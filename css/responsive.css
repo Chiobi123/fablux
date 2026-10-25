@@ -1,0 +1,182 @@
+/*=========================================
+        LARGE TABLETS
+=========================================*/
+
+@media (max-width:1024px){
+
+    .container{
+        width:90%;
+    }
+
+    .hero-content h1{
+        font-size:55px;
+    }
+
+    .product-grid{
+        grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    }
+
+    .footer-container{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+/*=========================================
+        TABLETS
+=========================================*/
+
+@media (max-width:768px){
+
+    section{
+        padding:80px 0;
+    }
+
+    .hero-content{
+        text-align:center;
+    }
+
+    .hero-content h1{
+        font-size:42px;
+    }
+
+    .hero-content p{
+        width:100%;
+    }
+
+    .product-grid,
+    .category-grid,
+    .arrival-grid,
+    .testimonial-grid,
+    .why-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .filter-group{
+
+        flex-direction:column;
+
+        margin-bottom:30px;
+
+    }
+
+    .filter-btn{
+
+        width:100%;
+
+    }
+
+    .newsletter-form{
+
+        flex-direction:column;
+
+    }
+
+    .newsletter-form input{
+
+        width:100%;
+
+    }
+
+    .newsletter-form button{
+
+        width:100%;
+
+    }
+
+    .footer-container{
+
+        grid-template-columns:1fr;
+
+        text-align:center;
+
+    }
+
+    .social-icons{
+
+        justify-content:center;
+
+    }
+
+}
+
+/*=========================================
+        MOBILE
+=========================================*/
+
+@media (max-width:480px){
+
+    .hero-content h1{
+
+        font-size:34px;
+
+    }
+
+    .section-title h2{
+
+        font-size:32px;
+
+    }
+
+    .logo{
+
+        font-size:24px;
+
+    }
+
+    .order-btn{
+
+        display:none;
+
+    }
+
+    .shop-content h1{
+
+        font-size:38px;
+
+    }
+
+    .shop-content p{
+
+        font-size:16px;
+
+    }
+
+    .filter-btn{
+
+        padding:10px 16px;
+
+        font-size:13px;
+
+    }
+
+    .product-detail-container,
+    .contact-container,
+    .about-container{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .gallery-thumbs{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+    .gallery-main img{
+
+        height:320px;
+
+    }
+
+    .product-summary .product-actions,
+    .product-summary .product-features{
+
+        grid-template-columns:1fr;
+
+    }
+
+}

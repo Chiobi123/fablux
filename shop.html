@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="css/responsive.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FabluX.U.Design | Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="css/pro.css">
+</head>
+
+<body>
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <h2 class="logo">Fablu<span>X</span>.U.Design</h2>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="shop.html" class="active">Shop</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <a href="#" class="order-btn">Order Now</a>
+                <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="shop-hero">
+        <div class="shop-overlay"></div>
+        <div class="container">
+            <div class="shop-content">
+                <span class="shop-small-title">FABLUX.U.DESIGN</span>
+                <h1>Premium Fashion Collection</h1>
+                <p>Explore the latest luxury essentials crafted for confidence, comfort and timeless style.</p>
+                <a href="#products" class="hero-btn">Explore Collection</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured shop-products" id="products">
+        <div class="container">
+            <div class="section-title">
+                <span>SHOP NOW</span>
+                <h2>Curated Pieces for Every Style</h2>
+                <p>Choose from our signature essentials across fashion, accessories and premium footwear.</p>
+            </div>
+
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="men">Men</button>
+                <button class="filter-btn" data-filter="women">Women</button>
+                <button class="filter-btn" data-filter="accessories">Accessories</button>
+                <button class="filter-btn" data-filter="shoes">Shoes</button>
+            </div>
+
+            <div class="product-grid">
+                <div class="product-card shop-product-card" data-category="men" data-product-id="1" data-product-name="Tailored Suit" data-product-price="₦95,000" data-product-category="Statement Menwear" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Tailored Suit">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" data-product-id="1">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Tailored Suit</h3>
+                        <p>Statement Menwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(45)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦95,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="2" data-product-name="Luxury Dress" data-product-price="₦75,000" data-product-category="Elegant Eveningwear" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Luxury Dress">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" data-product-id="2">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Luxury Dress</h3>
+                        <p>Elegant Eveningwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(32)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦75,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="3" data-product-name="Designer Sneakers" data-product-price="₦58,000" data-product-category="Luxury Streetwear" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Designer Sneakers">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" data-product-id="3">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Designer Sneakers</h3>
+                        <p>Luxury Streetwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(28)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦58,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="4" data-product-name="Luxury Watch" data-product-price="₦120,000" data-product-category="Signature Accessories" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Luxury Watch">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" data-product-id="4">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Luxury Watch</h3>
+                        <p>Signature Accessories</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(89)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦120,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="5" data-product-name="Luxury Jacket" data-product-price="₦85,000" data-product-category="Modern Layering" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Luxury Jacket">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" data-product-id="5">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Luxury Jacket</h3>
+                        <p>Modern Layering</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(56)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦85,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="6" data-product-name="Designer Bag" data-product-price="₦120,000" data-product-category="Premium Leather" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Designer Bag">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" data-product-id="6">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Designer Bag</h3>
+                        <p>Premium Leather</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(71)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦120,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="7" data-product-name="Classic Polo Shirt" data-product-price="₦35,000" data-product-category="Casual Wear" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Classic Polo">
+                        <div class="product-badge sale">Sale -20%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Classic Polo</h3>
+                        <p>Casual Wear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(34)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦35,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="8" data-product-name="Silk Blouse" data-product-price="₦48,000" data-product-category="Office Wear" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Silk Blouse">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Silk Blouse</h3>
+                        <p>Office Wear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(62)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦48,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="9" data-product-name="Premium Leather Shoes" data-product-price="₦65,000" data-product-category="Formal Footwear" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Leather Shoes">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Leather Shoes</h3>
+                        <p>Formal Footwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(93)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦65,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="10" data-product-name="Designer Sunglasses" data-product-price="₦42,000" data-product-category="Eye Accessories" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Sunglasses">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Sunglasses</h3>
+                        <p>Eye Accessories</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(47)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦42,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="11" data-product-name="Wool Cardigan" data-product-price="₦72,000" data-product-category="Winter Collection" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Cardigan">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Wool Cardigan</h3>
+                        <p>Winter Collection</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(53)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦72,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="12" data-product-name="High Waist Jeans" data-product-price="₦32,000" data-product-category="Denim" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Jeans">
+                        <div class="product-badge sale">Sale -15%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>High Waist Jeans</h3>
+                        <p>Denim</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(81)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦32,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="13" data-product-name="Athletic Sneakers" data-product-price="₦28,000" data-product-category="Sports" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Sneakers">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Athletic Sneakers</h3>
+                        <p>Sports</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(128)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦28,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="14" data-product-name="Leather Belt" data-product-price="₦18,000" data-product-category="Accessories" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Belt">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Leather Belt</h3>
+                        <p>Accessories</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(76)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦18,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="15" data-product-name="Formal Shirt" data-product-price="₦28,000" data-product-category="Business Casual" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Formal Shirt">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Formal Shirt</h3>
+                        <p>Business Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(99)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦28,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="16" data-product-name="Summer Dress" data-product-price="₦45,000" data-product-category="Casual" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Summer Dress">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Summer Dress</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(44)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦45,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="17" data-product-name="Wool Scarf" data-product-price="₦22,000" data-product-category="Winter" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Scarf">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Wool Scarf</h3>
+                        <p>Winter</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(38)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦22,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="18" data-product-name="Casual Loafers" data-product-price="₦52,000" data-product-category="Footwear" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Loafers">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Casual Loafers</h3>
+                        <p>Footwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(67)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦52,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="19" data-product-name="Joggers" data-product-price="₦25,000" data-product-category="Sportswear" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Joggers">
+                        <div class="product-badge sale">Sale -25%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Joggers</h3>
+                        <p>Sportswear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(85)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦25,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="20" data-product-name="Leather Jacket" data-product-price="₦95,000" data-product-category="Outerwear" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Leather Jacket">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Leather Jacket</h3>
+                        <p>Outerwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(112)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦95,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="21" data-product-name="Classic Watch" data-product-price="₦85,000" data-product-category="Timepiece" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Watch">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Classic Watch</h3>
+                        <p>Timepiece</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(156)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦85,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="22" data-product-name="Heeled Boots" data-product-price="₦55,000" data-product-category="Women's Footwear" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Boots">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Heeled Boots</h3>
+                        <p>Women's Footwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(72)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦55,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="23" data-product-name="Henley Shirt" data-product-price="₦22,000" data-product-category="Casual" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Henley">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Henley Shirt</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(91)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦22,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="24" data-product-name="Beanie Hat" data-product-price="₦15,000" data-product-category="Headwear" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Beanie">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Beanie Hat</h3>
+                        <p>Headwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(58)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦15,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="25" data-product-name="Crop Top" data-product-price="₦18,000" data-product-category="Casual Wear" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Crop Top">
+                        <div class="product-badge sale">Sale -30%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Crop Top</h3>
+                        <p>Casual Wear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(64)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦18,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="26" data-product-name="Canvas Shoes" data-product-price="₦20,000" data-product-category="Casual Footwear" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Canvas">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Canvas Shoes</h3>
+                        <p>Casual Footwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(103)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦20,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="27" data-product-name="V-Neck Sweater" data-product-price="₦38,000" data-product-category="Knitwear" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Sweater">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>V-Neck Sweater</h3>
+                        <p>Knitwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(79)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦38,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="28" data-product-name="Shoulder Bag" data-product-price="₦42,000" data-product-category="Bags" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Shoulder Bag">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Shoulder Bag</h3>
+                        <p>Bags</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(87)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦42,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="29" data-product-name="Maxi Skirt" data-product-price="₦48,000" data-product-category="Bottom Wear" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Maxi Skirt">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Maxi Skirt</h3>
+                        <p>Bottom Wear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(73)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦48,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="30" data-product-name="Flip Flops" data-product-price="₦12,000" data-product-category="Summer" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Flip Flops">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Flip Flops</h3>
+                        <p>Summer</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(42)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦12,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="31" data-product-name="Cargo Pants" data-product-price="₦35,000" data-product-category="Casual" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Cargo Pants">
+                        <div class="product-badge sale">Sale -20%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Cargo Pants</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(68)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦35,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="32" data-product-name="Tie Collection" data-product-price="₦15,000" data-product-category="Formal" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Tie">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Tie Collection</h3>
+                        <p>Formal</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(51)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦15,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="33" data-product-name="Bodysuit" data-product-price="₦32,000" data-product-category="Basics" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Bodysuit">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Bodysuit</h3>
+                        <p>Basics</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(96)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦32,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="34" data-product-name="Sandals" data-product-price="₦18,000" data-product-category="Casual" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Sandals">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Sandals</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(59)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦18,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="35" data-product-name="Tank Top" data-product-price="₦12,000" data-product-category="Summer" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Tank Top">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Tank Top</h3>
+                        <p>Summer</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(74)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦12,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="36" data-product-name="Crossbody Bag" data-product-price="₦35,000" data-product-category="Bags" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Crossbody">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Crossbody Bag</h3>
+                        <p>Bags</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(82)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦35,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="37" data-product-name="Blazer" data-product-price="₦65,000" data-product-category="Formal" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Blazer">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Blazer</h3>
+                        <p>Formal</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(108)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦65,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="38" data-product-name="Court Shoes" data-product-price="₦48,000" data-product-category="Formal" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Court Shoes">
+                        <div class="product-badge sale">Sale -18%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Court Shoes</h3>
+                        <p>Formal</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(45)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦48,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="39" data-product-name="Chino Shorts" data-product-price="₦22,000" data-product-category="Summer" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Shorts">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Chino Shorts</h3>
+                        <p>Summer</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(61)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦22,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="40" data-product-name="Bracelet" data-product-price="₦28,000" data-product-category="Jewelry" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Bracelet">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Bracelet</h3>
+                        <p>Jewelry</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(77)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦28,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="41" data-product-name="Leggings" data-product-price="₦28,000" data-product-category="Activewear" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Leggings">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Leggings</h3>
+                        <p>Activewear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(119)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦28,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="42" data-product-name="Platform Shoes" data-product-price="₦62,000" data-product-category="Fashion" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Platform">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Platform Shoes</h3>
+                        <p>Fashion</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(94)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦62,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="43" data-product-name="Hoodie" data-product-price="₦42,000" data-product-category="Casual" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Hoodie">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Hoodie</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(135)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦42,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="44" data-product-name="Backpack" data-product-price="₦55,000" data-product-category="Bags" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Backpack">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Backpack</h3>
+                        <p>Bags</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(142)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦55,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="45" data-product-name="Cardigan" data-product-price="₦52,000" data-product-category="Knitwear" data-product-image="images/products/product3.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product3.jpg" alt="Cardigan">
+                        <div class="product-badge sale">Sale -22%</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Cardigan</h3>
+                        <p>Knitwear</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(83)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦52,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="46" data-product-name="Slip-Ons" data-product-price="₦32,000" data-product-category="Casual" data-product-image="images/products/product4.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product4.jpg" alt="Slip-Ons">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Slip-Ons</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-count">(66)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦32,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="men" data-product-id="47" data-product-name="Sweatpants" data-product-price="₦32,000" data-product-category="Casual" data-product-image="images/products/product5.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product5.jpg" alt="Sweatpants">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Sweatpants</h3>
+                        <p>Casual</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(88)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦32,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="accessories" data-product-id="48" data-product-name="Necklace" data-product-price="₦22,000" data-product-category="Jewelry" data-product-image="images/products/product6.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product6.jpg" alt="Necklace">
+                        <div class="product-badge">New</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Necklace</h3>
+                        <p>Jewelry</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(69)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦22,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="women" data-product-id="49" data-product-name="Wide Leg Pants" data-product-price="₦58,000" data-product-category="Formal" data-product-image="images/products/product1.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product1.jpg" alt="Wide Leg">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Wide Leg Pants</h3>
+                        <p>Formal</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(75)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦58,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card shop-product-card" data-category="shoes" data-product-id="50" data-product-name="Oxford Shoes" data-product-price="₦72,000" data-product-category="Formal" data-product-image="images/products/product2.jpg">
+                    <div class="product-image">
+                        <img src="images/products/product2.jpg" alt="Oxford">
+                        <div class="product-badge">Hot</div>
+                        <div class="product-overlay">
+                            <button class="quick-view-btn">Quick View</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Oxford Shoes</h3>
+                        <p>Formal</p>
+                        <div class="product-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">(111)</span>
+                        </div>
+                        <div class="product-price">
+                            <span>₦72,000</span>
+                            <button class="cart-btn"><i class="fa-solid fa-cart-shopping"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <span>JOIN THE CLUB</span>
+                <h2>Receive first access to new drops</h2>
+                <p>Subscribe for exclusive offers, styling guides and early product releases.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-box">
+                <h2>FabluX<span>.U.Design</span></h2>
+                <p>Luxury fashion for those who appreciate quality, elegance and confidence.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                </div>
+            </div>
+            <div class="footer-box">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="shop.html">Shop</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-box">
+                <h3>Categories</h3>
+                <ul>
+                    <li><a href="#">Men's Fashion</a></li>
+                    <li><a href="#">Women's Fashion</a></li>
+                    <li><a href="#">Shoes</a></li>
+                    <li><a href="#">Accessories</a></li>
+                </ul>
+            </div>
+            <div class="footer-box">
+                <h3>Contact</h3>
+                <ul>
+                    <li><i class="fa-solid fa-phone"></i> +234 XXX XXX XXXX</li>
+                    <li><i class="fa-solid fa-envelope"></i> info@fabluxudesign.com</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Nigeria</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 FabluX.U.Design. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <button id="topBtn"><i class="fa-solid fa-arrow-up"></i></button>
+    <script src="js/store.js"></script><script src="js/api-client.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/products-data.js"></script>
+    <script src="js/pro.js"></script><script src="js/backend-bridge.js"></script>
+</body>
+
+</html>
