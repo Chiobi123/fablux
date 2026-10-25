@@ -12,3 +12,13 @@ output.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Local DB/admin scripts - they contain credentials, never commit
+db-run.js
+db-query.js
+db-apply.js
+seed-products.js
+cleanup.js
+test-auth.js
+test-rest.js
+test-adapter.js
