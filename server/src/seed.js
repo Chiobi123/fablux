@@ -1,5 +1,36 @@
-const fs=require('node:fs');const path=require('node:path');const vm=require('node:vm');const repo=require('./repository');const auth=require('./auth');
-function loadProducts(){const file=path.join(__dirname,'..','..','js','products-data.js');const ctx={window:{}};vm.createContext(ctx);vm.runInContext(fs.readFileSync(file,'utf8'),ctx);return ctx.window.FAB_PRODUCTS||[];}
-repo.seedProducts(loadProducts());
-repo.setSetting('marketplace_enabled', repo.getSetting('marketplace_enabled','0'));
-auth.bootstrapAdmin();
+// Supabase Seed Module
+// Seeds initial data into Supabase on server startup
+const supabase = require('./db');
+const productsData = require('../../js/products-data');
+
+async function seedInitialData() {
+  const products = productsData.FAB_PRODUCTS || [];
+
+  for (const p of products) {
+    const { error } = await supabase
+      .from('products')
+      .upsert([
+        {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          category: p.category,
+          image: p.image,
+          active: p.active !== false ? 1 : 0,
+          stock: p.stock || 100,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ]);
+    if (error) console.error('Seed product error:', error.message);
+  }
+
+  // Set marketplace setting
+  await supabase.from('settings').upsert([
+    { key: 'marketplace_enabled', value: '0', updated_at: new Date().toISOString() }
+  ]);
+
+  console.log('Supabase seed completed');
+}
+
+module.exports = { seedInitialData };

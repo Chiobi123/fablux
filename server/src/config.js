@@ -36,5 +36,7 @@ module.exports = {
   paymentReservationMinutes: Number(process.env.PAYMENT_RESERVATION_MINUTES || 20),
   appBaseUrl: process.env.APP_BASE_URL || `http://127.0.0.1:${Number(process.env.PORT || 5000)}`,
   resetTokenMinutes: Number(process.env.RESET_TOKEN_MINUTES || 30),
-  allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean)
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean),
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
 };
