@@ -19,9 +19,39 @@
     const e=new Error(msg); e.status=status; return e;
   }
 
+  // ---- resilient network layer -------------------------------------------------
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  // Retries transient network failures ("Failed to fetch", timeouts, resets)
+  async function netFetch(url,opts,tries){
+    const max=tries||3; let err=null;
+    for(let i=0;i<max;i++){
+      try{ return await fetch(url,opts); }
+      catch(e){ err=e; if(i<max-1) await sleep(350+i*650); }
+    }
+    throw err;
+  }
+  // Turns raw browser network errors into a message a human can act on
+  function friendly(e){
+    const m=String(e&&e.message||'');
+    if(!e||e.status) return m||'Something went wrong.';
+    if(/fetch|network|load failed|timeout|ECONN/i.test(m))
+      return 'Network problem — please check your connection and tap again.';
+    return m||'Something went wrong.';
+  }
+  function cachedUser(){
+    try{ return JSON.parse(localStorage.getItem(USER_KEY)||'null'); }catch(e){ return null; }
+  }
+  function cacheUser(u){
+    if(!u) return null;
+    try{ localStorage.setItem(USER_KEY,JSON.stringify(u)); }catch(e){}
+    return u;
+  }
+
   async function rest(path,options){
     const opts=Object.assign({},options||{},{headers:authHeaders(options&&options.headers)});
-    const res=await fetch(REST+path,opts);
+    let res;
+    try{ res=await netFetch(REST+path,opts); }
+    catch(e){ const x=new Error(friendly(e)); x.network=true; throw x; }
     const text=await res.text();
     let data=null; try{data=text?JSON.parse(text):null;}catch(e){data=null;}
     if(!res.ok) throw fail(data,res.status);
@@ -29,19 +59,24 @@
   }
 
   async function authCall(path,body){
-    const res=await fetch(AUTH+path,{method:'POST',
-      headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+KEY},
-      body:JSON.stringify(body)});
+    let res;
+    try{
+      res=await netFetch(AUTH+path,{method:'POST',
+        headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+KEY},
+        body:JSON.stringify(body)});
+    }catch(e){ const x=new Error(friendly(e)); x.network=true; throw x; }
     const text=await res.text();
     let data=null; try{data=text?JSON.parse(text):null;}catch(e){data=null;}
     if(!res.ok) throw fail(data,res.status);
     return data;
   }
 
+  // Returns the Supabase user, or null when signed out.
+  // Throws only on a genuine network failure (never on a 401).
   async function currentUser(){
     const t=token(); if(!t) return null;
-    const res=await fetch(AUTH+'/user',{headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+t}});
-    if(!res.ok){ if(res.status===401||res.status===403){setToken(null);} return null; }
+    const res=await netFetch(AUTH+'/user',{headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+t}});
+    if(!res.ok){ if(res.status===401||res.status===403){setToken(null);localStorage.removeItem(USER_KEY);} return null; }
     return res.json();
   }
 
@@ -66,16 +101,27 @@
   }
 
   async function sessionUser(){
-    const u=await currentUser();
+    let u;
+    try{ u=await currentUser(); }
+    catch(e){
+      // Network hiccup while verifying the session: keep the cached profile
+      const c=cachedUser();
+      if(c) return c;
+      const x=new Error(friendly(e)); x.network=true; throw x;
+    }
     if(!u){localStorage.removeItem(USER_KEY);return null;}
-    let role='customer';
-    try{const rows=await rest('/users?select=role&id=eq.'+encodeURIComponent(u.id));if(rows&&rows[0])role=rows[0].role;}catch(e){}
+    const c=cachedUser();
+    let role=(c&&c.role)||'customer';
+    try{
+      const rows=await rest('/users?select=role&id=eq.'+encodeURIComponent(u.id));
+      if(rows&&rows[0])role=rows[0].role;
+    }catch(e){ role=(c&&c.role)||'customer'; }
     const mapped=mapUser(u,role);
-    localStorage.setItem(USER_KEY,JSON.stringify(mapped));
+    cacheUser(mapped);
     return mapped;
   }
 
-  const uid=()=>{const u=JSON.parse(localStorage.getItem(USER_KEY)||'null');return u&&u.id;};
+  const uid=()=>{const u=cachedUser();return u&&u.id;};
 
   // Accept tokens handed back by Supabase email links (confirm / recovery)
   (function captureHashToken(){
@@ -93,7 +139,13 @@
     async register(body){
       const data=await authCall('/signup',{email:body.email,password:body.password,
         data:{name:body.name,phone:body.phone||''},redirect_to:location.origin+'/login.html'});
-      if(data&&data.access_token){setToken(data.access_token);await ensureUserRow(data.user);return {token:data.access_token};}
+      if(data&&data.access_token){
+        setToken(data.access_token);
+        cacheUser(mapUser(data.user,'customer'));
+        try{ await ensureUserRow(data.user); }catch(e){}
+        try{ await sessionUser(); }catch(e){}
+        return {token:data.access_token};
+      }
       // Confirmation email required
       try{ return await api.login({email:body.email,password:body.password}); }
       catch(err){
@@ -106,18 +158,24 @@
     async login(body){
       const data=await authCall('/token?grant_type=password',{email:body.email,password:body.password});
       setToken(data.access_token);
-      const u=data.user; await ensureUserRow(u);
-      await sessionUser();
+      cacheUser(mapUser(data.user,'customer'));
+      try{ await ensureUserRow(data.user); }catch(e){}
+      try{ await sessionUser(); }catch(e){}
       return {token:data.access_token};
     },
     async logout(){
       const t=token(); setToken(null); localStorage.removeItem(USER_KEY);
       if(!t) return;
-      try{await fetch(AUTH+'/logout',{method:'POST',headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+t}});}catch(e){}
+      try{await netFetch(AUTH+'/logout',{method:'POST',headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+t}});}catch(e){}
     },
-    me(){return sessionUser().then(u=>({user:u})).catch(()=>({user:null}));},
+    async me(){
+      try{ return {user:await sessionUser()}; }
+      catch(e){ return {user:cachedUser()}; }
+    },
     async account(){
-      const u=await sessionUser();
+      let u=null;
+      try{ u=await sessionUser(); }
+      catch(e){ u=cachedUser(); if(!u) throw e; }
       if(!u) return {user:null,addresses:[]};
       let addresses=[];
       try{addresses=await rest('/addresses?select=id,label,address,city,state,created_at&user_id=eq.'+encodeURIComponent(u.id)+'&order=created_at.desc');}catch(e){}
