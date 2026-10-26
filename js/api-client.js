@@ -405,6 +405,21 @@
           '&order=created_at.desc&limit='+(limit||50));
       }catch(e){ return []; }
     },
+    async adminReturns(){
+      await api.requireAdmin();
+      try{
+        return await rest('/returns?select=id,order_id,reason,details,status,created_at,user_id,users(name,email)'+
+          '&order=created_at.desc&limit=500');
+      }catch(e){ return []; }
+    },
+    async adminReturnStatus(id,status){
+      await api.requireAdmin();
+      const s=String(status||'').trim().toLowerCase();
+      if(!/^(requested|approved|rejected|received|refunded)$/.test(s)) throw new Error('Unknown return status.');
+      await rest('/returns?id=eq.'+encodeURIComponent(id),
+        {method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({status:s})});
+      return {status:s};
+    },
     async adminCreateProduct(body){
       const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
       const now=new Date().toISOString();

@@ -52,7 +52,7 @@
   }
 
   function tabsHtml() {
-    var tabs = [['orders', 'Orders'], ['settings', 'Store settings'], ['notifications', 'Notifications'], ['audit', 'Audit trail']];
+    var tabs = [['orders', 'Orders'], ['returns', 'Returns'], ['settings', 'Store settings'], ['notifications', 'Notifications'], ['audit', 'Audit trail']];
     return '<div class="pro-admin-nav" style="margin-bottom:18px;flex-wrap:wrap;display:flex;gap:10px">' +
       tabs.map(function (t) {
         return '<button class="btn' + (state.tab === t[0] ? '' : ' pro-card-link') + '" data-tab="' + t[0] + '" style="cursor:pointer">' + t[1] + '</button>';
@@ -239,9 +239,32 @@
       }).join('') + '</ul>' : '<p>No audit entries yet.</p>') + '</div>';
   }
 
+  var RETURN_LABEL = { requested: 'Requested', approved: 'Approved', rejected: 'Rejected', received: 'Received', refunded: 'Refunded' };
+  var RETURN_OPTIONS = ['requested', 'approved', 'rejected', 'received', 'refunded'];
+
+  async function renderReturns(box, dash) {
+    var rows = await window.FabluXAPI.adminReturns();
+    box.innerHTML = tabsHtml() + '<div class="pro-admin-section"><h3>Returns &amp; Refunds</h3>' +
+      '<p style="opacity:.8">Requests submitted on the Returns page. Change a status to move a request along; the customer sees it under their orders.</p>' +
+      (rows.length ? '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr>' +
+        ['Order', 'Customer', 'Reason', 'Status', 'Action'].map(function (h) { return '<th style="text-align:left;padding:8px;border-bottom:1px solid rgba(0,0,0,.15)">' + h + '</th>'; }).join('') +
+        '</tr></thead><tbody>' + rows.map(function (r) {
+          var who = (r.users && (r.users.name || r.users.email)) || 'Signed-in customer';
+          return '<tr><td><strong>' + esc(r.order_id || '—') + '</strong><br><small>' + when(r.created_at) + '</small></td>' +
+            '<td>' + esc(who) + '</td>' +
+            '<td>' + esc(r.reason || '') + (r.details ? '<br><small>' + esc(String(r.details).slice(0, 140)) + '</small>' : '') + '</td>' +
+            '<td><span class="status">' + esc(RETURN_LABEL[r.status] || r.status) + '</span></td>' +
+            '<td><select data-return="' + esc(r.id) + '" style="padding:8px 10px;border:1px solid rgba(0,0,0,.2);border-radius:6px;background:#fff;font:inherit">' +
+            RETURN_OPTIONS.map(function (s) {
+              return '<option value="' + s + '"' + (r.status === s ? ' selected' : '') + '>' + RETURN_LABEL[s] + '</option>';
+            }).join('') + '</select></td></tr>';
+        }).join('') + '</tbody></table></div>' : '<p>No return requests yet.</p>') + '</div>';
+  }
+
   async function render(box, dash) {
     if (state.order) return openOrder(box, dash, state.order.reference);
     if (state.tab === 'orders') return renderOrders(box, dash);
+    if (state.tab === 'returns') return renderReturns(box, dash);
     if (state.tab === 'settings') return renderSettings(box, dash);
     if (state.tab === 'notifications') return renderNotifications(box, dash);
     if (state.tab === 'audit') return renderAudit(box, dash);
@@ -255,6 +278,13 @@
         if (!b) return;
         state.tab = b.dataset.tab; state.order = null;
         render(box, dash);
+      });
+      box.addEventListener('change', function (ev) {
+        var s = ev.target.closest && ev.target.closest('[data-return]');
+        if (!s) return;
+        window.FabluXAPI.adminReturnStatus(s.dataset.return, s.value)
+          .then(function () { toast('Return status updated'); return render(box, dash); })
+          .catch(function (e) { toast(e && e.message ? e.message : 'Could not update the return'); });
       });
       return render(box, dash);
     }

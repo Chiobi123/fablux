@@ -64,6 +64,25 @@ const getCart=()=>window.FabluXStore?.getCart?.()||[];
 async function redirectAfterLogin(){if(typeof window.redirectAfterLogin==='function'){window.redirectAfterLogin();return}const ret=new URLSearchParams(location.search).get('return');if(ret){location.href=ret;return}let role='customer';try{const d=await api.me();if(d&&d.user)role=d.user.role||'customer'}catch(e){}location.href=(role==='admin')?'admin.html':'account.html';}
 async function handleAuth(event){const f=event.target;if(f.id!=='loginForm'&&f.id!=='registerForm'&&f.id!=='forgotForm')return;event.preventDefault();event.stopImmediatePropagation();try{if(f.id==='loginForm'){await api.login({email:f.email.value,password:f.password.value});toast('✓ Welcome back');await redirectAfterLogin();}else if(f.id==='registerForm'){await api.register({name:f.name.value, email:f.email.value, phone:f.phone.value, password:f.password.value});toast('✓ Account created');await redirectAfterLogin();}else{await api.forgotPassword(f.email.value.trim());toast('If the email exists, a reset link has been sent. Check your inbox.');}}catch(e){toast(e.message)}finally{if(window.FabluXSyncAccount)window.FabluXSyncAccount();}}
 
+/* Returns page: the request is written to the Supabase returns table
+   (row level security keeps it private to the customer and visible to the
+   administrators, who can move it along from the console). */
+function handleReturnForm(){
+  const f=document.getElementById('returnForm'); if(!f)return;
+  f.onsubmit=async e=>{
+    e.preventDefault();
+    try{
+      await api.returnRequest({orderId:f.order.value.trim(),reason:f.reason.value,details:f.details.value.trim()});
+      toast('✓ Return request submitted');
+      f.reset();
+    }catch(err){
+      const m=String((err&&err.message)||'');
+      if(/sign in/i.test(m)){location.href='login.html?return='+encodeURIComponent(location.pathname+location.search);return}
+      toast(m);
+    }
+  };
+}
+
 /* Capture the Supabase recovery tokens from the reset link (#access_token=...&refresh_token=...).
    This is the only password-reset entry point: no local account store is involved. */
 function captureResetToken(){
@@ -142,7 +161,7 @@ function initSiteChrome(){
   }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();injectMarketplaceState();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();});
+document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();injectMarketplaceState();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
 /* Never show a stale identity: re-render the account page whenever the tab
    becomes visible again (e.g. after signing in somewhere else). */
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;if(document.getElementById('accountPage'))renderAccount();});
