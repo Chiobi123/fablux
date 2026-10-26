@@ -26,6 +26,7 @@ function injectHeader(){
      window.FabluXAPI.me().then(d=>{ if(d&&d.user){account.textContent='My Account';account.href='account.html'}else{signedOut()} }).catch(signedOut);
    };
    sync();
+   window.FabluXSyncAccount=sync;
    // Re-check whenever the tab becomes visible again, so a sign-in or sign-out
    // done in another tab is reflected immediately.
    document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
