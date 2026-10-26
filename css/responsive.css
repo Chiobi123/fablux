@@ -180,3 +180,167 @@
     }
 
 }
+/* ==========================================================================
+   FABLUX.U.DESIGN — universal device layer (phones, tablets, laptops)
+   Loaded last on every page so these fixes always win over page styles.
+   ========================================================================== */
+
+/* ---------- global safety ---------- */
+html,body{overflow-x:hidden;max-width:100%}
+img{max-width:100%;height:auto}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+a{ -webkit-tap-highlight-color:transparent }
+
+/* ---------- header / navigation on every device ---------- */
+header{z-index:2000}
+nav{gap:10px}
+.logo{white-space:nowrap}
+
+@media (max-width:768px){
+    nav{height:74px}
+    .logo{font-size:1.5rem}
+    /* Closed menu must be completely inert so it can never swallow taps. */
+    .nav-links{visibility:hidden;pointer-events:none;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+    .nav-links.active{visibility:visible;pointer-events:auto}
+    .nav-links a{padding:10px 14px;min-height:44px;display:inline-flex;align-items:center}
+    .menu-toggle{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08)}
+    .order-btn{display:inline-block;padding:11px 20px;font-size:.9rem;min-height:44px}
+}
+
+/* ---------- touch targets (all devices with a coarse pointer) ---------- */
+@media (pointer:coarse){
+    .btn,.btn-outline,.pro-form button,.pro-card-actions button,.pro-card-link,
+    .pro-admin-nav a,.pro-admin-nav button,.filter-btn,.fablux-admin-actions .btn,
+    .fablux-qty button,.modal-close,.newsletter-form button,.contact-form .btn{
+        min-height:46px;
+    }
+}
+
+/* ---------- forms: full-width, no iOS zoom ---------- */
+.pro-form input,
+.pro-form select,
+.pro-form textarea,
+.pro-shop-tools input,
+.pro-shop-tools select{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+}
+@media (max-width:768px){
+    .pro-form input,
+    .pro-form select,
+    .pro-form textarea{font-size:16px;min-height:48px}
+    .pro-form button,.pro-form .btn{width:100%;min-height:50px}
+    .pro-form{gap:16px}
+    .pro-auth{margin:34px auto;padding:0 4px}
+    .pro-shop-tools{flex-direction:column;align-items:stretch}
+    .pro-shop-tools input,.pro-shop-tools select{min-width:0}
+}
+
+/* ---------- cards, grids, sections ---------- */
+@media (max-width:768px){
+    .pro-card-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+    .pro-card img{height:180px}
+    .pro-card>div{padding:14px}
+    .fablux-admin-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+    .fablux-admin-stat{padding:14px}
+    .pro-empty{padding:44px 14px}
+    section{padding:60px 0}
+}
+
+/* ---------- buttons that are fixed-width on desktop ---------- */
+@media (max-width:768px){
+    .btn,.btn-outline{width:100%;max-width:420px;height:54px}
+    .product-summary .product-actions .btn,
+    .product-summary .product-actions .btn-outline{width:100%}
+    .pro-card-actions{gap:10px}
+    .pro-card-actions button,.pro-card-link{flex:1 1 auto;text-align:center;min-height:44px}
+}
+
+/* ---------- admin console ---------- */
+#adminPage{max-width:100%}
+#adminPage .pro-admin-card{max-width:100%;margin:24px auto;padding:20px 16px}
+#adminPage .pro-admin-section{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#adminPage table{width:100%;min-width:600px}
+@media (max-width:768px){
+    .pro-admin-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+    .pro-admin-nav a,.pro-admin-nav button{min-height:46px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px}
+    .fablux-admin-actions{gap:8px}
+    .fablux-admin-actions .btn,.fablux-admin-actions .btn-outline{width:100%;max-width:none}
+    #adminPage table{font-size:14px}
+    #adminPage table th,#adminPage table td{padding:8px 6px}
+    .pro-summary-row{gap:10px;font-size:14px;flex-wrap:wrap}
+    .pro-summary-row strong{text-align:right}
+    .pro-order{padding:16px 13px}
+    .pro-order>div{gap:8px}
+    .pro-admin-card .btn,.pro-admin-card button{max-width:100%}
+}
+
+/* ---------- checkout / orders / invoice / success ---------- */
+@media (max-width:768px){
+    .pro-summary{padding:16px 14px}
+    .pro-summary-row{padding:9px 0}
+    .invoice-head{display:block;gap:14px}
+    .invoice-head>div{margin-bottom:12px}
+    .pro-order>div{flex-direction:column;align-items:flex-start}
+    .status{align-self:flex-start}
+    .pro-success-head i{font-size:44px}
+    .pro-success-head h2{font-size:26px}
+    .checkout-grid,.orders-grid{grid-template-columns:1fr}
+}
+
+/* ---------- track / waybill / auth ---------- */
+@media (max-width:768px){
+    .fablux-timeline li{padding:9px 0 9px 30px}
+    .fablux-events li{font-size:13px}
+    .pro-text-link{display:inline-block;min-height:44px;line-height:44px}
+    .waybill-sheet,.wb{max-width:100%!important}
+    .wb-actions{gap:10px}
+    .wb-actions .btn{width:100%;max-width:100%}
+    .pro-auth .btn,.pro-auth button{width:100%}
+    .pro-auth .section-title h2{font-size:30px}
+}
+
+/* ---------- product / shop / cart ---------- */
+@media (max-width:768px){
+    .pro-shop-tools{margin:14px 0 22px}
+    .modal{padding:12px}
+    .modal-content{padding:26px 16px;max-height:90vh}
+    .fablux-cart-panel{max-width:100%}
+    .product-summary .product-actions{grid-template-columns:1fr}
+    .quick-view-btn,.add-to-cart-btn,.wishlist-btn{width:100%;min-height:48px}
+}
+
+/* ---------- small phones ---------- */
+@media (max-width:480px){
+    .container{width:92%}
+    nav{height:66px}
+    .logo{font-size:1.25rem}
+    /* Keep the cart reachable on phones: it is the only cart entry point in the header. */
+    .order-btn{display:inline-block;padding:9px 15px;font-size:.8rem}
+    .order-btn .cart-count-badge{margin-left:5px}
+    .menu-toggle{width:42px;height:42px;font-size:22px}
+    .btn,.btn-outline{max-width:100%}
+    .pro-form button,.pro-form .btn{max-width:100%}
+    .pro-auth .section-title h2{font-size:26px}
+    .section-title h2{font-size:28px}
+    .hero-content h1{font-size:30px}
+    #adminPage .pro-admin-card{padding:16px 12px}
+    #adminPage table{min-width:520px}
+    .fablux-admin-grid{grid-template-columns:repeat(2,1fr)}
+    .pro-card-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+    .pro-card img{height:140px}
+    .footer-container{gap:26px}
+}
+
+/* ---------- landscape phones: menus should not cover the page ---------- */
+@media (max-height:520px) and (max-width:950px){
+    .nav-links{max-height:70vh;overflow-y:auto;padding:16px 0;gap:6px}
+    .nav-links a{padding:7px 12px;min-height:38px}
+}
+
+/* ---------- very wide screens: keep content centred ---------- */
+@media (min-width:1600px){
+    .container{width:74%}
+}

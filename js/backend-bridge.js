@@ -4,8 +4,30 @@ const api=window.FabluXAPI; if(!api)return;
 const money=n=>'₦'+Number(n||0).toLocaleString('en-NG');
 const toast=m=>window.FabluXStore?.toast(m);
 const getCart=()=>window.FabluXStore?.getCart?.()||[];
-function redirectAfterLogin(){const ret=new URLSearchParams(location.search).get('return');location.href=ret||'account.html';}
+function redirectAfterLogin(){if(typeof window.redirectAfterLogin==='function'){window.redirectAfterLogin();return}const ret=new URLSearchParams(location.search).get('return');location.href=ret||'account.html';}
 async function handleAuth(event){const f=event.target;if(f.id!=='loginForm'&&f.id!=='registerForm'&&f.id!=='forgotForm')return;event.preventDefault();event.stopImmediatePropagation();try{if(f.id==='loginForm'){await api.login({email:f.email.value,password:f.password.value});toast('✓ Welcome back');redirectAfterLogin();}else if(f.id==='registerForm'){await api.register({name:f.name.value, email:f.email.value, phone:f.phone.value, password:f.password.value});toast('✓ Account created');location.href='account.html';}else{await api.forgotPassword(f.email.value.trim());toast('If the email exists, a reset link has been sent. Check your inbox.');}}catch(e){toast(e.message)}}
+
+/* Capture the Supabase recovery tokens from the reset link (#access_token=...&refresh_token=...).
+   This is the only password-reset entry point: no local account store is involved. */
+function captureResetToken(){
+  const raw=(location.hash||'')+'&'+(location.search||'');
+  const p=new URLSearchParams(raw.replace(/^#/,''));
+  const at=p.get('access_token'), rt=p.get('refresh_token');
+  if(at&&window.FabluXAuthTokenKey){localStorage.setItem(window.FabluXAuthTokenKey,at);localStorage.removeItem('fablux_api_user_v1');history.replaceState(null,'',location.pathname);}
+}
+async function handleReset(event){
+  const f=event.target; if(f.id!=='resetForm')return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  try{
+    if(!f.password.value||f.password.value.length<8){toast('Password must be at least 8 characters');return}
+    if(f.password.value!==f.confirm.value){toast('Passwords do not match');return}
+    const tok=(location.hash||location.search||'');
+    if(/access_token=/.test(tok))captureResetToken();
+    await api.resetPassword(null,f.password.value);
+    toast('✓ Password updated — please sign in');
+    setTimeout(()=>{location.href='login.html'},700);
+  }catch(e){toast(e.message)}
+}
 async function renderAccount(){const box=document.getElementById('accountPage');if(!box)return;try{const d=await api.account();box.querySelector('[data-user-name]').textContent=d.user.name;box.querySelector('[data-user-email]').textContent=d.user.email;box.querySelector('[data-user-phone]').textContent=d.user.phone||'Not added';const logout=box.querySelector('[data-logout]');if(logout)logout.onclick=async()=>{await api.logout();location.href='login.html';};let section=document.getElementById('addressBook');if(!section){section=document.createElement('section');section.id='addressBook';section.style.marginTop='40px';box.appendChild(section)}section.innerHTML=`<div class="section-title"><span>DELIVERY</span><h3>Address Book</h3></div><form id="addressForm" class="pro-form"><label>Label<input name="label" required></label><label>Address<textarea name="address" rows="3" required></textarea></label><label>City<input name="city" required></label><label>State<input name="state" required></label><button class="btn">Save Address</button></form><div class="pro-card-grid" style="margin-top:20px">${d.addresses.map(a=>`<article class="pro-card"><div><strong>${a.label}</strong><p>${a.address}<br>${a.city}, ${a.state}</p><button type="button" data-delete-address="${a.id}">Remove</button></div></article>`).join('')}</div>`;section.querySelector('#addressForm').onsubmit=async e=>{e.preventDefault();try{await api.createAddress(Object.fromEntries(new FormData(e.target)));toast('✓ Address saved');renderAccount()}catch(err){toast(err.message)}};section.querySelectorAll('[data-delete-address]').forEach(b=>b.onclick=async()=>{try{await api.deleteAddress(b.dataset.deleteAddress);renderAccount()}catch(e){toast(e.message)}})}catch(e){if(e&&(e.network||/Network problem/i.test(String(e.message||'')))){toast(e.message||'Network problem — please try again.');return}location.href='login.html?return='+encodeURIComponent(location.pathname+location.search)}}
 const STATUS_LABEL={pending_payment:'Order received',payment_confirmed:'Payment confirmed',confirmed:'Order confirmed',processing:'Preparing parcel',ready_for_dispatch:'Ready for dispatch',shipped:'Collected by courier',delivered:'Delivered',cancelled:'Cancelled'};
 async function renderOrders(){const box=document.getElementById('ordersPage');if(!box)return;try{const d=await api.orders();box.innerHTML=d.orders.length?d.orders.map(o=>`<article class="pro-order"><div><strong>${o.reference||o.id}</strong><span>${new Date(o.created_at).toLocaleDateString('en-NG')}</span></div><p>${(o.items||[]).map(i=>`${i.name} × ${i.quantity}`).join(', ')}</p><div><strong>${money(o.total)}</strong><span class="status">${STATUS_LABEL[o.status]||o.status}</span></div><div class="pro-card-link" style="display:flex;gap:14px;flex-wrap:wrap"><a href="order-success.html?ref=${encodeURIComponent(o.reference||'')}&token=${encodeURIComponent(o.tracking_token||localStorage.getItem('fablux_last_order_token')||'')}">Order Details</a><a href="track.html?ref=${encodeURIComponent(o.reference||'')}&token=${encodeURIComponent(o.tracking_token||'')}">Track Order</a></div></article>`).join(''):'<div class="pro-empty"><h2>No orders yet</h2><a class="btn" href="shop.html">Start Shopping</a></div>'}catch(e){box.innerHTML='<div class="pro-empty"><h2>Your orders</h2><p>'+e.message+'</p><a class="btn" href="login.html?return=orders.html">Sign In</a> <a class="btn" href="shop.html">Continue as guest</a></div>'}}
@@ -23,6 +45,45 @@ async function renderOrderSuccess(){const box=document.getElementById('orderSucc
 async function renderTrack(){const box=document.getElementById('trackPage');if(!box)return;const q=new URLSearchParams(location.search);const refInput=box.querySelector('[name=ref]');const tokInput=box.querySelector('[name=token]');const show=async(ref,token)=>{const out=box.querySelector('[data-track-result]');if(!out)return;out.innerHTML='<p>Loading…</p>';try{const d=await api.track(ref,token);const o=d.order;const steps=[['pending_payment','Order received'],['payment_confirmed','Payment confirmed'],['confirmed','Order confirmed'],['processing','Preparing parcel'],['ready_for_dispatch','Ready for dispatch'],['shipped','Collected by courier'],['delivered','Delivered']];const doneIdx=Math.max(0,steps.findIndex(s=>s[0]===o.status));const cancelled=o.status==='cancelled';const timeline=(d.events||[]).map(ev=>`<li><strong>${ev.label}</strong><span>${new Date(ev.created_at).toLocaleString('en-NG')}</span></li>`).join('');out.innerHTML=`<div class="pro-admin-section"><h3>Order ${o.reference}</h3><div class="pro-summary-row"><span>Current status</span><strong>${STATUS_LABEL[o.status]||o.status}</strong></div><div class="pro-summary-row"><span>Payment</span><strong>${o.payment_status}</strong></div><div class="pro-summary-row"><span>Total</span><strong>${money(o.total)}</strong></div><div class="pro-summary-row"><span>Delivering to</span><strong>${o.city}, ${o.state}</strong></div>${o.courier?`<div class="pro-summary-row"><span>Courier</span><strong>${o.courier}${o.courier_tracking?' — '+o.courier_tracking:''}</strong></div>`:''}</div><div class="pro-admin-section"><h3>Progress</h3><ol class="fablux-timeline">${cancelled?'<li class="cancelled"><strong>Order cancelled</strong></li>':steps.map((s,i)=>`<li class="${i<=doneIdx?'done':''}"><strong>${s[1]}</strong></li>`).join('')}</ol></div><div class="pro-admin-section"><h3>History</h3><ul class="fablux-events">${timeline}</ul></div><div class="pro-admin-section"><h3>Items</h3>${d.items.map(i=>`<div class="pro-summary-row"><span>${i.name} × ${i.quantity}</span><strong>${money(i.line_total)}</strong></div>`).join('')}</div>`}catch(err){out.innerHTML='<div class="pro-empty"><h2>Cannot find that order</h2><p>'+err.message+'</p></div>'}};if(refInput&&tokInput){const form=box.querySelector('form');if(form)form.addEventListener('submit',e=>{e.preventDefault();show(refInput.value.trim(),tokInput.value.trim())});if(q.get('ref')){refInput.value=q.get('ref');tokInput.value=q.get('token')||'';show(refInput.value,tokInput.value)}}}
 
 function injectMarketplaceState(){api.publicSettings().then(d=>{localStorage.setItem('fablux_marketplace_enabled_v1',d.marketplaceEnabled?'1':'0');const nav=document.querySelector('.nav-links');if(d.marketplaceEnabled&&nav&&!nav.querySelector('[data-pro-link="market"]')){const li=document.createElement('li');li.innerHTML='<a data-pro-link="market" href="marketplace.html">Marketplace</a>';nav.appendChild(li)}}).catch(()=>{});}
-document.addEventListener('submit',handleAuth,true);document.addEventListener('submit',handleCheckout,true);document.addEventListener('submit',handleReview,true);document.addEventListener('submit',handleReturn,true);document.addEventListener('submit',handleContact,true);document.addEventListener('submit',handleNewsletter,true);
-document.addEventListener('DOMContentLoaded',()=>{injectMarketplaceState();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();});
+document.addEventListener('submit',handleAuth,true);
+captureResetToken();document.addEventListener('submit',handleReset,true);document.addEventListener('submit',handleCheckout,true);document.addEventListener('submit',handleReview,true);document.addEventListener('submit',handleReturn,true);document.addEventListener('submit',handleContact,true);document.addEventListener('submit',handleNewsletter,true);
+/* ---- site chrome (works on every page, even those that do not load js/script.js) ---- */
+function initSiteChrome(){
+  const scriptLoaded=!!document.querySelector('script[src="js/script.js"]');
+  const menuBtn=document.querySelector('.menu-toggle');
+  const navLinks=document.querySelector('.nav-links');
+  if(menuBtn&&navLinks&&!scriptLoaded&&!menuBtn.dataset.bound){
+    menuBtn.dataset.bound='1';
+    menuBtn.setAttribute('aria-label','Menu');
+    menuBtn.addEventListener('click',()=>{
+      const open=navLinks.classList.toggle('active');
+      menuBtn.setAttribute('aria-expanded',open?'true':'false');
+      document.body.classList.toggle('nav-open',open);
+    });
+    navLinks.addEventListener('click',e=>{
+      if(e.target.closest('a')){navLinks.classList.remove('active');document.body.classList.remove('nav-open');}
+    });
+    document.addEventListener('click',e=>{
+      if(navLinks.classList.contains('active')&&!e.target.closest('.nav-links')&&!e.target.closest('.menu-toggle')){
+        navLinks.classList.remove('active');document.body.classList.remove('nav-open');
+      }
+    });
+  }
+  const topBtn=document.getElementById('topBtn');
+  if(topBtn&&!scriptLoaded&&!topBtn.dataset.bound){
+    topBtn.dataset.bound='1';
+    topBtn.style.display='none';
+    topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+    const onScroll=()=>{topBtn.style.display=window.scrollY>400?'flex':'none';};
+    window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  }
+  const loader=document.getElementById('loader');
+  if(loader&&!scriptLoaded){
+    const hide=()=>{if(!loader.isConnected)return;loader.classList.add('loader-ready');requestAnimationFrame(()=>loader.remove());};
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide,{once:true});else hide();
+    setTimeout(hide,600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();injectMarketplaceState();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();});
 })();
