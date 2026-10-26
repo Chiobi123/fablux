@@ -50,7 +50,7 @@
     .testimonial-grid,
     .why-grid{
 
-        grid-template-columns:1fr;
+        grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
 
     }
 
@@ -200,8 +200,8 @@ nav{gap:10px}
     nav{height:74px}
     .logo{font-size:1.5rem}
     /* Closed menu must be completely inert so it can never swallow taps. */
-    .nav-links{visibility:hidden;pointer-events:none;box-shadow:0 18px 40px rgba(0,0,0,.45)}
-    .nav-links.active{visibility:visible;pointer-events:auto}
+    .nav-links{visibility:hidden;pointer-events:none;box-shadow:0 18px 40px rgba(0,0,0,.45);transition:transform .4s ease,visibility 0s linear .4s}
+    .nav-links.active{visibility:visible;pointer-events:auto;transition:transform .4s ease,visibility 0s}
     .nav-links a{padding:10px 14px;min-height:44px;display:inline-flex;align-items:center}
     .menu-toggle{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08)}
     .order-btn{display:inline-block;padding:11px 20px;font-size:.9rem;min-height:44px}
