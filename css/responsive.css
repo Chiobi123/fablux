@@ -432,6 +432,22 @@ nav{gap:10px}
 
 /* ---------- phones ---------- */
 @media (max-width:560px){
+    /* Long brand words ("FabluX.U.Design") must wrap, otherwise the heading
+       overflows and reserves a hidden gutter that squeezes the hero. */
+    h1,h2,h3{
+        overflow-wrap:break-word;
+        word-break:break-word;
+    }
+
+    .newsletter-content h2{
+        width:100%;
+        font-size:clamp(24px,7vw,34px);
+    }
+
+    .section-title h2{
+        font-size:clamp(24px,7vw,30px);
+    }
+
     .hero{
         height:100vh;
         height:100svh;
