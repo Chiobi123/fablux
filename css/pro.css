@@ -3,3 +3,21 @@
 
 /* Frontend completion utilities — intentionally follow the existing FabluX visual language. */
 .fablux-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:25px 0}.fablux-admin-stat{padding:18px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(0,0,0,.12)}.fablux-admin-stat strong{font-size:1.5rem;display:block;margin-top:6px}.fablux-admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.fablux-track{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.fablux-track span{padding:8px 12px;border-radius:20px;background:rgba(255,255,255,.07);font-size:.85rem}.fablux-track span.active{background:rgba(123,44,255,.35)}.fablux-review{padding:18px;border:1px solid rgba(255,255,255,.1);border-radius:8px;margin-top:18px}.fablux-review-list{display:grid;gap:12px;margin-top:14px}.fablux-review-item{padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:7px}.fablux-coupon{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.fablux-coupon input{flex:1;min-width:180px}.fablux-sale-badge{display:inline-block;padding:4px 8px;border-radius:12px;background:rgba(123,44,255,.25);font-size:.75rem;margin-left:5px}.fablux-error{color:#ffb3b3}.fablux-success{color:#b9ffc9}.pro-admin-nav{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.pro-admin-nav a{padding:9px 13px;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:inherit;text-decoration:none}.pro-admin-section{padding:22px 0;border-top:1px solid rgba(255,255,255,.08)}
+
+
+/* ===== Fulfilment: tracking timeline, events, success & admin ===== */
+.fablux-timeline{list-style:none;margin:0;padding:0;counter-reset:step}
+.fablux-timeline li{position:relative;padding:10px 0 10px 34px;counter-increment:step;opacity:.55;border-left:2px solid rgba(0,0,0,.15);margin-left:10px}
+.fablux-timeline li:before{content:counter(step);position:absolute;left:-13px;top:8px;width:24px;height:24px;border-radius:50%;background:#ddd;color:#333;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.fablux-timeline li.done{opacity:1}
+.fablux-timeline li.done:before{background:#1b7f4b;color:#fff;content:"\2713"}
+.fablux-timeline li.cancelled{opacity:1;color:#b3261e}
+.fablux-events{list-style:none;margin:0;padding:0}
+.fablux-events li{padding:8px 0;border-bottom:1px dashed rgba(0,0,0,.15);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px}
+.fablux-events li span{opacity:.7}
+.pro-success-head{text-align:center;padding:10px 0 22px}
+.pro-success-head i{font-size:54px;color:#1b7f4b}
+.pro-success-head h2{margin:10px 0 6px}
+.pro-admin-nav a,.pro-admin-nav button{display:inline-block}
+#adminPage table th,#adminPage table td{padding:8px;border-bottom:1px solid rgba(0,0,0,.12);vertical-align:top}
+#adminPage tr[data-ref]:hover{background:rgba(0,0,0,.04)}

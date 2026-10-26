@@ -211,32 +211,36 @@
       await rest('/addresses?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{Prefer:'return=minimal'}});
       return {ok:true};
     },
+    // Order creation happens in the database (PostgreSQL function `create_order`):
+    // prices, stock, delivery charge and totals are computed server-side, never in the browser.
     async createOrder(body){
-      const u=await sessionUser(); if(!u) throw new Error('Please sign in to place an order.');
-      const ids=(body.items||[]).map(i=>String(i.productId));
-      if(!ids.length) throw new Error('Your cart is empty.');
-      const products=await rest('/products?select=id,name,price,stock&active=eq.1&id=in.("'+ids.map(encodeURIComponent).join('","')+'")');
-      const byId={}; (products||[]).forEach(p=>byId[String(p.id)]=p);
-      let subtotal=0; const lines=[];
-      for(const it of body.items){
-        const p=byId[String(it.productId)];
-        if(!p) throw new Error('An item in your cart is no longer available.');
-        const qty=Math.max(1,Number(it.quantity)||1);
-        subtotal+=p.price*qty;
-        lines.push({product_id:String(p.id),name:p.name,price:p.price,quantity:qty});
-      }
-      const deliveryFee=2500;
-      const now=new Date().toISOString();
-      const order={id:'FX'+Date.now().toString(36).toUpperCase(),user_id:u.id,status:'pending',
-        subtotal,delivery_fee:deliveryFee,discount:0,total:subtotal+deliveryFee,
-        payment_method:body.paymentMethod||'pay-on-delivery',delivery_method:body.deliveryMethod||'standard',
-        customer_name:body.name||u.name,email:body.email||u.email,phone:body.phone||u.phone||'',
-        address:body.address||'',city:body.city||'',state:body.state||'',created_at:now,updated_at:now};
-      await rest('/orders',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(order)});
-      await rest('/order_items',{method:'POST',headers:{Prefer:'return=minimal'},
-        body:JSON.stringify(lines.map(l=>Object.assign({order_id:order.id},l)))});
+      const items=(body.items||[]).map(i=>({product_id:String(i.productId),quantity:Math.max(1,Number(i.quantity)||1)}));
+      if(!items.length) throw new Error('Your cart is empty.');
+      const out=await rest('/rpc/create_order',{method:'POST',body:JSON.stringify({
+        p_items:items,
+        p_name:body.name||'',p_phone:body.phone||'',p_address:body.address||'',
+        p_city:body.city||'',p_state:body.state||'',
+        p_delivery_method:body.deliveryMethod||'standard',
+        p_payment_method:body.paymentMethod||'pay-on-delivery',
+        p_guest_email:body.email||null,
+        p_landmark:body.landmark||null,
+        p_instructions:body.instructions||null,
+        p_idempotency_key:body.idempotencyKey||null
+      })});
+      if(!out||!out.reference) throw new Error('The order could not be saved. Please try again.');
+      localStorage.setItem('fablux_last_order_ref',out.reference);
+      localStorage.setItem('fablux_last_order_token',out.tracking_token);
       localStorage.setItem('fablux_cart_v1','[]');
-      return {order};
+      return {order:{
+        id:out.order_id,reference:out.reference,tracking_token:out.tracking_token,
+        status:out.status,payment_status:out.payment_status,subtotal:out.subtotal,
+        delivery_fee:out.delivery_fee,discount:0,total:out.total,currency:out.currency,
+        created_at:out.created_at,duplicate:!!out.duplicate
+      }};
+    },
+    // Secure tracking: only the person holding the order's tracking token can open it.
+    async track(ref,token){
+      return rest('/rpc/track_order',{method:'POST',body:JSON.stringify({p_ref:ref,p_token:token})});
     },
     async verifyPaystack(){return {paid:false};},
     async orders(){
@@ -282,9 +286,18 @@
       return {ok:true};
     },
     async publicSettings(){
-      let enabled=false;
-      try{const rows=await rest('/settings?select=value&key=eq.marketplace_enabled');enabled=!!(rows&&rows[0]&&rows[0].value==='1');}catch(e){}
-      return {marketplaceEnabled:enabled};
+      const keys='marketplace_enabled,delivery_fee_default,delivery_fee_express_surcharge,store_name,store_contact,store_email,store_address,email_enabled';
+      const rows=await rest('/settings?select=key,value&key=in.("'+keys.split(',').join('","')+'")');
+      const map={}; (rows||[]).forEach(r=>map[r.key]=r.value);
+      const n=(k,d)=>{const v=parseInt(map[k],10);return isNaN(v)?d:v;};
+      return {
+        marketplaceEnabled:map.marketplace_enabled==='1',
+        deliveryFee:n('delivery_fee_default',2500),
+        expressSurcharge:n('delivery_fee_express_surcharge',0),
+        store:{name:map.store_name||'FabluX.U.Design',contact:map.store_contact||'',
+               email:map.store_email||'',address:map.store_address||''},
+        emailConfigured:map.email_enabled==='true'
+      };
     },
     async forgotPassword(email){
       await authCall('/recover',{email,redirect_to:location.origin+'/reset-password.html'});
@@ -297,36 +310,87 @@
       if(!res.ok) throw fail(await res.json().catch(()=>null),res.status);
       return {ok:true};
     },
+    async requireAdmin(){
+      const u=await sessionUser();
+      if(!u||u.role!=='admin') throw new Error('Admin access required.');
+      return u;
+    },
     async adminDashboard(){
-      const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
+      await api.requireAdmin();
       const count=async(path)=>{try{const rows=await rest(path);return (rows||[]).length;}catch(e){return 0;}};
-      const [products,customers,orders,reviews]=await Promise.all([
+      const [products,customers,orders,reviews,pendingAlerts]=await Promise.all([
         count('/products?select=id&active=eq.1&limit=5000'),
         count('/users?select=id&role=eq.customer&limit=5000'),
         count('/orders?select=id&limit=5000'),
-        count('/reviews?select=id&limit=5000')
+        count('/reviews?select=id&limit=5000'),
+        count('/notifications?select=id&status=eq.pending&limit=5000')
       ]);
       const s=await api.publicSettings();
-      return {stats:{products,customers,orders,reviews},marketplaceEnabled:s.marketplaceEnabled};
+      return {stats:{products,customers,orders,reviews,pendingAlerts},
+        marketplaceEnabled:s.marketplaceEnabled,settings:s,emailConfigured:s.emailConfigured};
     },
     async adminMarketplace(enabled){
-      const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
-      await rest('/settings?key=eq.marketplace_enabled',{method:'PATCH',headers:{Prefer:'return=minimal'},
-        body:JSON.stringify({value:enabled?'1':'0',updated_at:new Date().toISOString()})});
+      await api.requireAdmin();
+      await rest('/rpc/admin_update_setting',{method:'POST',
+        body:JSON.stringify({p_key:'marketplace_enabled',p_value:enabled?'1':'0'})});
       return {marketplaceEnabled:!!enabled};
     },
-    async adminOrders(){
-      const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
-      const orders=await rest('/orders?select=id,status,total,customer_name,email,created_at&order=created_at.desc&limit=200');
-      return {orders:orders||[]};
+    async adminUpdateSetting(key,value){
+      await api.requireAdmin();
+      return rest('/rpc/admin_update_setting',{method:'POST',
+        body:JSON.stringify({p_key:key,p_value:String(value)})});
     },
-    async adminOrderStatus(id,status){
-      const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
-      const allowed=['pending','confirmed','processing','shipped','out_for_delivery','delivered','cancelled'];
-      if(!allowed.includes(status)) throw new Error('Invalid order status.');
-      await rest('/orders?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},
-        body:JSON.stringify({status,updated_at:new Date().toISOString()})});
-      return {ok:true};
+    async adminOrders(params){
+      await api.requireAdmin();
+      params=params||{};
+      let q='/orders?select=*,order_items(*)&order=created_at.desc&limit=500';
+      if(params.status) q+='&status=eq.'+encodeURIComponent(params.status);
+      if(params.payment) q+='&payment_status=eq.'+encodeURIComponent(params.payment);
+      if(params.search) q+='&or=(reference.ilike.'+encodeURIComponent('%'+params.search+'%')+
+        ',customer_name.ilike.'+encodeURIComponent('%'+params.search+'%')+
+        ',email.ilike.'+encodeURIComponent('%'+params.search+'%')+')';
+      const rows=await rest(q);
+      const orders=(rows||[]).map(o=>{const items=o.order_items||[];delete o.order_items;o.items=items;return o;});
+      return {orders};
+    },
+    async adminOrder(ref,status){
+      await api.requireAdmin();
+      const rows=await rest('/orders?select=*,order_items(*)&reference=eq.'+encodeURIComponent(ref));
+      if(!rows||!rows.length) throw new Error('Order not found.');
+      const o=rows[0]; o.items=o.order_items||[]; delete o.order_items;
+      let events=[];
+      try{events=await rest('/order_events?select=event,label,actor,created_at&order_id=eq.'+encodeURIComponent(o.id)+'&order=created_at.asc');}catch(e){}
+      return {order:o,events:events||[]};
+    },
+    async adminOrderStatus(ref,status){
+      await api.requireAdmin();
+      return rest('/rpc/admin_set_order_status',{method:'POST',
+        body:JSON.stringify({p_ref:ref,p_new_status:status})});
+    },
+    async adminPaymentStatus(ref,status){
+      await api.requireAdmin();
+      return rest('/rpc/admin_set_payment_status',{method:'POST',
+        body:JSON.stringify({p_ref:ref,p_new_status:status})});
+    },
+    async adminSetCourier(ref,courier,tracking,dispatchedAt,notes){
+      await api.requireAdmin();
+      return rest('/rpc/admin_set_courier',{method:'POST',body:JSON.stringify({
+        p_ref:ref,p_courier:courier||'',p_tracking:tracking||'',
+        p_dispatched_at:dispatchedAt||null,p_notes:notes||null})});
+    },
+    async adminNotifications(limit){
+      await api.requireAdmin();
+      try{
+        return await rest('/notifications?select=id,order_id,event,recipient,subject,status,error,created_at'+
+          '&order=created_at.desc&limit='+(limit||50));
+      }catch(e){ return []; }
+    },
+    async adminAudit(limit){
+      await api.requireAdmin();
+      try{
+        return await rest('/audit_log?select=actor_email,action,entity,entity_id,detail,created_at'+
+          '&order=created_at.desc&limit='+(limit||50));
+      }catch(e){ return []; }
     },
     async adminCreateProduct(body){
       const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');

@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FabluX.U.Design | Waybill</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/pro.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"><style>
+.wb{max-width:760px;margin:26px auto;background:#fff;color:#111;border:2px solid #111;padding:0;font-family:Poppins,Arial,sans-serif}
+.wb-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 20px;background:#111;color:#fff;flex-wrap:wrap}
+.wb-head h1{font-size:22px;margin:0}
+.wb-head h1 span{color:#d4af37}
+.wb-head .ref{font-size:20px;font-weight:700;letter-spacing:1px}
+.wb-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #111}
+.wb-cell{padding:14px 20px;border-right:1px solid #111}
+.wb-cell:last-child{border-right:none}
+.wb-cell h4{margin:0 0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.6}
+.wb-cell p{margin:2px 0;font-size:15px;line-height:1.45}
+.wb-body{display:grid;grid-template-columns:1.4fr 1fr;gap:0}
+.wb-body .wb-cell{border-bottom:1px solid #111}
+.wb-items li{font-size:14px;margin:3px 0}
+.wb-cod{padding:16px 20px;font-size:18px;font-weight:700}
+.wb-qr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px}
+.wb-qr img,.wb-qr canvas{width:150px;height:150px}
+.wb-qr small{font-size:11px;text-align:center;word-break:break-all;opacity:.7}
+.wb-foot{padding:12px 20px;font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:2px solid #111}
+.wb-actions{max-width:760px;margin:20px auto;display:flex;gap:12px;flex-wrap:wrap}
+@media print{.wb-actions,header,footer{display:none!important}.wb{border-width:1.5px;margin:0}@page{size:A5 landscape;margin:8mm}}
+@media(max-width:640px){.wb-grid,.wb-body{grid-template-columns:1fr}.wb-cell{border-right:none;border-bottom:1px solid #111}}
+</style></head><body><header><div class="container"><nav><h2 class="logo">Fablu<span>X</span>.U.Design</h2><ul class="nav-links"><li><a href="index.html" class="">Home</a></li><li><a href="shop.html" class="">Shop</a></li><li><a href="about.html" class="">About</a></li><li><a href="contact.html" class="">Contact</a></li></ul><a href="#" class="order-btn">Order Now</a><div class="menu-toggle"><i class="fa-solid fa-bars"></i></div></nav></div></header>
+<main><section class="featured"><div class="container">
+<div class="wb-actions"><button class="btn" onclick="window.print()">Print waybill</button><a class="btn" href="admin.html">Back to admin</a><a class="btn" href="orders.html">My orders</a></div>
+<div class="wb" id="waybill"><p style="padding:20px">Loading waybill…</p></div>
+</div></section></main>
+<footer><div class="container"><p>© FabluX.U.Design. All rights reserved.</p></div></footer>
+<script src="js/store.js"></script><script src="js/api-client.js"></script><script src="js/products-data.js"></script><script src="js/pro.js"></script><script src="js/backend-bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+(async function(){
+  var box=document.getElementById('waybill');
+  var q=new URLSearchParams(location.search);
+  var ref=q.get('ref')||localStorage.getItem('fablux_last_order_ref')||'';
+  var token=q.get('token')||localStorage.getItem('fablux_last_order_token')||'';
+  if(!ref){box.innerHTML='<p style="padding:20px">No order reference supplied. Open an order from the admin page or your order confirmation.</p>';return}
+  var o=null,items=[];
+  try{
+    var d=await window.FabluXAPI.adminOrder(ref);
+    o=d.order;items=o.items||[];
+  }catch(e){
+    try{
+      var t=await window.FabluXAPI.track(ref,token);
+      o=t.order;items=t.items||[];
+    }catch(err){
+      box.innerHTML='<p style="padding:20px">Cannot load order '+ref+': '+err.message+'</p>';return;
+    }
+  }
+  var pay=o.payment_method==='bank-transfer'?'BANK TRANSFER':'PAY ON DELIVERY';
+  var cod=o.payment_status==='successful'?'PREPAID':('COLLECT ₦'+Number(o.total||0).toLocaleString('en-NG'));
+  var store={name:'FabluX.U.Design',contact:'+234 XXX XXX XXXX',address:'Nigeria'};
+  try{var s=await window.FabluXAPI.publicSettings();if(s.store&&s.store.name)store=s.store}catch(e){}
+  var trackUrl='https://fablux.pages.dev/track.html?ref='+encodeURIComponent(o.reference)+'&token='+encodeURIComponent(token||o.tracking_token||'');
+  box.innerHTML=
+   '<div class="wb-head"><h1>Fablu<span>X</span>.U.Design</h1><div class="ref">'+esc(o.reference)+'</div><div>'+pay+'</div></div>'+
+   '<div class="wb-grid">'+
+     '<div class="wb-cell"><h4>Sender</h4><p><strong>'+esc(store.name)+'</strong></p><p>'+esc(store.address)+'</p><p>'+esc(store.contact||store.email||'')+'</p></div>'+
+     '<div class="wb-cell"><h4>Recipient</h4><p><strong>'+esc(o.customer_name)+'</strong></p><p>'+esc(o.address)+'</p>'+(o.landmark?'<p>Near: '+esc(o.landmark)+'</p>':'')+'<p>'+esc(o.city)+', '+esc(o.state)+'</p><p>'+esc(o.phone||'')+'</p></div>'+
+   '</div>'+
+   '<div class="wb-body">'+
+     '<div class="wb-cell"><h4>Parcel contents</h4><ul class="wb-items">'+items.map(function(i){return '<li>'+esc(i.name)+' × '+i.quantity+'</li>'}).join('')+'</ul>'+
+       (o.instructions?'<p style="font-size:13px">Note: '+esc(o.instructions)+'</p>':'')+'</div>'+
+     '<div class="wb-qr"><div id="qrbox"></div><small>'+esc(trackUrl)+'</small></div>'+
+   '</div>'+
+   '<div class="wb-cod" style="border-top:1px solid #111">'+cod+'</div>'+
+   '<div class="wb-foot"><span>Courier: '+esc(o.courier||'To be assigned')+(o.courier_tracking?' — '+esc(o.courier_tracking):'')+'</span><span>Placed: '+new Date(o.created_at).toLocaleDateString('en-NG')+'</span><span>Handle with care · Fragile goods</span></div>';
+  try{
+    if(window.QRCode){new QRCode(document.getElementById('qrbox'),{text:trackUrl,width:150,height:150,correctLevel:QRCode.CorrectLevel.M})}
+    else{document.getElementById('qrbox').textContent='QR unavailable offline'}
+  }catch(e){document.getElementById('qrbox').textContent='QR unavailable'}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+})();
+</script>
+</body></html>

@@ -22,3 +22,7 @@ cleanup.js
 test-auth.js
 test-rest.js
 test-adapter.js
+setup-admins.js
+peek.js
+peek.txt
+tmp-*.js
