@@ -320,7 +320,7 @@ nav{gap:10px}
     /* Keep the cart reachable on phones: it is the only cart entry point in the header. */
     .order-btn{display:inline-block;padding:9px 15px;font-size:.8rem}
     .order-btn .cart-count-badge{margin-left:5px}
-    .menu-toggle{width:42px;height:42px;font-size:22px}
+    .menu-toggle{width:44px;height:44px;font-size:22px}
     .btn,.btn-outline{max-width:100%}
     .pro-form button,.pro-form .btn{max-width:100%}
     .pro-auth .section-title h2{font-size:26px}
