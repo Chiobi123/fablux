@@ -529,3 +529,148 @@ body{
     .hero-content h1{font-size:clamp(28px,5vw,42px)}
     .scroll{display:none}
 }
+
+/* ============================================================
+   MY ACCOUNT — clear, finger-friendly navigation.
+   Every action is a full-width row (min 48px tall) with a
+   chevron, instead of packed little pills.
+   ============================================================ */
+
+#accountPage .section-title p{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+}
+
+.account-role{
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:999px;
+    background:rgba(123,44,255,.25);
+    border:1px solid rgba(123,44,255,.6);
+    font-size:.7rem;
+    font-weight:600;
+    letter-spacing:.14em;
+    color:#fff;
+}
+
+#accountPage .pro-card-grid{
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:18px;
+}
+
+#accountPage .pro-card > div,
+#addressBook .pro-card > div{
+    display:flex;
+    flex-direction:column;
+    padding:20px 18px;
+}
+
+#accountPage .pro-card h3,
+#addressBook .pro-card h3{
+    margin:0 0 14px;
+    font-size:.78rem;
+    font-weight:600;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    opacity:.65;
+}
+
+#accountPage .pro-card p,
+#addressBook .pro-card p{
+    margin:0 0 4px;
+    font-size:.92rem;
+    line-height:1.6;
+    opacity:.85;
+    overflow-wrap:anywhere;
+}
+
+#accountPage .pro-card-link{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    width:100%;
+    min-height:48px;
+    margin:0 0 10px;
+    padding:12px 15px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:10px;
+    color:#fff;
+    text-decoration:none;
+    font-size:.95rem;
+    font-weight:500;
+    line-height:1.3;
+    text-align:left;
+    cursor:pointer;
+    transition:background .18s ease, border-color .18s ease, transform .12s ease;
+}
+
+#accountPage .pro-card-link:last-child{margin-bottom:0}
+
+#accountPage .pro-card-link::after{
+    content:'›';
+    font-size:1.45rem;
+    line-height:1;
+    opacity:.55;
+}
+
+#accountPage .pro-card-link:hover,
+#accountPage .pro-card-link:focus-visible{
+    background:rgba(123,44,255,.22);
+    border-color:rgba(123,44,255,.75);
+    outline:none;
+}
+
+#accountPage .pro-card-link:active{transform:scale(.985)}
+
+#accountPage .pro-card-link[data-logout]{
+    background:rgba(255,90,90,.08);
+    border-color:rgba(255,120,120,.4);
+    color:#ffc9c9;
+}
+
+#accountPage .pro-card-link[data-logout]::after{content:'×';font-size:1.15rem;opacity:.85}
+
+#accountPage .pro-card-link[data-logout]:hover,
+#accountPage .pro-card-link[data-logout]:focus-visible{
+    background:rgba(255,90,90,.2);
+    border-color:#ff8f8f;
+}
+
+/* address book: same row treatment */
+#addressBook .pro-card-grid{gap:14px}
+
+#addressBook .pro-card [data-delete-address]{
+    width:100%;
+    min-height:44px;
+    margin-top:12px;
+    padding:10px 14px;
+    background:rgba(255,90,90,.08);
+    border:1px solid rgba(255,120,120,.35);
+    border-radius:10px;
+    color:#ffc9c9;
+    font:inherit;
+    font-size:.9rem;
+    cursor:pointer;
+    transition:background .18s ease, border-color .18s ease;
+}
+
+#addressBook .pro-card [data-delete-address]:hover,
+#addressBook .pro-card [data-delete-address]:focus-visible{
+    background:rgba(255,90,90,.2);
+    border-color:#ff8f8f;
+    outline:none;
+}
+
+#addressBook .pro-form .btn{width:100%;min-height:48px;padding:13px 18px}
+
+/* phones: one column, comfortable rhythm */
+@media (max-width:560px){
+    #accountPage .pro-card-grid{grid-template-columns:1fr;gap:14px}
+    #accountPage .pro-card > div{padding:18px 16px}
+    #accountPage .pro-card-link{font-size:1rem}
+}

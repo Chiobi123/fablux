@@ -23,7 +23,7 @@ function injectHeader(){
    const here=encodeURIComponent(location.pathname+location.search);
    const signedOut=()=>{account.textContent='Sign In';account.href='login.html?return='+here};
    const sync=()=>{ signedOut();
-     window.FabluXAPI.me().then(d=>{ if(d&&d.user){account.textContent='My Account';account.href='account.html'}else{signedOut()} }).catch(signedOut);
+     window.FabluXAPI.me().then(d=>{ if(d&&d.user){ if(d.user.role==='admin'){account.textContent='Admin Console';account.href='admin.html'}else{account.textContent='My Account';account.href='account.html'} }else{signedOut()} }).catch(signedOut);
    };
    sync();
    window.FabluXSyncAccount=sync;
