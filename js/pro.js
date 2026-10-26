@@ -22,8 +22,13 @@ function injectHeader(){
    // Account state always comes from the Supabase session, never from local storage.
    const here=encodeURIComponent(location.pathname+location.search);
    const signedOut=()=>{account.textContent='Sign In';account.href='login.html?return='+here};
-   signedOut();
-   window.FabluXAPI.me().then(d=>{ if(d&&d.user){account.textContent='My Account';account.href='account.html'}else{signedOut()} }).catch(()=>{});
+   const sync=()=>{ signedOut();
+     window.FabluXAPI.me().then(d=>{ if(d&&d.user){account.textContent='My Account';account.href='account.html'}else{signedOut()} }).catch(signedOut);
+   };
+   sync();
+   // Re-check whenever the tab becomes visible again, so a sign-in or sign-out
+   // done in another tab is reflected immediately.
+   document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
  } else if(user()){account.textContent='My Account';account.href='account.html'}
 }
 function productFromCard(c){return {id:String(c.dataset.productId),name:c.dataset.productName,price:Number((c.dataset.productPrice||'').replace(/[^0-9.]/g,'')),category:c.dataset.productCategory,image:c.dataset.productImage,group:c.dataset.category}}

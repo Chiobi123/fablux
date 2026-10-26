@@ -38,14 +38,23 @@
       return 'Network problem — please check your connection and tap again.';
     return m||'Something went wrong.';
   }
+  /* The cached profile is only ever valid for the exact token it was stored
+     with. This makes it impossible to see one person's name/email after a
+     different person signs in (or after the session changes/expires). */
   function cachedUser(){
-    try{ return JSON.parse(localStorage.getItem(USER_KEY)||'null'); }catch(e){ return null; }
+    try{
+      const raw=JSON.parse(localStorage.getItem(USER_KEY)||'null');
+      if(!raw||typeof raw!=='object'||!raw.u||!raw.u.id){ localStorage.removeItem(USER_KEY); return null; }
+      if((raw.t||'')!==(token()||'')){ localStorage.removeItem(USER_KEY); return null; }
+      return raw.u;
+    }catch(e){ localStorage.removeItem(USER_KEY); return null; }
   }
   function cacheUser(u){
     if(!u) return null;
-    try{ localStorage.setItem(USER_KEY,JSON.stringify(u)); }catch(e){}
+    try{ localStorage.setItem(USER_KEY,JSON.stringify({t:token()||'',u:u})); }catch(e){}
     return u;
   }
+  function clearIdentity(){ setToken(null); try{ localStorage.removeItem(USER_KEY); }catch(e){} }
 
   async function rest(path,options){
     const opts=Object.assign({},options||{},{headers:authHeaders(options&&options.headers)});
@@ -137,6 +146,7 @@
 
   const api={
     async register(body){
+      clearIdentity();
       const data=await authCall('/signup',{email:body.email,password:body.password,
         data:{name:body.name,phone:body.phone||''},redirect_to:location.origin+'/login.html'});
       if(data&&data.access_token){
@@ -156,6 +166,9 @@
       }
     },
     async login(body){
+      // Drop any previous person's identity BEFORE authenticating, so a failed
+      // sign-in can never leave another account's name/email on screen.
+      clearIdentity();
       const data=await authCall('/token?grant_type=password',{email:body.email,password:body.password});
       setToken(data.access_token);
       cacheUser(mapUser(data.user,'customer'));

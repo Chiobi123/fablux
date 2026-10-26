@@ -57,17 +57,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Scroll reveal animation
+    // Scroll reveal animation.
+    // NOTE: a 0.15 intersection ratio can never be reached by a section that is
+    // taller than ~6x the viewport (the shop grid on a phone is ~15000px tall),
+    // which used to leave whole sections stuck at opacity:0 on mobile.
     const observer = new IntersectionObserver(
         entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add("show");
+                    observer.unobserve(entry.target);
                 }
             });
         },
         {
-            threshold: 0.15,
+            threshold: 0,
+            rootMargin: "0px 0px -8% 0px",
         }
     );
 
@@ -75,6 +80,29 @@ document.addEventListener("DOMContentLoaded", function () {
         el.classList.add("hidden");
         observer.observe(el);
     });
+
+    // Safety net: anything already in view (or scrolled past) is revealed
+    // immediately, so no section can ever stay invisible.
+    const revealVisible = () => {
+        document.querySelectorAll(".hidden:not(.show)").forEach(el => {
+            const r = el.getBoundingClientRect();
+            if (r.top < window.innerHeight * 0.95 && r.bottom > -window.innerHeight) {
+                el.classList.add("show");
+                observer.unobserve(el);
+            }
+        });
+    };
+    revealVisible();
+    window.addEventListener("load", revealVisible);
+    let revealTick = false;
+    window.addEventListener("scroll", () => {
+        if (revealTick) return;
+        revealTick = true;
+        requestAnimationFrame(() => {
+            revealTick = false;
+            revealVisible();
+        });
+    }, { passive: true });
 
     // Fast loader: remove as soon as the DOM is ready instead of forcing a 1.2s wait.
     const loader = document.getElementById("loader");
