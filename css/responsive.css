@@ -353,6 +353,13 @@ nav{gap:10px}
    horizontal scrollbar on any phone or tablet.
    ============================================================ */
 
+/* body must never become a scroll container: a transform on a section
+   (the reveal animation) would otherwise open a hidden inner scrollbar
+   and shave ~16px off every full-width background picture. */
+body{
+    overflow-x:clip;          /* clip, not hidden: no scrollbar box */
+}
+
 .slider,
 .slide,
 .hero,
