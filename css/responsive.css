@@ -344,3 +344,165 @@ nav{gap:10px}
 @media (min-width:1600px){
     .container{width:74%}
 }
+
+/* ============================================================
+   RESPONSIVE BACKGROUNDS
+   Every hero/banner picture scales with the device: it is always
+   cover-sized (never stretched, never mis-cropped), anchored so
+   the model stays visible in portrait, and it never causes a
+   horizontal scrollbar on any phone or tablet.
+   ============================================================ */
+
+.slider,
+.slide,
+.hero,
+.shop-hero,
+.shop-overlay,
+.overlay{
+    background-repeat:no-repeat;
+    -webkit-background-size:cover;
+    background-size:cover;
+    background-position:center center;
+    background-attachment:scroll;
+}
+
+/* Never taller than the real screen (svh ignores the mobile URL bar) */
+.hero{
+    height:100vh;
+    height:100svh;
+    min-height:520px;
+    max-height:none;
+    overflow:hidden;
+}
+
+.slider,
+.slide{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+}
+
+/* hero1/hero2 are landscape photos with the model on the right:
+   in portrait, anchor right so the subject is not cropped away. */
+.slide:nth-child(1),
+.slide:nth-child(2){
+    background-position:68% center;
+}
+
+.shop-hero{
+    height:auto;
+    min-height:340px;
+    padding:120px 0 70px;
+    background-position:65% center;
+    background-size:cover;
+}
+
+/* Text blocks shrink with the screen instead of overflowing */
+.hero-content{
+    width:100%;
+    max-width:650px;
+    padding-top:0;
+}
+
+.hero p{
+    width:100%;
+    max-width:550px;
+}
+
+.newsletter-form input{
+    width:100%;
+    max-width:420px;
+    min-width:0;
+}
+
+/* ---------- small tablets and below ---------- */
+@media (max-width:900px){
+    .slide:nth-child(1),
+    .slide:nth-child(2),
+    .shop-hero{
+        background-position:72% center;
+    }
+
+    .hero{
+        min-height:560px;
+        padding:90px 0 60px;
+    }
+}
+
+/* ---------- phones ---------- */
+@media (max-width:560px){
+    .hero{
+        height:100vh;
+        height:100svh;
+        min-height:600px;
+        padding:100px 0 70px;
+        align-items:center;
+    }
+
+    .slide:nth-child(1),
+    .slide:nth-child(2){
+        background-position:75% center;
+    }
+
+    .hero-content h1{
+        font-size:clamp(30px,9vw,44px);
+        line-height:1.15;
+    }
+
+    .hero p{
+        font-size:16px;
+        line-height:1.7;
+    }
+
+    .hero-buttons{
+        flex-wrap:wrap;
+        gap:12px;
+    }
+
+    .hero-buttons .btn{
+        flex:1 1 46%;
+        min-width:140px;
+        text-align:center;
+    }
+
+    .shop-hero{
+        min-height:300px;
+        padding:100px 0 60px;
+        background-position:75% center;
+    }
+
+    .scroll{
+        display:none;      /* the animated hint eats phone space */
+    }
+
+    .newsletter-form{
+        flex-direction:column;
+        gap:10px;
+    }
+
+    .newsletter-form input,
+    .newsletter-form button{
+        width:100%;
+        max-width:100%;
+    }
+}
+
+/* ---------- very narrow phones (320px class) ---------- */
+@media (max-width:360px){
+    .hero{min-height:560px}
+    .hero-content{max-width:100%}
+    .hero-content h1{font-size:30px}
+}
+
+/* ---------- landscape phones: screen is short ---------- */
+@media (max-height:520px) and (orientation:landscape){
+    .hero{
+        height:auto;
+        min-height:420px;
+        padding:90px 0 50px;
+    }
+
+    .hero-content h1{font-size:clamp(28px,5vw,42px)}
+    .scroll{display:none}
+}

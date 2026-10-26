@@ -1,3 +1,58 @@
+/* ============================================================
+   Image fallback: some photos are not uploaded yet (0-byte files),
+   which would leave blank boxes. Any image that fails to load is
+   replaced with a branded FabluX placeholder of the same size.
+   Drop a real photo on top of the same path and it shows again.
+   ============================================================ */
+(function(){
+'use strict';
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function wrap(text,per,max){
+  const words=String(text||'FABLU X').split(/\s+/).filter(Boolean); let lines=[], cur='';
+  for(const w of words){
+    if(!cur){cur=w}
+    else if((cur+' '+w).length<=per){cur+=' '+w}
+    else{lines.push(cur);cur=w}
+    if(lines.length>=max)break;
+  }
+  if(cur&&lines.length<max)lines.push(cur);
+  if(lines.length>max)lines=lines.slice(0,max);
+  if(lines.length&&words.join(' ').length>lines.join(' ').length)lines[lines.length-1]=lines[lines.length-1].slice(0,Math.max(1,per-1))+'…';
+  return lines;
+}
+function placeholder(img){
+  const alt=(img.getAttribute('alt')||img.getAttribute('title')||'FabluX').trim()||'FabluX';
+  const lines=wrap(alt.toUpperCase(),16,3);
+  const t=lines.map((l,i)=>'<text x="300" y="'+(400+i*54)+'" text-anchor="middle" font-family="Poppins,Arial,sans-serif" font-size="40" font-weight="700" fill="#ffffff">'+esc(l)+'</text>').join('');
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750">'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="#241033"/><stop offset="0.55" stop-color="#3d1a5c"/><stop offset="1" stop-color="#7B2CBF"/>'+
+    '</linearGradient></defs>'+
+    '<rect width="600" height="750" fill="url(#g)"/>'+
+    '<rect x="18" y="18" width="564" height="714" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-dasharray="10 8"/>'+
+    '<g fill="none" stroke="rgba(255,255,255,.55)" stroke-width="7" stroke-linecap="round">'+
+    '<path d="M300 176 a26 26 0 1 1 26 26 c-16 0-26 12-26 26"/>'+
+    '<path d="M300 228 L188 300 c-14 9-8 30 9 30 h206 c17 0 23-21 9-30 L300 228"/>'+
+    '</g>'+
+    '<text x="300" y="560" text-anchor="middle" font-family="Poppins,Arial,sans-serif" font-size="26" font-weight="600" letter-spacing="6" fill="rgba(255,255,255,.75)">FABLU X</text>'+
+    '<text x="300" y="606" text-anchor="middle" font-family="Poppins,Arial,sans-serif" font-size="22" fill="rgba(255,255,255,.6)">photo coming soon</text>'+
+    t+
+    '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function swap(img){
+  if(!img||img.tagName!=='IMG'||img.dataset.fabluxPlaceholder)return;
+  img.dataset.fabluxPlaceholder='1';
+  try{ img.src=placeholder(img); }catch(e){}
+}
+// capture-phase: fires for every image, including ones added later
+document.addEventListener('error',function(e){swap(e.target)},true);
+// images that failed before this script ran
+function sweep(){Array.prototype.forEach.call(document.images,swap)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sweep);else sweep();
+window.addEventListener('load',sweep);
+})();
+
 (function(){
 'use strict';
 const api=window.FabluXAPI; if(!api)return;
