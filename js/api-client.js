@@ -508,11 +508,13 @@
     async adminDeleteImage(path){
       await api.requireAdmin();
       if(!path||path.indexOf('/')<0||path.indexOf('..')>=0) return {ok:true};
+      /* storage rejects a DELETE that declares an empty JSON body */
+      const h=authHeaders(); delete h['Content-Type'];
       try{
-        await fetch(BASE+'/storage/v1/object/'+IMAGE_BUCKET+'/'+path,
-          {method:'DELETE',headers:authHeaders()});
-      }catch(e){}
-      return {ok:true};
+        const res=await fetch(BASE+'/storage/v1/object/'+IMAGE_BUCKET+'/'+path,
+          {method:'DELETE',headers:h});
+        return {ok:res.ok,status:res.status};
+      }catch(e){ return {ok:false,status:0}; }
     },
     async adminCreateProduct(body){
       const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
