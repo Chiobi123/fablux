@@ -53,7 +53,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // Back to top button
     if (topBtn) {
         topBtn.addEventListener("click", function () {
+            const y0 = window.scrollY;
             window.scrollTo({ top: 0, behavior: "smooth" });
+            // guarantee the jump when smooth scrolling is unavailable
+            setTimeout(function () {
+                if (window.scrollY === y0 && window.scrollY > 0) window.scrollTo({ top: 0, behavior: "instant" });
+            }, 400);
         });
     }
 

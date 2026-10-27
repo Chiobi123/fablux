@@ -1335,3 +1335,76 @@ nav{height:84px}
         display: none;
     }
 }
+/* ============================================================
+   MENU BAR — every link stays visible and is laid out HORIZONTALLY
+   on every device. No hamburger, no vertical dropdown: links simply
+   wrap onto a second row on smaller screens.
+   ============================================================ */
+.menu-toggle{display:none!important}
+
+@media (max-width:1200px){
+    nav{
+        height:auto!important;
+        min-height:70px;
+        flex-wrap:wrap;
+        row-gap:0;
+        padding:6px 0 0;
+    }
+    .nav-links{
+        order:5;
+        width:100%;
+        display:flex!important;
+        visibility:visible!important;
+        opacity:1!important;
+        pointer-events:auto!important;
+        position:static!important;
+        transform:none!important;
+        flex-direction:row;
+        flex-wrap:wrap;
+        justify-content:center;
+        align-items:center;
+        gap:2px 4px!important;
+        padding:2px 0 10px!important;
+        margin:0!important;
+        background:transparent!important;
+        box-shadow:none!important;
+        max-height:none!important;
+        overflow:visible!important;
+        transition:none!important;
+    }
+    .nav-links a{
+        padding:7px 11px!important;
+        min-height:38px;
+        display:inline-flex;
+        align-items:center;
+        font-size:.74rem;
+        letter-spacing:.08em;
+        white-space:nowrap;
+    }
+    .nav-links a::after{display:none}
+}
+@media (max-width:420px){
+    .nav-links a{padding:6px 8px!important;font-size:.7rem;letter-spacing:.06em}
+    .nav-links{gap:0 2px!important}
+}
+
+/* ============================================================
+   CONCISE HOME PAGE — hero plus the product story inside about a
+   scroll and a half; tighter section rhythm underneath.
+   ============================================================ */
+.hero{height:88vh;min-height:560px}
+.featured,.categories,.why-us{padding:64px 0}
+.newsletter{padding:56px 0}
+.section-title{margin-bottom:34px}
+@media (max-width:768px){
+    .hero{height:84vh;min-height:500px}
+    .featured,.categories,.why-us{padding:44px 0}
+    .newsletter{padding:40px 0}
+    .section-title{margin-bottom:24px}
+}
+/* --- tighter header rows on small phones --- */
+@media (max-width:480px){
+    nav{min-height:0;padding:2px 0 0}
+    .nav-links{padding:0 0 6px!important}
+    .nav-links a{padding:5px 7px!important;min-height:34px;font-size:.68rem}
+}

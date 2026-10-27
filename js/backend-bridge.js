@@ -151,19 +151,30 @@ function initSiteChrome(){
     try{
       canBack=history.length>1||(!!document.referrer&&new URL(document.referrer).origin===location.origin);
     }catch(e){canBack=false;}
+    /* Up is added on pages that have no "back to top" button of their own
+       (the admin console, account, checkout, orders, …). */
+    const needsUp=!document.getElementById('topBtn');
+    const upIcon='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
+      '<path d="M5 14l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const backIcon='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
+      '<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const homeIcon='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
+      '<path d="M4 11.4L12 4.2l8 7.2M6.6 10.1V19.8h10.8V10.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const dock=document.createElement('nav');
     dock.id='navDock';
-    dock.setAttribute('aria-label','Back and home');
+    dock.setAttribute('aria-label','Back, top and home');
     dock.innerHTML=
-      '<button type="button" id="navBack" title="Previous page" aria-label="Go back"'+(canBack?'':' disabled')+'>'+
-        '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
-        '<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
-      '</button>'+
-      '<a id="navHome" href="index.html" title="Home page" aria-label="Go to home page">'+
-        '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
-        '<path d="M4 11.4L12 4.2l8 7.2M6.6 10.1V19.8h10.8V10.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
-      '</a>';
+      (needsUp?'<button type="button" id="navUp" title="Back to top" aria-label="Back to top">'+upIcon+'</button>':'')+
+      '<button type="button" id="navBack" title="Previous page" aria-label="Go back"'+(canBack?'':' disabled')+'>'+backIcon+'</button>'+
+      '<a id="navHome" href="index.html" title="Home page" aria-label="Go to home page">'+homeIcon+'</a>';
     document.body.appendChild(dock);
+    const up=dock.querySelector('#navUp');
+    if(up)up.addEventListener('click',()=>{
+      const y0=window.scrollY;
+      try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){window.scrollTo({top:0,behavior:'instant'});}
+      /* guarantee the jump even where smooth scrolling is unavailable */
+      setTimeout(()=>{ if(window.scrollY===y0&&window.scrollY>0) window.scrollTo({top:0,behavior:'instant'}); },400);
+    });
     const back=dock.querySelector('#navBack');
     if(canBack)back.addEventListener('click',()=>{try{history.back();}catch(e){}});
   }
@@ -191,7 +202,11 @@ function initSiteChrome(){
   if(topBtn&&!scriptLoaded&&!topBtn.dataset.bound){
     topBtn.dataset.bound='1';
     topBtn.style.display='none';
-    topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+    topBtn.addEventListener('click',()=>{
+      const y0=window.scrollY;
+      try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){window.scrollTo({top:0,behavior:'instant'});}
+      setTimeout(()=>{ if(window.scrollY===y0&&window.scrollY>0) window.scrollTo({top:0,behavior:'instant'}); },400);
+    });
     const onScroll=()=>{topBtn.style.display=window.scrollY>400?'flex':'none';};
     window.addEventListener('scroll',onScroll,{passive:true});onScroll();
   }
@@ -239,7 +254,7 @@ function shopCardHtml(p){
   const available=Math.max(0,Number(p.stock||0)-Number(p.reserved_stock||0));
   const badge=available<=0?'<div class="product-badge sold-out">Sold out</div>'
     :(available<=3?'<div class="product-badge" style="background:#ff9800;box-shadow:0 2px 8px rgba(255,152,0,.4)">Low stock</div>':'');
-  const pic=img?'<img src="'+img+'" alt="'+name+'">'
+  const pic=img?'<img src="'+img+'" alt="'+name+'" loading="lazy" decoding="async">'
     :'<div style="height:100%;display:flex;align-items:center;justify-content:center;opacity:.45;font-size:.8rem">No picture</div>';
   return '<div class="product-card shop-product-card'+(available<=0?' is-sold-out':'')+'" data-category="'+filterBucket(p)+
     '" data-product-id="'+id+'" data-product-name="'+name+'" data-product-price="'+priceTxt+
