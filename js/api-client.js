@@ -497,7 +497,7 @@
       const ext=((file.name||'').split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
       const path='products/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
       const res=await fetch(BASE+'/storage/v1/object/'+IMAGE_BUCKET+'/'+path,
-        {method:'POST',headers:Object.assign({'Content-Type':file.type||'image/jpeg','x-upsert':'true'},authHeaders()),body:file});
+        {method:'POST',headers:Object.assign({},authHeaders(),{'Content-Type':file.type||'image/jpeg','x-upsert':'true'}),body:file});
       if(!res.ok){
         const t=await res.text();
         let m='';try{m=(JSON.parse(t)||{}).message||''}catch(e){}
