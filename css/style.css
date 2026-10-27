@@ -240,19 +240,50 @@ nav{
 
     align-items:center;
 
-    width:180px;
+    width:auto;
 
-    height:60px;
+    min-width:180px;
+
+    height:56px;
+
+    padding:0 30px;
+
+    border:2px solid transparent;
+
+    box-sizing:border-box;
 
     border-radius:50px;
 
     text-decoration:none;
+
+    /* one voice for every control: page font, comfortable weight, real feedback */
+    font-family:inherit;
+
+    font-size:.95rem;
+
+    font-weight:600;
+
+    letter-spacing:.02em;
+
+    line-height:1;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    -webkit-tap-highlight-color:transparent;
+
+    user-select:none;
+
+    transition:background .2s ease,border-color .2s ease,color .2s ease,
+               box-shadow .25s ease,transform .12s ease;
 
 }
 
 .btn{
     background:#7B2CBF;
     color:white;
+    box-shadow:0 10px 22px -14px rgba(123,44,255,.95);
 }
 
 .btn-outline{

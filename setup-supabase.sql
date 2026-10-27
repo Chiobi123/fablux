@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS orders (
  subtotal INTEGER NOT NULL,
  delivery_fee INTEGER NOT NULL DEFAULT 0,
  discount INTEGER NOT NULL DEFAULT 0,
+ promo_code TEXT,
  total INTEGER NOT NULL,
  payment_method TEXT NOT NULL,
  delivery_method TEXT NOT NULL,

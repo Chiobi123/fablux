@@ -8,6 +8,7 @@
   const KEY='sb_publishable_E0_BuUK9piwZfNdvlwpbAA_-CM03cNs';
   const REST=BASE+'/rest/v1';
   const AUTH=BASE+'/auth/v1';
+  const IMAGE_BUCKET='product-images';
 
   const token=()=>localStorage.getItem(TOKEN_KEY);
   const setToken=t=>{t?localStorage.setItem(TOKEN_KEY,t):localStorage.removeItem(TOKEN_KEY);};
@@ -238,6 +239,7 @@
         p_guest_email:body.email||null,
         p_landmark:body.landmark||null,
         p_instructions:body.instructions||null,
+        p_promo:body.promoCode?String(body.promoCode).trim():null,
         p_idempotency_key:body.idempotencyKey||null
       })});
       if(!out||!out.reference) throw new Error('The order could not be saved. Please try again.');
@@ -247,7 +249,8 @@
       return {order:{
         id:out.order_id,reference:out.reference,tracking_token:out.tracking_token,
         status:out.status,payment_status:out.payment_status,subtotal:out.subtotal,
-        delivery_fee:out.delivery_fee,discount:0,total:out.total,currency:out.currency,
+        delivery_fee:out.delivery_fee,discount:out.discount||0,promo:out.promo_code||null,
+        total:out.total,currency:out.currency,
         created_at:out.created_at,duplicate:!!out.duplicate
       }};
     },
@@ -338,8 +341,22 @@
         count('/reviews?select=id&limit=5000'),
         count('/notifications?select=id&status=eq.pending&limit=5000')
       ]);
+      /* this month's trading + anything running low, straight from the tables */
+      let monthOrders=0,monthRevenue=0,lowStock=[];
+      try{
+        const m=new Date();m.setDate(1);m.setHours(0,0,0,0);
+        const rows=await rest('/orders?select=total,status,created_at&created_at=gte.'+encodeURIComponent(m.toISOString())+'&limit=5000');
+        monthOrders=(rows||[]).length;
+        monthRevenue=(rows||[]).reduce((n,o)=>n+(o.status==='cancelled'?0:Number(o.total)||0),0);
+      }catch(e){}
+      try{
+        const prods=await rest('/products?select=id,name,stock,reserved_stock&order=stock.asc&limit=1000');
+        lowStock=(prods||[])
+          .map(p=>({id:String(p.id),name:p.name,available:Math.max(0,Number(p.stock||0)-Number(p.reserved_stock||0))}))
+          .filter(p=>p.available<=5).slice(0,8);
+      }catch(e){}
       const s=await api.publicSettings();
-      return {stats:{products,customers,orders,reviews,pendingAlerts},
+      return {stats:{products,customers,orders,reviews,pendingAlerts,monthOrders,monthRevenue,lowStock},
         marketplaceEnabled:s.marketplaceEnabled,settings:s,emailConfigured:s.emailConfigured};
     },
     async adminMarketplace(enabled){
@@ -419,6 +436,83 @@
       await rest('/returns?id=eq.'+encodeURIComponent(id),
         {method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({status:s})});
       return {status:s};
+    },
+    async adminCustomers(){
+      await api.requireAdmin();
+      let users=[];
+      try{ users=await rest('/users?select=id,name,email,phone,role,created_at&order=created_at.desc&limit=1000'); }catch(e){ return []; }
+      const counts={};
+      try{
+        const os=await rest('/orders?select=user_id&limit=5000');
+        (os||[]).forEach(function(o){ if(o.user_id) counts[o.user_id]=(counts[o.user_id]||0)+1; });
+      }catch(e){}
+      return (users||[]).map(function(u){ return Object.assign({},u,{orderCount:counts[u.id]||0}); });
+    },
+    async adminPromos(){
+      await api.requireAdmin();
+      try{ return await rest('/promo_codes?select=*&order=created_at.desc&limit=500'); }catch(e){ return []; }
+    },
+    async adminSavePromo(body){
+      await api.requireAdmin();
+      const code=String(body.code||'').trim().toUpperCase().replace(/\s+/g,'');
+      if(!/^[A-Z0-9_-]{3,24}$/.test(code)) throw new Error('Code must be 3–24 letters or numbers.');
+      const kind=body.kind==='amount'?'amount':'percent';
+      const value=Math.round(Number(body.value));
+      if(!(value>0)) throw new Error('Enter a value greater than zero.');
+      if(kind==='percent'&&value>90) throw new Error('A percentage discount cannot exceed 90%.');
+      const row={code:code,kind:kind,value:value,
+        min_subtotal:Math.max(0,Math.round(Number(body.minSubtotal)||0)),
+        max_uses:Math.max(0,Math.round(Number(body.maxUses)||0)),
+        used_count:Math.max(0,Math.round(Number(body.usedCount)||0)),
+        active:(body.active===false||body.active===0||body.active==='0')?0:1,
+        created_at:body.createdAt||new Date().toISOString(),
+        updated_at:new Date().toISOString()};
+      await rest('/promo_codes',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(row)});
+      return {promo:row};
+    },
+    async adminDeletePromo(code){
+      await api.requireAdmin();
+      await rest('/promo_codes?code=eq.'+encodeURIComponent(code),
+        {method:'DELETE',headers:{Prefer:'return=minimal'}});
+      return {ok:true};
+    },
+    /* Customers never read the codes table: the database function decides. */
+    async validatePromo(code,subtotal){
+      return rest('/rpc/validate_promo',{method:'POST',
+        body:JSON.stringify({p_code:String(code||''),p_subtotal:Math.max(0,Math.round(Number(subtotal)||0))})});
+    },
+    async adminProducts(){
+      await api.requireAdmin();
+      try{
+        return await rest('/products?select=*&order=created_at.desc,id&limit=1000');
+      }catch(e){ return []; }
+    },
+    /* Product pictures live in a public Supabase Storage bucket; only an
+       approved administrator may put files there or remove them again. */
+    async adminUploadImage(file){
+      await api.requireAdmin();
+      if(!file) throw new Error('Choose a picture first.');
+      if(file.type && !/^image\//.test(file.type)) throw new Error('That file is not an image.');
+      if(file.size>5*1024*1024) throw new Error('Picture must be smaller than 5 MB.');
+      const ext=((file.name||'').split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+      const path='products/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+      const res=await fetch(BASE+'/storage/v1/object/'+IMAGE_BUCKET+'/'+path,
+        {method:'POST',headers:Object.assign({'Content-Type':file.type||'image/jpeg','x-upsert':'true'},authHeaders()),body:file});
+      if(!res.ok){
+        const t=await res.text();
+        let m='';try{m=(JSON.parse(t)||{}).message||''}catch(e){}
+        throw new Error(m||('Picture upload failed ('+res.status+').'));
+      }
+      return {path:path, url:BASE+'/storage/v1/object/public/'+IMAGE_BUCKET+'/'+path};
+    },
+    async adminDeleteImage(path){
+      await api.requireAdmin();
+      if(!path||path.indexOf('/')<0||path.indexOf('..')>=0) return {ok:true};
+      try{
+        await fetch(BASE+'/storage/v1/object/'+IMAGE_BUCKET+'/'+path,
+          {method:'DELETE',headers:authHeaders()});
+      }catch(e){}
+      return {ok:true};
     },
     async adminCreateProduct(body){
       const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');

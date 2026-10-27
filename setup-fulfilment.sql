@@ -196,6 +196,7 @@ CREATE OR REPLACE FUNCTION public.create_order(
   p_guest_email      text DEFAULT NULL,
   p_landmark         text DEFAULT NULL,
   p_instructions     text DEFAULT NULL,
+  p_promo            text DEFAULT NULL,
   p_idempotency_key  text DEFAULT NULL)
 RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
@@ -209,6 +210,10 @@ DECLARE
   v_subtotal     bigint := 0;
   v_fee          bigint := 0;
   v_base         bigint := 0;
+  v_discount     bigint := 0;
+  v_promo        text := NULL;
+  v_check        jsonb;
+  v_total        bigint := 0;
   v_order_id     text;
   v_ref          text;
   v_token        text;
@@ -223,6 +228,7 @@ BEGIN
         'reference', v_dup.reference, 'tracking_token', v_dup.tracking_token,
         'status', v_dup.status, 'payment_status', v_dup.payment_status,
         'subtotal', v_dup.subtotal, 'delivery_fee', v_dup.delivery_fee,
+        'discount', v_dup.discount, 'promo_code', v_dup.promo_code,
         'total', v_dup.total, 'currency', v_dup.currency, 'created_at', v_dup.created_at);
     END IF;
   END IF;
@@ -280,6 +286,21 @@ BEGIN
                                 WHERE key = 'delivery_fee_express_surcharge'), 0);
   END IF;
 
+  -- ---- promo / discount code: checked by the database, never by the page ----
+  IF p_promo IS NOT NULL AND btrim(p_promo) <> '' THEN
+    v_check := public.validate_promo(btrim(p_promo), v_subtotal);
+    IF coalesce((v_check->>'valid')::boolean, false) THEN
+      v_discount := coalesce((v_check->>'discount')::bigint, 0);
+      v_promo    := v_check->>'code';
+      UPDATE public.promo_codes
+         SET used_count = used_count + 1, updated_at = iso_now()
+       WHERE code = v_promo;
+    ELSE
+      RAISE EXCEPTION '%', coalesce(v_check->>'message', 'That promo code is not valid.');
+    END IF;
+  END IF;
+  v_total := greatest(0, v_subtotal + v_fee - v_discount);
+
   -- ---- persist -----------------------------------------------------------
   v_order_id := 'ord_' || substr(md5(random()::text || clock_timestamp()::text), 1, 16);
   v_ref      := 'FX-' || to_char(now(),'YYYY') || '-' || lpad(nextval('order_reference_seq')::text, 5, '0');
@@ -288,14 +309,14 @@ BEGIN
 
   INSERT INTO public.orders (
     id, reference, user_id, guest_email, status, payment_status,
-    subtotal, delivery_fee, discount, total, currency,
+    subtotal, delivery_fee, discount, total, currency, promo_code,
     payment_method, delivery_method, customer_name, email, phone,
     address, city, state, landmark, instructions,
     tracking_token, idempotency_key, created_at, updated_at, status_updated_at)
   VALUES (
     v_order_id, v_ref, v_uid::text, CASE WHEN v_uid IS NULL THEN lower(trim(p_guest_email)) END,
     'pending_payment', 'pending',
-    v_subtotal, v_fee, 0, v_subtotal + v_fee, 'NGN',
+    v_subtotal, v_fee, v_discount, v_total, 'NGN', v_promo,
     coalesce(p_payment_method,'pay-on-delivery'), coalesce(p_delivery_method,'standard'),
     trim(p_name), v_email, regexp_replace(trim(p_phone),'[^0-9+]','','g'),
     trim(p_address), trim(p_city), trim(p_state),
@@ -313,19 +334,20 @@ BEGIN
 
   PERFORM public.queue_notification(v_order_id, 'admin_new_order', 'ujunwaigbani@gmail.com',
     'New FabluX order ' || v_ref,
-    public.admin_alert_body(v_ref, v_subtotal + v_fee, 'pending', 'pending_payment'));
+    public.admin_alert_body(v_ref, v_total, 'pending', 'pending_payment'));
   PERFORM public.queue_notification(v_order_id, 'admin_new_order', 'igbanichiobiebere@gmail.com',
     'New FabluX order ' || v_ref,
-    public.admin_alert_body(v_ref, v_subtotal + v_fee, 'pending', 'pending_payment'));
+    public.admin_alert_body(v_ref, v_total, 'pending', 'pending_payment'));
   PERFORM public.queue_notification(v_order_id, 'order_received', v_email,
     'We received your FabluX order ' || v_ref,
     format('Your order %s was received. Total NGN %s. Track it any time: https://fablux.pages.dev/track.html?ref=%s&token=%s',
-           v_ref, v_subtotal + v_fee, v_ref, v_token));
+           v_ref, v_total, v_ref, v_token));
 
   RETURN jsonb_build_object(
     'duplicate', false, 'order_id', v_order_id, 'reference', v_ref,
     'tracking_token', v_token, 'status', 'pending_payment', 'payment_status', 'pending',
-    'subtotal', v_subtotal, 'delivery_fee', v_fee, 'total', v_subtotal + v_fee,
+    'subtotal', v_subtotal, 'delivery_fee', v_fee, 'discount', v_discount,
+    'promo_code', v_promo, 'total', v_total,
     'currency', 'NGN', 'created_at', v_created);
 END $$;
 

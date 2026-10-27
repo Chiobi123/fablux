@@ -107,13 +107,16 @@ async function handleReset(event){
 async function renderAccount(){const box=document.getElementById('accountPage');if(!box)return;try{const d=await api.account();if(!d||!d.user){location.href='login.html?return='+encodeURIComponent(location.pathname+location.search);return}box.querySelector('[data-user-name]').textContent=d.user.name;box.querySelector('[data-user-email]').textContent=d.user.email;box.querySelector('[data-user-phone]').textContent=d.user.phone||'Not added';const role=(d.user.role||'customer');const welcome=box.querySelector('.section-title p');let badge=document.getElementById('roleBadge');if(!badge&&welcome){badge=document.createElement('span');badge.id='roleBadge';badge.className='account-role';welcome.appendChild(badge)}if(badge)badge.textContent=role==='admin'?'ADMINISTRATOR':'MEMBER';let adminCard=document.getElementById('adminShortcut');if(role==='admin'&&!adminCard){adminCard=document.createElement('article');adminCard.className='pro-card';adminCard.id='adminShortcut';adminCard.innerHTML='<div><h3>Admin Console</h3><p>Orders, payment confirmation, dispatch and store settings.</p><a class="pro-card-link" href="admin.html">Open Admin Console</a></div>';const grid=box.querySelector('.pro-card-grid');if(grid)grid.prepend(adminCard)}else if(role!=='admin'&&adminCard){adminCard.remove()}const logout=box.querySelector('[data-logout]');if(logout)logout.onclick=async()=>{await api.logout();location.href='login.html';};let section=document.getElementById('addressBook');if(!section){section=document.createElement('section');section.id='addressBook';section.style.marginTop='40px';box.appendChild(section)}section.innerHTML=`<div class="section-title"><span>DELIVERY</span><h3>Address Book</h3></div><form id="addressForm" class="pro-form"><label>Label<input name="label" required></label><label>Address<textarea name="address" rows="3" required></textarea></label><label>City<input name="city" required></label><label>State<input name="state" required></label><button class="btn">Save Address</button></form><div class="pro-card-grid" style="margin-top:20px">${d.addresses.map(a=>`<article class="pro-card"><div><strong>${a.label}</strong><p>${a.address}<br>${a.city}, ${a.state}</p><button type="button" data-delete-address="${a.id}">Remove</button></div></article>`).join('')}</div>`;section.querySelector('#addressForm').onsubmit=async e=>{e.preventDefault();try{await api.createAddress(Object.fromEntries(new FormData(e.target)));toast('✓ Address saved');renderAccount()}catch(err){toast(err.message)}};section.querySelectorAll('[data-delete-address]').forEach(b=>b.onclick=async()=>{try{await api.deleteAddress(b.dataset.deleteAddress);renderAccount()}catch(e){toast(e.message)}})}catch(e){if(e&&(e.network||/Network problem/i.test(String(e.message||'')))){toast(e.message||'Network problem — please try again.');return}location.href='login.html?return='+encodeURIComponent(location.pathname+location.search)}}
 const STATUS_LABEL={pending_payment:'Order received',payment_confirmed:'Payment confirmed',confirmed:'Order confirmed',processing:'Preparing parcel',ready_for_dispatch:'Ready for dispatch',shipped:'Collected by courier',delivered:'Delivered',cancelled:'Cancelled'};
 async function renderOrders(){const box=document.getElementById('ordersPage');if(!box)return;try{const d=await api.orders();box.innerHTML=d.orders.length?d.orders.map(o=>`<article class="pro-order"><div><strong>${o.reference||o.id}</strong><span>${new Date(o.created_at).toLocaleDateString('en-NG')}</span></div><p>${(o.items||[]).map(i=>`${i.name} × ${i.quantity}`).join(', ')}</p><div><strong>${money(o.total)}</strong><span class="status">${STATUS_LABEL[o.status]||o.status}</span></div><div class="pro-card-link" style="display:flex;gap:14px;flex-wrap:wrap"><a href="order-success.html?ref=${encodeURIComponent(o.reference||'')}&token=${encodeURIComponent(o.tracking_token||localStorage.getItem('fablux_last_order_token')||'')}">Order Details</a><a href="track.html?ref=${encodeURIComponent(o.reference||'')}&token=${encodeURIComponent(o.tracking_token||'')}">Track Order</a></div></article>`).join(''):'<div class="pro-empty"><h2>No orders yet</h2><a class="btn" href="shop.html">Start Shopping</a></div>'}catch(e){box.innerHTML='<div class="pro-empty"><h2>Your orders</h2><p>'+e.message+'</p><a class="btn" href="login.html?return=orders.html">Sign In</a> <a class="btn" href="shop.html">Continue as guest</a></div>'}}
-async function handleCheckout(event){const f=event.target;if(!f.closest('#checkoutPage'))return;event.preventDefault();event.stopImmediatePropagation();const cart=getCart();if(!cart.length){toast('Your cart is empty');return}try{const d=Object.fromEntries(new FormData(f));if(!window.FabluXAPI){throw new Error('Checkout is unavailable right now.')}const fp=JSON.stringify(cart.map(x=>[x.id,x.quantity]))+'|'+(d.payment||'');let key=sessionStorage.getItem('fablux_idem_fp')||'';let idem=sessionStorage.getItem('fablux_idem')||'';if(key!==fp||!idem){idem=(crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);sessionStorage.setItem('fablux_idem',idem);sessionStorage.setItem('fablux_idem_fp',fp);}const order=await api.createOrder({name:d.name,email:d.email,phone:d.phone,address:d.address,state:d.state,city:d.city,landmark:d.landmark||'',instructions:d.instructions||'',deliveryMethod:d.delivery||'standard',paymentMethod:d.payment||'pay-on-delivery',idempotencyKey:idem,items:cart.map(x=>({productId:x.id,quantity:x.quantity}))});sessionStorage.removeItem('fablux_idem');sessionStorage.removeItem('fablux_idem_fp');localStorage.setItem('fablux_last_order_id_v1',order.order.id);localStorage.setItem('fablux_last_order_ref',order.order.reference);localStorage.setItem('fablux_last_order_token',order.order.tracking_token);if(order.payment&&order.payment.authorizationUrl){location.href=order.payment.authorizationUrl;return;}location.href='order-success.html?ref='+encodeURIComponent(order.order.reference)+'&token='+encodeURIComponent(order.order.tracking_token)}catch(e){toast(e.message)}}
+async function handleCheckout(event){const f=event.target;if(!f.closest('#checkoutPage'))return;event.preventDefault();event.stopImmediatePropagation();const cart=getCart();if(!cart.length){toast('Your cart is empty');return}try{const d=Object.fromEntries(new FormData(f));if(!window.FabluXAPI){throw new Error('Checkout is unavailable right now.')}const fp=JSON.stringify(cart.map(x=>[x.id,x.quantity]))+'|'+(d.payment||'');let key=sessionStorage.getItem('fablux_idem_fp')||'';let idem=sessionStorage.getItem('fablux_idem')||'';if(key!==fp||!idem){idem=(crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);sessionStorage.setItem('fablux_idem',idem);sessionStorage.setItem('fablux_idem_fp',fp);}const order=await api.createOrder({name:d.name,email:d.email,phone:d.phone,address:d.address,state:d.state,city:d.city,landmark:d.landmark||'',instructions:d.instructions||'',deliveryMethod:d.delivery||'standard',paymentMethod:d.payment||'pay-on-delivery',promoCode:checkoutPromo?checkoutPromo.code:null,idempotencyKey:idem,items:cart.map(x=>({productId:x.id,quantity:x.quantity}))});checkoutPromo=null;sessionStorage.removeItem('fablux_idem');sessionStorage.removeItem('fablux_idem_fp');localStorage.setItem('fablux_last_order_id_v1',order.order.id);localStorage.setItem('fablux_last_order_ref',order.order.reference);localStorage.setItem('fablux_last_order_token',order.order.tracking_token);if(order.payment&&order.payment.authorizationUrl){location.href=order.payment.authorizationUrl;return;}location.href='order-success.html?ref='+encodeURIComponent(order.order.reference)+'&token='+encodeURIComponent(order.order.tracking_token)}catch(e){toast(e.message)}}
 async function handleReview(event){const f=event.target;if(f.id!=='reviewForm')return;event.preventDefault();event.stopImmediatePropagation();try{const id=new URLSearchParams(location.search).get('id');const d=Object.fromEntries(new FormData(f));await api.review({productId:id,rating:Number(d.rating),text:d.text});toast('✓ Review submitted');f.reset()}catch(e){toast(e.message)}}
 async function handleContact(event){const f=event.target;if(!f.classList.contains('contact-form'))return;event.preventDefault();event.stopImmediatePropagation();try{await api.contact(Object.fromEntries(new FormData(f)));f.reset();toast('✓ Message sent successfully')}catch(e){toast(e.message)}}
 async function handleNewsletter(event){const f=event.target;if(!f.classList.contains('newsletter-form'))return;event.preventDefault();event.stopImmediatePropagation();try{await api.newsletter({email:f.querySelector('input[type=email]')?.value});f.reset();toast('✓ You are subscribed to FabluX.U.Design updates')}catch(e){toast(e.message)}}
 async function renderAdmin(){const box=document.getElementById('adminPage');if(!box)return;if(window.FabluXAdmin&&window.FabluXAdmin.render){try{await window.FabluXAdmin.render(box)}catch(e){box.innerHTML='<div class="pro-empty"><h2>Admin access required</h2><p>'+e.message+'</p><a class="btn" href="login.html?return=admin.html">Admin Login</a></div>'}return}try{const d=await api.adminDashboard();box.innerHTML=`<div class="section-title"><span>FABLUX ADMIN</span><h2>Store Control Center</h2><p>Secure backend-connected administration.</p></div><div class="fablux-admin-grid"><div class="fablux-admin-stat">Products<strong>${d.stats.products}</strong></div><div class="fablux-admin-stat">Customers<strong>${d.stats.customers}</strong></div><div class="fablux-admin-stat">Orders<strong>${d.stats.orders}</strong></div><div class="fablux-admin-stat">Reviews<strong>${d.stats.reviews}</strong></div></div>`}catch(e){box.innerHTML='<div class="pro-empty"><h2>Admin access required</h2><p>Please sign in with an administrator account.</p><a class="btn" href="login.html?return=admin.html">Admin Login</a></div>'}}
 
-async function renderCheckout(){const box=document.getElementById('checkoutPage');if(!box)return;try{const cart=getCart();if(!cart.length){box.innerHTML='<div class="pro-empty"><h2>Your cart is empty</h2><a class="btn" href="shop.html">Return to Shop</a></div>';return}const f=box.querySelector('form');let me={user:null};try{me=await api.me()}catch(e){}if(me.user){if(!f.querySelector('[name=name]').value)f.querySelector('[name=name]').value=me.user.name||'';if(!f.querySelector('[name=email]').value)f.querySelector('[name=email]').value=me.user.email||'';if(!f.querySelector('[name=phone]').value)f.querySelector('[name=phone]').value=me.user.phone||''}else if(!f.querySelector('[data-guest-note]')){const g=document.createElement('small');g.dataset.guestNote='1';g.style.display='block';g.style.opacity='.75';g.textContent='Checking out as a guest? Enter your email above — you will receive a secure tracking link.';f.querySelector('[name=email]').parentElement.after(g)}if(!f.querySelector('[name=payment]')){const l=document.createElement('label');l.innerHTML='Payment Method<select name="payment" required><option value="pay-on-delivery">Pay on Delivery (pay when you receive)</option><option value="bank-transfer">Bank Transfer (payment confirmed by the store)</option></select>';f.querySelector('[name=delivery]').parentElement.after(l)}let settings={deliveryFee:2500,expressSurcharge:0};try{settings=await api.publicSettings()}catch(e){}const renderFees=()=>{const method=f.querySelector('[name=delivery]').value||'standard';let fee=Number(settings.deliveryFee)||0;if(method==='express')fee+=Number(settings.expressSurcharge)||0;if(method==='pickup')fee=0;const subtotal=cart.reduce((s,x)=>s+x.price*x.quantity,0);const sum=f.querySelector('[data-summary]');if(sum)sum.innerHTML=cart.map(x=>`<div class="pro-summary-row"><span>${x.name} × ${x.quantity}</span><strong>${money(x.price*x.quantity)}</strong></div>`).join('');if(f.querySelector('[data-subtotal]'))f.querySelector('[data-subtotal]').textContent=money(subtotal);if(f.querySelector('[data-delivery]'))f.querySelector('[data-delivery]').textContent=money(fee);if(f.querySelector('[data-total]'))f.querySelector('[data-total]').textContent=money(subtotal+fee)};renderFees();f.querySelector('[name=delivery]').addEventListener('change',renderFees)}catch(e){toast(e.message)}}
+/* Promo code applied at checkout (re-validated by the database when the
+   order is placed — the page only ever displays the discount). */
+let checkoutPromo=null;
+async function renderCheckout(){const box=document.getElementById('checkoutPage');if(!box)return;try{const cart=getCart();if(!cart.length){box.innerHTML='<div class="pro-empty"><h2>Your cart is empty</h2><a class="btn" href="shop.html">Return to Shop</a></div>';return}const f=box.querySelector('form');let me={user:null};try{me=await api.me()}catch(e){}if(me.user){if(!f.querySelector('[name=name]').value)f.querySelector('[name=name]').value=me.user.name||'';if(!f.querySelector('[name=email]').value)f.querySelector('[name=email]').value=me.user.email||'';if(!f.querySelector('[name=phone]').value)f.querySelector('[name=phone]').value=me.user.phone||''}else if(!f.querySelector('[data-guest-note]')){const g=document.createElement('small');g.dataset.guestNote='1';g.style.display='block';g.style.opacity='.75';g.textContent='Checking out as a guest? Enter your email above — you will receive a secure tracking link.';f.querySelector('[name=email]').parentElement.after(g)}if(!f.querySelector('[name=payment]')){const l=document.createElement('label');l.innerHTML='Payment Method<select name="payment" required><option value="pay-on-delivery">Pay on Delivery (pay when you receive)</option><option value="bank-transfer">Bank Transfer (payment confirmed by the store)</option></select>';f.querySelector('[name=delivery]').parentElement.after(l)}let settings={deliveryFee:2500,expressSurcharge:0};try{settings=await api.publicSettings()}catch(e){}const promoRow=f.querySelector('[data-promo-row]'),promoInput=f.querySelector('[name=promo]'),applyBtn=f.querySelector('[data-apply-promo]');const cartTotal=()=>cart.reduce((s,x)=>s+x.price*x.quantity,0);const discount=()=>checkoutPromo?Math.min(checkoutPromo.discount,cartTotal()):0;const renderFees=()=>{const method=f.querySelector('[name=delivery]').value||'standard';let fee=Number(settings.deliveryFee)||0;if(method==='express')fee+=Number(settings.expressSurcharge)||0;if(method==='pickup')fee=0;const subtotal=cartTotal();const off=discount();const sum=f.querySelector('[data-summary]');if(sum)sum.innerHTML=cart.map(x=>`<div class="pro-summary-row"><span>${x.name} × ${x.quantity}</span><strong>${money(x.price*x.quantity)}</strong></div>`).join('');if(f.querySelector('[data-subtotal]'))f.querySelector('[data-subtotal]').textContent=money(subtotal);if(f.querySelector('[data-delivery]'))f.querySelector('[data-delivery]').textContent=money(fee);if(promoRow){promoRow.style.display=off>0?'':'none';if(off>0){const lab=f.querySelector('[data-promo-label]');if(lab&&checkoutPromo)lab.textContent='Discount ('+checkoutPromo.code+')';if(f.querySelector('[data-discount]'))f.querySelector('[data-discount]').textContent='-'+money(off)}}if(f.querySelector('[data-total]'))f.querySelector('[data-total]').textContent=money(Math.max(0,subtotal+fee-off))};renderFees();f.querySelector('[name=delivery]').addEventListener('change',renderFees);if(applyBtn&&promoInput){const doApply=async()=>{const code=promoInput.value.trim();if(!code){checkoutPromo=null;renderFees();return}applyBtn.classList.add('is-busy');applyBtn.disabled=true;try{const r=await api.validatePromo(code,cartTotal());if(r&&r.valid){checkoutPromo={code:r.code,discount:Number(r.discount)||0};renderFees();toast('✓ Promo applied — '+money(checkoutPromo.discount)+' off')}else{checkoutPromo=null;renderFees();toast((r&&r.message)||'That promo code is not valid')}}catch(e){checkoutPromo=null;renderFees();toast(e.message)}finally{applyBtn.classList.remove('is-busy');applyBtn.disabled=false}};applyBtn.addEventListener('click',doApply);promoInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doApply()}})}}catch(e){toast(e.message)}}
 async function renderInvoice(){const box=document.getElementById('invoicePage');if(!box)return;try{const id=new URLSearchParams(location.search).get('id');if(!id)throw new Error('Order reference is missing.');const d=await api.order(id),o=d.order;box.innerHTML=`<div class="invoice-head"><div><span>FABLUX.U.DESIGN</span><h1>Invoice</h1></div><strong>${o.id}</strong></div><p>${new Date(o.created_at).toLocaleString('en-NG')}</p><div class="pro-summary">${o.items.map(i=>`<div class="pro-summary-row"><span>${i.name} × ${i.quantity}</span><strong>${money(i.price*i.quantity)}</strong></div>`).join('')}<hr><div class="pro-summary-row"><span>Subtotal</span><strong>${money(o.subtotal)}</strong></div><div class="pro-summary-row"><span>Delivery</span><strong>${money(o.delivery_fee)}</strong></div><div class="pro-summary-row"><span>Discount</span><strong>-${money(o.discount)}</strong></div><div class="pro-summary-row"><strong>Total</strong><strong>${money(o.total)}</strong></div></div><button class="btn" onclick="window.print()">Print Invoice</button>`}catch(e){box.innerHTML=`<div class="pro-empty"><h2>Unable to load invoice</h2><p>${e.message}</p></div>`}}
 async function renderOrderSuccess(){const box=document.getElementById('orderSuccess');if(!box)return;const q=new URLSearchParams(location.search);const ref=q.get('ref')||localStorage.getItem('fablux_last_order_ref')||'';const token=q.get('token')||localStorage.getItem('fablux_last_order_token')||'';if(!ref){box.innerHTML='<div class="pro-empty"><h2>No recent order</h2><a class="btn" href="shop.html">Continue Shopping</a></div>';return}try{const d=await api.track(ref,token);const o=d.order;const payLabel={pending:'Awaiting payment',successful:'Payment received',failed:'Payment failed',refunded:'Refunded'};box.innerHTML=`<div class="pro-success-head"><i class="fa-solid fa-circle-check"></i><h2>Thank you — your order is saved</h2><p>Order reference <strong>${o.reference}</strong></p></div><div class="pro-admin-section"><h3>Order summary</h3>${d.items.map(i=>`<div class="pro-summary-row"><span>${i.name} × ${i.quantity}</span><strong>${money(i.line_total)}</strong></div>`).join('')}<div class="pro-summary-row"><span>Subtotal</span><strong>${money(o.subtotal)}</strong></div><div class="pro-summary-row"><span>Delivery</span><strong>${money(o.delivery_fee)}</strong></div><div class="pro-summary-row"><strong>Total</strong><strong>${money(o.total)}</strong></div></div><div class="pro-admin-section"><h3>Status</h3><div class="pro-summary-row"><span>Order status</span><strong>${STATUS_LABEL[o.status]||o.status}</strong></div><div class="pro-summary-row"><span>Payment</span><strong>${payLabel[o.payment_status]||o.payment_status}</strong></div><div class="pro-summary-row"><span>Payment method</span><strong>${o.payment_method==='bank-transfer'?'Bank Transfer':'Pay on Delivery'}</strong></div><div class="pro-summary-row"><span>Placed</span><strong>${new Date(o.created_at).toLocaleString('en-NG')}</strong></div><div class="pro-summary-row"><span>Delivering to</span><strong>${o.address}, ${o.city}, ${o.state}</strong></div></div><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px"><a class="btn" href="track.html?ref=${encodeURIComponent(o.reference)}&token=${encodeURIComponent(token||'')}">Track this order</a><a class="btn" href="shop.html">Continue Shopping</a></div><p style="margin-top:14px;opacity:.8">Keep your reference <strong>${o.reference}</strong> — it is the way to track, collect or return this order.</p>`}catch(e){box.innerHTML='<div class="pro-empty"><h2>Order not found</h2><p>'+e.message+'</p><a class="btn" href="orders.html">My Orders</a></div>'}}
 
@@ -160,7 +163,194 @@ function initSiteChrome(){
   }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();injectMarketplaceState();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
+/* ============================================================
+   LIVE CATALOGUE — the shop reads Supabase, so a product added,
+   repriced or hidden in the admin console is exactly what
+   shoppers see. Static markup stays as the offline fallback.
+   ============================================================ */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* Which filter chips a piece belongs to. A card may carry more than
+   one bucket (space separated) so unisex pieces stay reachable from
+   both the Men and the Women chip. */
+function filterBucket(p){
+  const s=String((p.category||'')+' '+(p.name||'')).toLowerCase();
+  if(/shoe|sneaker|heel|boot|slipper|footwear|loafer|sandal|flip ?flop|slip-on|oxford|trainer/.test(s))return 'shoes';
+  if(/watch|bag|jewel|accessor|sunglass|belt|cap\b|hat|scarf|headwear|necklace|bracelet|tie\b|backpack|beanie|fragrance|perfume/.test(s))return 'accessories';
+  const w=/women|woman|ladies|feminine|dress|gown|skirt|eveningwear|blouse|legging|bodysuit|crop top|maxi|stiletto|lace/.test(s);
+  const m=/menwear|men's|\bmen\b|masculine|suit|blazer|tuxedo/.test(s);
+  if(w&&m)return 'men women';
+  if(w)return 'women';
+  if(m)return 'men';
+  return 'men women';
+}
+
+function shopCardHtml(p){
+  const id=esc(p.id), name=esc(p.name), cat=esc(p.category||''), priceTxt='₦'+(Number(p.price)||0).toLocaleString('en-NG');
+  const img=p.image?esc(p.image):'';
+  const available=Math.max(0,Number(p.stock||0)-Number(p.reserved_stock||0));
+  const badge=available<=0?'<div class="product-badge sold-out">Sold out</div>'
+    :(available<=3?'<div class="product-badge" style="background:#ff9800;box-shadow:0 2px 8px rgba(255,152,0,.4)">Low stock</div>':'');
+  const pic=img?'<img src="'+img+'" alt="'+name+'">'
+    :'<div style="height:100%;display:flex;align-items:center;justify-content:center;opacity:.45;font-size:.8rem">No picture</div>';
+  return '<div class="product-card shop-product-card'+(available<=0?' is-sold-out':'')+'" data-category="'+filterBucket(p)+
+    '" data-product-id="'+id+'" data-product-name="'+name+'" data-product-price="'+priceTxt+
+    '" data-product-category="'+cat+'" data-product-image="'+img+'">' +
+    '<div class="product-image">'+pic+badge+
+    '<div class="product-overlay"><button class="quick-view-btn" type="button" data-product-id="'+id+'">Quick View</button></div></div>' +
+    '<div class="product-info"><h3>'+name+'</h3><p>'+cat+'</p>' +
+    '<div class="product-price"><span>'+priceTxt+'</span>' +
+    '<button class="cart-btn" type="button" aria-label="Add '+name+' to cart"><i class="fa-solid fa-cart-shopping"></i></button></div></div></div>';
+}
+
+let qvCurrent=null;
+function ensureQuickView(){
+  let m=document.getElementById('fxQuickView');
+  if(m)return m;
+  m=document.createElement('div');
+  m.className='modal';
+  m.id='fxQuickView';
+  m.innerHTML='<div class="modal-content"><button class="modal-close" type="button" aria-label="Close">&times;</button>' +
+    '<div class="modal-header"><div class="modal-image"><img id="fxQvImg" src="" alt=""></div>' +
+    '<div class="modal-details"><h2 id="fxQvName"></h2><p id="fxQvCat"></p>' +
+    '<div class="modal-price" id="fxQvPrice"></div>' +
+    '<div class="modal-actions"><button class="add-to-cart-btn" id="fxQvCart" type="button"><i class="fa-solid fa-cart-shopping"></i> Add to Cart</button>' +
+    '<button class="wishlist-btn" id="fxQvWish" type="button"><i class="fa-regular fa-heart"></i> Wishlist</button>' +
+    '<a class="btn btn-outline" id="fxQvDetails" href="#" style="min-width:0;max-width:190px;height:48px">View details</a></div>' +
+    '<div class="modal-description"><p id="fxQvStock"></p></div></div></div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',function(e){
+    if(e.target===m||e.target.closest('.modal-close')){m.classList.remove('active');return}
+    if(e.target.closest('#fxQvCart')&&qvCurrent){
+      window.FabluXStore?.addToCart(qvCurrent);
+      m.classList.remove('active');
+    }
+    if(e.target.closest('#fxQvWish')&&qvCurrent){
+      window.FabluXStore?.toggleWishlist(qvCurrent);
+      m.classList.remove('active');
+    }
+  });
+  return m;
+}
+
+function openQuickView(p,available){
+  const m=ensureQuickView();
+  qvCurrent=p;
+  const img=m.querySelector('#fxQvImg');
+  if(p.image){img.src=p.image;img.alt=p.name;img.style.display=''}else{img.removeAttribute('src');img.style.display='none'}
+  m.querySelector('#fxQvName').textContent=p.name;
+  m.querySelector('#fxQvCat').textContent=p.category||'FabluX Signature';
+  m.querySelector('#fxQvPrice').textContent='₦'+(Number(p.price)||0).toLocaleString('en-NG');
+  m.querySelector('#fxQvStock').textContent=available>0
+    ? available+' available — ready to ship in 2–4 business days.'
+    : 'Sold out. This piece is not taking orders right now.';
+  const det=m.querySelector('#fxQvDetails');
+  if(det)det.setAttribute('href','product.html?id='+encodeURIComponent(String(p.id)));
+  m.classList.add('active');
+}
+
+function wireShopGrid(grid){
+  const store=window.FabluXStore;
+  Array.prototype.forEach.call(grid.querySelectorAll('.product-card'),function(card){
+    const available=(function(){
+      const rows=window.__fxRows||[];
+      const r=rows.filter(function(x){return String(x.id)===String(card.dataset.productId)})[0];
+      if(!r)return 99;
+      return Math.max(0,Number(r.stock||0)-Number(r.reserved_stock||0));
+    })();
+    const cartBtn=card.querySelector('.cart-btn');
+    if(cartBtn)cartBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      if(available<=0){window.FabluXStore?.toast('This piece is sold out');return}
+      const p=store&&store.productFromCard&&store.productFromCard(card);
+      if(p)store.addToCart(p);
+    });
+    const qv=card.querySelector('.quick-view-btn');
+    if(qv)qv.addEventListener('click',function(e){
+      e.preventDefault();
+      const p=store&&store.productFromCard&&store.productFromCard(card);
+      if(p)openQuickView(p,available);
+    });
+  });
+  const host=grid.closest('.shop-products');
+  const bar=host&&host.querySelector('.filter-group');
+  if(bar&&!bar.dataset.wired){
+    bar.dataset.wired='1';
+    bar.addEventListener('click',function(e){
+      const b=e.target.closest&&e.target.closest('.filter-btn');
+      if(!b)return;
+      Array.prototype.forEach.call(bar.querySelectorAll('.filter-btn'),function(x){x.classList.remove('active')});
+      b.classList.add('active');
+      const f=b.dataset.filter||'all';
+      Array.prototype.forEach.call(grid.querySelectorAll('.product-card'),function(c){
+        const buckets=String(c.dataset.category||'').split(/\s+/).filter(Boolean);
+        c.style.display=(f==='all'||buckets.indexOf(f)>=0)?'':'none';
+      });
+    });
+  }
+}
+
+function syncFeaturedGrid(rows){
+  const byId={};
+  rows.forEach(function(r){byId[String(r.id)]=r});
+  Array.prototype.forEach.call(document.querySelectorAll('.product-card[data-product-id]'),function(card){
+    if(card.closest('.shop-products'))return;
+    const row=byId[String(card.dataset.productId)];
+    if(!row)return;
+    const price='₦'+(Number(row.price)||0).toLocaleString('en-NG');
+    card.dataset.productName=row.name;
+    card.dataset.productPrice=price;
+    card.dataset.productCategory=row.category||'';
+    card.dataset.productImage=row.image||'';
+    const h=card.querySelector('h3'); if(h)h.textContent=row.name;
+    const sub=card.querySelector('.product-info p'); if(sub&&row.category)sub.textContent=row.category;
+    const amt=card.querySelector('.product-info span'); if(amt)amt.textContent=price;
+    const img=card.querySelector('.product-image img'); if(img&&row.image)img.src=row.image;
+    if(!card.dataset.wired){
+      card.dataset.wired='1';
+      const add=card.querySelector('.feat-add');
+      if(add&&window.FabluXStore)add.addEventListener('click',function(e){
+        e.preventDefault();
+        const prod=window.FabluXStore.productFromCard(card);
+        if(prod)window.FabluXStore.addToCart(prod);
+      });
+    }
+  });
+}
+
+function syncDetailPage(rows){
+  if(!window.FabluXDetail)return;
+  const id=new URLSearchParams(location.search).get('id');
+  if(!id)return;
+  const row=rows.filter(function(r){return String(r.id)===String(id)})[0];
+  if(row)window.FabluXDetail.update(row);
+}
+
+async function syncCatalog(){
+  let rows=[];
+  try{ rows=await api.products(); }catch(e){ return; }
+  if(!Array.isArray(rows)||!rows.length)return;
+  rows=rows.slice().sort(function(a,b){
+    const na=Number(a.id),nb=Number(b.id);
+    if(!isNaN(na)&&!isNaN(nb))return na-nb;
+    return String(a.id).localeCompare(String(b.id));
+  });
+  window.__fxRows=rows;
+  try{
+    window.FAB_PRODUCTS=rows.map(function(r){
+      return {id:String(r.id),name:r.name,price:Number(r.price)||0,category:r.category||'',image:r.image||''};
+    });
+  }catch(e){}
+  Array.prototype.forEach.call(document.querySelectorAll('.product-grid'),function(grid){
+    if(!grid.closest('.shop-products'))return;
+    grid.innerHTML=rows.map(shopCardHtml).join('');
+    wireShopGrid(grid);
+  });
+  syncFeaturedGrid(rows);
+  syncDetailPage(rows);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();injectMarketplaceState();syncCatalog();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
 /* Never show a stale identity: re-render the account page whenever the tab
    becomes visible again (e.g. after signing in somewhere else). */
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;if(document.getElementById('accountPage'))renderAccount();});

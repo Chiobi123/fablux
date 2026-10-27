@@ -674,3 +674,560 @@ body{
     #accountPage .pro-card > div{padding:18px 16px}
     #accountPage .pro-card-link{font-size:1rem}
 }
+
+/* ============================================================
+   CONTROLS — one tactile button system for the whole site.
+   Same sizing, page font, and real hover / press / keyboard
+   feedback on every clickable thing (forms, admin, cards).
+   ============================================================ */
+
+button,
+input[type="submit"],
+input[type="button"]{cursor:pointer}
+
+/* --- form and card buttons inherit the same pill as .btn --- */
+.pro-form button,
+.pro-form .btn,
+.pro-card-actions button{
+    box-sizing:border-box;
+    min-width:0;
+    min-height:52px;
+    padding:0 26px;
+    border:2px solid transparent;
+    border-radius:50px;
+    font-family:inherit;
+    font-size:.95rem;
+    font-weight:600;
+    letter-spacing:.02em;
+    line-height:1;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .2s ease,border-color .2s ease,color .2s ease,
+               box-shadow .25s ease,transform .12s ease;
+}
+
+/* --- primary button feedback --- */
+.btn:hover,
+.pro-form button:hover,
+.pro-form .btn:hover,
+.pro-card-actions button:hover{
+    background:#8f3ad8;
+    border-color:#8f3ad8;
+    color:#fff;
+    box-shadow:0 18px 30px -16px rgba(123,44,255,1);
+    transform:translateY(-2px);
+}
+
+.btn:active,
+.pro-form button:active,
+.pro-form .btn:active,
+.pro-card-actions button:active{
+    transform:translateY(0) scale(.97);
+    box-shadow:0 6px 14px -10px rgba(123,44,255,.9);
+    transition-duration:.06s;
+}
+
+.btn-outline:hover{
+    background:rgba(123,44,255,.18);
+    border-color:#a46bff;
+    color:#fff;
+    box-shadow:0 16px 28px -18px rgba(123,44,255,.9);
+    transform:translateY(-2px);
+}
+.btn-outline:active{transform:translateY(0) scale(.97);transition-duration:.06s}
+
+/* --- header CTA --- */
+.order-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:46px;
+    font-family:inherit;
+    transition:background .2s ease,box-shadow .25s ease,transform .12s ease;
+}
+.order-btn:hover{
+    background:#8f3ad8;
+    box-shadow:0 16px 28px -16px rgba(123,44,255,1);
+    transform:translateY(-2px);
+}
+.order-btn:active{transform:translateY(0) scale(.96);transition-duration:.06s}
+
+/* --- filter chips --- */
+.filter-btn{
+    min-height:46px;
+    font-family:inherit;
+    transition:background .2s ease,border-color .2s ease,color .2s ease,transform .12s ease,box-shadow .25s ease;
+}
+.filter-btn:hover{transform:translateY(-2px);box-shadow:0 12px 22px -16px rgba(123,44,255,.95)}
+.filter-btn:active{transform:scale(.96)}
+.filter-btn.active{box-shadow:0 10px 20px -14px rgba(123,44,255,.95)}
+
+/* --- visible keyboard focus everywhere, never removed silently --- */
+.btn:focus-visible,
+.btn-outline:focus-visible,
+.pro-form button:focus-visible,
+.order-btn:focus-visible,
+.filter-btn:focus-visible,
+.quick-view-btn:focus-visible,
+.cart-btn:focus-visible,
+.wishlist-btn:focus-visible,
+.add-to-cart-btn:focus-visible,
+.pro-tab:focus-visible,
+.pro-card-link:focus-visible,
+.product-icons a:focus-visible,
+.menu-toggle:focus-visible{
+    outline:3px solid rgba(167,110,253,.9);
+    outline-offset:3px;
+}
+
+/* --- busy / disabled states (used while an action is saving) --- */
+.btn[disabled],
+.btn[aria-disabled="true"],
+button[disabled]{
+    opacity:.55;
+    cursor:not-allowed;
+    pointer-events:none;
+    transform:none !important;
+    box-shadow:none !important;
+}
+.btn.is-busy{pointer-events:none;opacity:.75}
+
+/* --- featured card icon links (home page) --- */
+.product-icons{
+    position:absolute;
+    left:8px;
+    right:8px;
+    bottom:8px;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .3s ease,transform .3s ease;
+    z-index:5;
+}
+.product-card:hover .product-icons,
+.product-card:focus-within .product-icons{opacity:1;transform:none}
+.product-icons a{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:rgba(24,24,24,.88);
+    border:1px solid rgba(255,255,255,.2);
+    color:#fff;
+    font-size:15px;
+    line-height:1;
+    text-decoration:none;
+    transition:background .2s ease,transform .12s ease,border-color .2s ease;
+}
+.product-icons a:hover{background:#7B2CBF;border-color:#a46bff;transform:translateY(-2px)}
+.product-icons a:active{transform:scale(.94)}
+/* touch screens have no hover: keep the icons visible */
+@media (pointer:coarse){
+    .product-icons{opacity:1;transform:none}
+    .cart-btn{width:42px;height:42px;font-size:15px}
+}
+
+/* --- admin tabs --- */
+.pro-admin-nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:20px 0}
+.pro-tab{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    padding:9px 20px;
+    border:1px solid rgba(0,0,0,.14);
+    border-radius:999px;
+    background:rgba(0,0,0,.04);
+    color:inherit;
+    font-family:inherit;
+    font-size:.88rem;
+    font-weight:600;
+    text-decoration:none;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .2s ease,border-color .2s ease,color .2s ease,transform .12s ease;
+}
+.pro-tab:hover{background:rgba(123,44,255,.14);border-color:rgba(123,44,255,.6);transform:translateY(-1px)}
+.pro-tab:active{transform:scale(.96)}
+.pro-tab.is-active,
+.pro-tab[aria-current="page"]{
+    background:#7B2CBF;
+    border-color:#7B2CBF;
+    color:#fff;
+    box-shadow:0 10px 20px -14px rgba(123,44,255,1);
+}
+
+/* --- admin: product manager --- */
+.pro-prod-form{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:14px;
+    max-width:none;
+    margin:0;
+}
+.pro-prod-form .pro-prod-wide{grid-column:1/-1}
+.pro-prod-form label{display:grid;gap:7px;font-weight:500}
+.pro-prod-form .pro-prod-actions{display:flex;gap:10px;flex-wrap:wrap;grid-column:1/-1}
+.pro-prod-actions .btn{flex:1 1 180px;min-width:0}
+.pro-prod-img{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.pro-prod-img img{
+    width:96px;
+    height:96px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid rgba(0,0,0,.14);
+    background:#f2f2f2;
+}
+.pro-prod-img input[type="file"]{padding:11px 12px}
+.pro-prod-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:16px;
+    margin-top:6px;
+}
+.pro-prod-card{
+    border:1px solid rgba(0,0,0,.12);
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 10px 24px -20px rgba(0,0,0,.6);
+    display:flex;
+    flex-direction:column;
+}
+.pro-prod-card img{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    background:#f2f2f2;
+    display:block;
+}
+.pro-prod-card.is-off img{filter:grayscale(1);opacity:.55}
+.pro-prod-body{padding:13px 14px 6px;flex:1}
+.pro-prod-body h4{margin:0 0 4px;font-size:1rem;line-height:1.3;overflow-wrap:anywhere}
+.pro-prod-body p{margin:0;font-size:.85rem;opacity:.7}
+.pro-prod-num{display:flex;justify-content:space-between;gap:8px;margin-top:9px;font-size:.9rem}
+.pro-prod-num strong{color:#7B2CBF}
+.pro-prod-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:.68rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    background:rgba(0,0,0,.07);
+    border:1px solid rgba(0,0,0,.1);
+}
+.tag-off{background:rgba(255,90,90,.14);border-color:rgba(255,90,90,.5);color:#b3261e}
+.tag-out{background:rgba(255,153,0,.16);border-color:rgba(255,153,0,.55);color:#8a4b00}
+.tag-on{background:rgba(46,164,79,.14);border-color:rgba(46,164,79,.5);color:#1c6b34}
+.pro-prod-actions-row{display:flex;gap:8px;padding:10px 14px 14px}
+.btn-sm{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:42px;
+    padding:0 14px;
+    font-size:.85rem;
+}
+.btn-danger{background:#fff;border:2px solid rgba(211,47,47,.5);color:#c62828;border-radius:999px}
+.btn-danger:hover{background:#d32f2f;border-color:#d32f2f;color:#fff;transform:translateY(-2px)}
+@media (max-width:600px){
+    .pro-prod-form{grid-template-columns:1fr}
+    .pro-prod-actions .btn{flex:1 1 100%}
+    .pro-prod-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+    .pro-prod-card img{height:120px}
+    .pro-tab{flex:1 1 calc(50% - 8px)}
+}
+
+/* --- sold out badge on product cards --- */
+.product-badge.sold-out{background:#c62828;box-shadow:0 2px 8px rgba(198,40,40,.45)}
+.product-card.is-sold-out .product-overlay .quick-view-btn{opacity:.6}
+
+/* ============================================================
+   DARK SURFACES — the admin console, forms and cards sit on the
+   black page, so every border, chip and panel is tuned for dark.
+   ============================================================ */
+.pro-admin-card,
+.pro-admin-section{color:#fff}
+
+.pro-tab{
+    background:rgba(255,255,255,.05);
+    border-color:rgba(255,255,255,.16);
+    color:#e9e6f2;
+}
+.pro-tab:hover{background:rgba(123,44,255,.22);border-color:rgba(164,107,255,.75);color:#fff}
+
+#adminPage table th,
+#adminPage table td,
+.pro-admin-section table th,
+.pro-admin-section table td{border-bottom-color:rgba(255,255,255,.12)}
+#adminPage table th,
+.pro-admin-section table th{color:#b9b4c9;letter-spacing:.06em;text-transform:uppercase;font-size:.72rem}
+#adminPage tr[data-ref]:hover{background:rgba(255,255,255,.05)}
+
+.pro-prod-card{
+    background:rgba(255,255,255,.045);
+    border-color:rgba(255,255,255,.1);
+    color:#fff;
+    box-shadow:0 18px 34px -28px rgba(0,0,0,.9);
+}
+.pro-prod-card img,
+.pro-prod-img img{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+.pro-prod-body p{color:#a5a0b8}
+.pro-prod-num strong{color:#d9b45a}
+
+.tag{
+    background:rgba(255,255,255,.07);
+    border-color:rgba(255,255,255,.16);
+    color:#cfcadf;
+}
+.tag-on{background:rgba(63,199,124,.14);border-color:rgba(63,199,124,.5);color:#7ee2a8}
+.tag-off{background:rgba(255,102,102,.14);border-color:rgba(255,102,102,.45);color:#ff9d9d}
+.tag-out{background:rgba(255,176,32,.14);border-color:rgba(255,176,32,.5);color:#ffce6a}
+
+/* ============================================================
+   MISSING CONTROL PIECES
+   ============================================================ */
+
+/* low-stock warning above the console tabs */
+.pro-admin-alert{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+    align-items:center;
+    margin:0 0 16px;
+    padding:13px 16px;
+    border:1px solid rgba(255,176,32,.45);
+    border-left:4px solid #ffb020;
+    border-radius:12px;
+    background:rgba(255,176,32,.1);
+    color:#ffd894;
+    font-size:.9rem;
+    line-height:1.6;
+}
+.pro-admin-alert strong{
+    color:#ffb020;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-size:.74rem;
+    margin-right:4px;
+}
+
+/* promo code entry in the checkout summary */
+.promo-row{display:flex;gap:10px;align-items:center;margin-top:14px}
+.promo-row input{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:48px;
+    padding:0 15px;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:50px;
+    background:rgba(0,0,0,.28);
+    color:inherit;
+    font-family:inherit;
+    font-size:.95rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+}
+.promo-row input::placeholder{letter-spacing:.04em;text-transform:none;opacity:.55}
+.promo-row .btn-outline{min-width:112px;height:48px;padding:0 20px;flex:0 0 auto}
+@media (max-width:420px){
+    .promo-row{flex-direction:column;align-items:stretch}
+    .promo-row .btn-outline{width:100%}
+}
+
+/* outline / destructive buttons keep their identity inside forms —
+   the form rule below must not flatten them into solid purple */
+.pro-form .btn-outline{
+    background:transparent;
+    border:2px solid rgba(255,255,255,.38);
+    color:#fff;
+}
+.pro-form .btn-outline:hover{
+    background:rgba(123,44,255,.2);
+    border-color:#a46bff;
+    color:#fff;
+}
+.pro-form .btn-danger,
+.pro-prod-actions-row .btn-danger{
+    background:transparent;
+    border:2px solid rgba(255,102,102,.55);
+    color:#ff8f8f;
+}
+.pro-form .btn-danger:hover,
+.pro-prod-actions-row .btn-danger:hover{
+    background:#d32f2f;
+    border-color:#d32f2f;
+    color:#fff;
+}
+.pro-form .btn-sm{min-height:42px;padding:0 16px;font-size:.85rem}
+
+/* stock line under the product price */
+.stock-line{
+    margin:-2px 0 14px;
+    font-size:.88rem;
+    font-weight:600;
+    letter-spacing:.03em;
+    color:#7ee2a8;
+}
+
+/* ============================================================
+   LUXURY POLISH — same black / purple / gold identity, tightened.
+   Consistent type scale, spacing rhythm, calmer header,
+   sharper cards and section titles.
+   ============================================================ */
+body{
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    letter-spacing:.01em;
+}
+
+h1,h2,h3,h4{
+    letter-spacing:-.02em;
+    font-weight:700;
+}
+h1{line-height:1.08}
+h2{line-height:1.15}
+
+section{scroll-margin-top:96px}
+
+/* --- header: darker glass, gold hairline, quieter nav --- */
+header{
+    background:rgba(6,6,8,.78);
+    border-bottom:1px solid rgba(212,175,55,.16);
+}
+nav{height:84px}
+.logo{
+    font-size:2rem;
+    letter-spacing:-.03em;
+    color:#fff;
+}
+.logo span{
+    color:var(--gold,#D4AF37);
+}
+.nav-links{gap:34px}
+.nav-links a{
+    position:relative;
+    font-size:.9rem;
+    font-weight:500;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#d7d3e4;
+    padding:6px 0;
+}
+.nav-links a::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    height:1px;
+    background:var(--gold,#D4AF37);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .3s ease;
+}
+.nav-links a:hover,
+.nav-links a.active{color:#fff}
+.nav-links a:hover::after,
+.nav-links a.active::after{transform:scaleX(1)}
+
+/* --- section titles: gold eyebrow, rule, measured heading --- */
+.section-title{margin-bottom:52px}
+.section-title span{
+    display:inline-block;
+    color:var(--gold,#D4AF37);
+    font-size:.76rem;
+    font-weight:600;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    padding-bottom:12px;
+    position:relative;
+}
+.section-title span::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:0;
+    width:34px;
+    height:1px;
+    transform:translateX(-50%);
+    background:rgba(212,175,55,.7);
+}
+.section-title h2{
+    font-size:clamp(1.75rem,1.15rem + 2.4vw,3rem);
+    margin:14px 0 12px;
+    color:#fff;
+}
+.section-title p{
+    color:#a9a5bb;
+    font-size:.98rem;
+    line-height:1.75;
+    max-width:640px;
+}
+
+/* --- cards: rounder, lifted, with a purple halo on hover --- */
+.product-card{
+    border-radius:16px;
+    border-color:rgba(255,255,255,.08);
+    background:linear-gradient(180deg,#161519,#0f0f11);
+    transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;
+}
+.product-card:hover{
+    transform:translateY(-6px);
+    border-color:rgba(164,107,255,.5);
+    box-shadow:0 26px 48px -30px rgba(123,44,255,.9);
+}
+.product-card:hover .product-image img{transform:scale(1.07)}
+.product-info{padding:16px 16px 18px}
+.product-info h3{font-size:.95rem;letter-spacing:-.01em}
+.product-info p{
+    font-size:.74rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:#8f8aa6;
+    margin-bottom:8px;
+}
+.product-info > span{
+    color:var(--gold,#D4AF37);
+    font-size:.95rem;
+    font-weight:700;
+    letter-spacing:.04em;
+}
+.product-price span{
+    color:var(--gold,#D4AF37);
+    font-size:.92rem;
+    letter-spacing:.04em;
+}
+
+/* --- buttons: one measured scale, gold-tinted primary --- */
+.btn,.btn-outline{font-size:.92rem;letter-spacing:.06em}
+.btn{
+    background:linear-gradient(135deg,#7B2CBF,#8f3ad8);
+    box-shadow:0 16px 30px -20px rgba(123,44,255,1);
+}
+.btn-outline{border-color:rgba(255,255,255,.42);color:#fff}
+.btn-outline:hover{border-color:#a46bff}
+
+/* --- section rhythm: the same breathing room everywhere --- */
+.featured{padding:110px 0 96px}
+.shop-products{padding-bottom:40px}
+
+@media (max-width:768px){
+    nav{height:72px}
+    .logo{font-size:1.6rem}
+    .section-title{margin-bottom:36px}
+    .section-title h2{font-size:clamp(1.6rem,1.2rem + 3vw,2.2rem)}
+    .featured{padding:92px 0 72px}
+    .btn,.btn-outline{letter-spacing:.05em}
+    .product-card:hover{transform:none}
+}
+@media (max-width:480px){
+    .section-title span{letter-spacing:.24em;font-size:.7rem}
+    .product-info{padding:13px 13px 15px}
+}
