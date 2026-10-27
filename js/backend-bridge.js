@@ -328,7 +328,10 @@ function syncDetailPage(rows){
 
 async function syncCatalog(){
   let rows=[];
-  try{ rows=await api.products(); }catch(e){ return; }
+  try{
+    const out=await api.products();
+    rows=Array.isArray(out)?out:((out&&out.products)||[]);
+  }catch(e){ return; }
   if(!Array.isArray(rows)||!rows.length)return;
   rows=rows.slice().sort(function(a,b){
     const na=Number(a.id),nb=Number(b.id);
