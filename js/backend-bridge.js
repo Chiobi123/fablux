@@ -144,6 +144,29 @@ document.addEventListener('submit',handleAuth,true);
 captureResetToken();document.addEventListener('submit',handleReset,true);document.addEventListener('submit',handleCheckout,true);document.addEventListener('submit',handleReview,true);document.addEventListener('submit',handleContact,true);document.addEventListener('submit',handleNewsletter,true);
 /* ---- site chrome (works on every page, even those that do not load js/script.js) ---- */
 function initSiteChrome(){
+  /* Persistent Back / Home dock — one control that works on every page,
+     regardless of how the visitor arrived or how many tabs are open. */
+  if(!document.getElementById('navDock')&&document.body){
+    let canBack=false;
+    try{
+      canBack=history.length>1||(!!document.referrer&&new URL(document.referrer).origin===location.origin);
+    }catch(e){canBack=false;}
+    const dock=document.createElement('nav');
+    dock.id='navDock';
+    dock.setAttribute('aria-label','Back and home');
+    dock.innerHTML=
+      '<button type="button" id="navBack" title="Previous page" aria-label="Go back"'+(canBack?'':' disabled')+'>'+
+        '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
+        '<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+      '</button>'+
+      '<a id="navHome" href="index.html" title="Home page" aria-label="Go to home page">'+
+        '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">'+
+        '<path d="M4 11.4L12 4.2l8 7.2M6.6 10.1V19.8h10.8V10.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+      '</a>';
+    document.body.appendChild(dock);
+    const back=dock.querySelector('#navBack');
+    if(canBack)back.addEventListener('click',()=>{try{history.back();}catch(e){}});
+  }
   const scriptLoaded=!!document.querySelector('script[src="js/script.js"]');
   const menuBtn=document.querySelector('.menu-toggle');
   const navLinks=document.querySelector('.nav-links');
@@ -173,10 +196,18 @@ function initSiteChrome(){
     window.addEventListener('scroll',onScroll,{passive:true});onScroll();
   }
   const loader=document.getElementById('loader');
-  if(loader&&!scriptLoaded){
-    const hide=()=>{if(!loader.isConnected)return;loader.classList.add('loader-ready');requestAnimationFrame(()=>loader.remove());};
+  if(loader&&!loader.dataset.bound){
+    loader.dataset.bound='1';
+    const started=(window.performance&&performance.timeOrigin)||Date.now();
+    let scheduled=false;
+    const fade=()=>{if(loader.isConnected){loader.classList.add('loader-ready');setTimeout(()=>loader.remove(),500);}};
+    const hide=()=>{
+      if(scheduled||!loader.isConnected)return;
+      scheduled=true;
+      setTimeout(fade,Math.max(0,700-(Date.now()-started)));
+    };
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hide,{once:true});else hide();
-    setTimeout(hide,600);
+    setTimeout(fade,4000); /* safety net: never trap the visitor */
   }
 }
 

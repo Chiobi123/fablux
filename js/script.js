@@ -104,13 +104,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }, { passive: true });
 
-    // Fast loader: remove as soon as the DOM is ready instead of forcing a 1.2s wait.
+    // Structural loader: the page wireframe stays up long enough to read the
+    // layout (700ms minimum), fades out, and is removed from the DOM.
     const loader = document.getElementById("loader");
-    if (loader) {
-        const hideLoader = () => {
+    if (loader && !loader.dataset.bound) {
+        loader.dataset.bound = "1";
+        const started = (window.performance && performance.timeOrigin) || Date.now();
+        let scheduled = false;
+        const fade = () => {
             if (!loader.isConnected) return;
             loader.classList.add("loader-ready");
-            requestAnimationFrame(() => loader.remove());
+            setTimeout(() => loader.remove(), 500);
+        };
+        const hideLoader = () => {
+            if (scheduled || !loader.isConnected) return;
+            scheduled = true;
+            setTimeout(fade, Math.max(0, 700 - (Date.now() - started)));
         };
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", hideLoader, { once: true });
@@ -118,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
             hideLoader();
         }
         // Safety fallback if a script/resource behaves unexpectedly.
-        setTimeout(hideLoader, 500);
+        setTimeout(fade, 4000);
     }
 
     // Mobile menu toggle

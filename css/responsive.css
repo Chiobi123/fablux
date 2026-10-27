@@ -1267,3 +1267,71 @@ nav{height:84px}
     .product-badge{padding:3px 7px;font-size:.6rem;top:6px;left:6px}
     .quick-view-btn{padding:8px 14px;font-size:11px}
 }
+
+/* ============================================================
+   NAV DOCK — persistent Back / Home control on every page
+   ============================================================ */
+#navDock{
+    position: fixed;
+    left: 18px;
+    bottom: 22px;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
+    background: rgba(12,12,16,.86);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+#navDock button,
+#navDock a{
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #e9e6f2;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+#navDock button:hover,
+#navDock a:hover{
+    background: rgba(212,175,55,.16);
+    color: #D4AF37;
+    transform: translateY(-1px);
+}
+#navDock button:focus-visible,
+#navDock a:focus-visible{
+    outline: 2px solid #D4AF37;
+    outline-offset: 2px;
+}
+#navDock button[disabled]{
+    opacity: .32;
+    cursor: default;
+    pointer-events: none;
+}
+@media (max-width: 640px){
+    #navDock{
+        left: 12px;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        padding: 4px;
+    }
+    #navDock button,
+    #navDock a{
+        width: 42px;
+        height: 42px;
+    }
+}
+@media print{
+    #navDock{
+        display: none;
+    }
+}
