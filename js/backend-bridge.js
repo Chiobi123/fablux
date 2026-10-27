@@ -111,7 +111,25 @@ async function handleCheckout(event){const f=event.target;if(!f.closest('#checko
 async function handleReview(event){const f=event.target;if(f.id!=='reviewForm')return;event.preventDefault();event.stopImmediatePropagation();try{const id=new URLSearchParams(location.search).get('id');const d=Object.fromEntries(new FormData(f));await api.review({productId:id,rating:Number(d.rating),text:d.text});toast('✓ Review submitted');f.reset()}catch(e){toast(e.message)}}
 async function handleContact(event){const f=event.target;if(!f.classList.contains('contact-form'))return;event.preventDefault();event.stopImmediatePropagation();try{await api.contact(Object.fromEntries(new FormData(f)));f.reset();toast('✓ Message sent successfully')}catch(e){toast(e.message)}}
 async function handleNewsletter(event){const f=event.target;if(!f.classList.contains('newsletter-form'))return;event.preventDefault();event.stopImmediatePropagation();try{await api.newsletter({email:f.querySelector('input[type=email]')?.value});f.reset();toast('✓ You are subscribed to FabluX.U.Design updates')}catch(e){toast(e.message)}}
-async function renderAdmin(){const box=document.getElementById('adminPage');if(!box)return;if(window.FabluXAdmin&&window.FabluXAdmin.render){try{await window.FabluXAdmin.render(box)}catch(e){box.innerHTML='<div class="pro-empty"><h2>Admin access required</h2><p>'+e.message+'</p><a class="btn" href="login.html?return=admin.html">Admin Login</a></div>'}return}try{const d=await api.adminDashboard();box.innerHTML=`<div class="section-title"><span>FABLUX ADMIN</span><h2>Store Control Center</h2><p>Secure backend-connected administration.</p></div><div class="fablux-admin-grid"><div class="fablux-admin-stat">Products<strong>${d.stats.products}</strong></div><div class="fablux-admin-stat">Customers<strong>${d.stats.customers}</strong></div><div class="fablux-admin-stat">Orders<strong>${d.stats.orders}</strong></div><div class="fablux-admin-stat">Reviews<strong>${d.stats.reviews}</strong></div></div>`}catch(e){box.innerHTML='<div class="pro-empty"><h2>Admin access required</h2><p>Please sign in with an administrator account.</p><a class="btn" href="login.html?return=admin.html">Admin Login</a></div>'}}
+async function renderAdmin(){
+  const box=document.getElementById('adminPage'); if(!box) return;
+  /* The console never hands a stranger a sign-in section: a signed-out
+     visitor is quietly taken to the normal sign-in page, and a signed-in
+     customer is simply told that this area is not theirs. */
+  const deny=async()=>{
+    let u=null; try{ u=(await api.me()).user }catch(e){}
+    if(!u){ location.replace('login.html?return=admin.html'); return; }
+    box.innerHTML='<div class="pro-empty"><h2>Administrators only</h2><p>This area is reserved for the FabluX store administrators.</p><a class="btn" href="index.html">Back to the store</a></div>';
+  };
+  if(window.FabluXAdmin&&window.FabluXAdmin.render){
+    try{ await window.FabluXAdmin.render(box); }catch(e){ await deny(); }
+    return;
+  }
+  try{
+    const d=await api.adminDashboard();
+    box.innerHTML=`<div class="section-title"><span>FABLUX ADMIN</span><h2>Store Control Center</h2><p>Secure backend-connected administration.</p></div><div class="fablux-admin-grid"><div class="fablux-admin-stat">Products<strong>${d.stats.products}</strong></div><div class="fablux-admin-stat">Customers<strong>${d.stats.customers}</strong></div><div class="fablux-admin-stat">Orders<strong>${d.stats.orders}</strong></div><div class="fablux-admin-stat">Reviews<strong>${d.stats.reviews}</strong></div></div>`;
+  }catch(e){ await deny(); }
+}
 
 /* Promo code applied at checkout (re-validated by the database when the
    order is placed — the page only ever displays the discount). */
@@ -122,7 +140,6 @@ async function renderOrderSuccess(){const box=document.getElementById('orderSucc
 
 async function renderTrack(){const box=document.getElementById('trackPage');if(!box)return;const q=new URLSearchParams(location.search);const refInput=box.querySelector('[name=ref]');const tokInput=box.querySelector('[name=token]');const show=async(ref,token)=>{const out=box.querySelector('[data-track-result]');if(!out)return;out.innerHTML='<p>Loading…</p>';try{const d=await api.track(ref,token);const o=d.order;const steps=[['pending_payment','Order received'],['payment_confirmed','Payment confirmed'],['confirmed','Order confirmed'],['processing','Preparing parcel'],['ready_for_dispatch','Ready for dispatch'],['shipped','Collected by courier'],['delivered','Delivered']];const doneIdx=Math.max(0,steps.findIndex(s=>s[0]===o.status));const cancelled=o.status==='cancelled';const timeline=(d.events||[]).map(ev=>`<li><strong>${ev.label}</strong><span>${new Date(ev.created_at).toLocaleString('en-NG')}</span></li>`).join('');out.innerHTML=`<div class="pro-admin-section"><h3>Order ${o.reference}</h3><div class="pro-summary-row"><span>Current status</span><strong>${STATUS_LABEL[o.status]||o.status}</strong></div><div class="pro-summary-row"><span>Payment</span><strong>${o.payment_status}</strong></div><div class="pro-summary-row"><span>Total</span><strong>${money(o.total)}</strong></div><div class="pro-summary-row"><span>Delivering to</span><strong>${o.city}, ${o.state}</strong></div>${o.courier?`<div class="pro-summary-row"><span>Courier</span><strong>${o.courier}${o.courier_tracking?' — '+o.courier_tracking:''}</strong></div>`:''}</div><div class="pro-admin-section"><h3>Progress</h3><ol class="fablux-timeline">${cancelled?'<li class="cancelled"><strong>Order cancelled</strong></li>':steps.map((s,i)=>`<li class="${i<=doneIdx?'done':''}"><strong>${s[1]}</strong></li>`).join('')}</ol></div><div class="pro-admin-section"><h3>History</h3><ul class="fablux-events">${timeline}</ul></div><div class="pro-admin-section"><h3>Items</h3>${d.items.map(i=>`<div class="pro-summary-row"><span>${i.name} × ${i.quantity}</span><strong>${money(i.line_total)}</strong></div>`).join('')}</div>`}catch(err){out.innerHTML='<div class="pro-empty"><h2>Cannot find that order</h2><p>'+err.message+'</p></div>'}};if(refInput&&tokInput){const form=box.querySelector('form');if(form)form.addEventListener('submit',e=>{e.preventDefault();show(refInput.value.trim(),tokInput.value.trim())});if(q.get('ref')){refInput.value=q.get('ref');tokInput.value=q.get('token')||'';show(refInput.value,tokInput.value)}}}
 
-function injectMarketplaceState(){api.publicSettings().then(d=>{localStorage.setItem('fablux_marketplace_enabled_v1',d.marketplaceEnabled?'1':'0');const nav=document.querySelector('.nav-links');if(d.marketplaceEnabled&&nav&&!nav.querySelector('[data-pro-link="market"]')){const li=document.createElement('li');li.innerHTML='<a data-pro-link="market" href="marketplace.html">Marketplace</a>';nav.appendChild(li)}}).catch(()=>{});}
 document.addEventListener('submit',handleAuth,true);
 captureResetToken();document.addEventListener('submit',handleReset,true);document.addEventListener('submit',handleCheckout,true);document.addEventListener('submit',handleReview,true);document.addEventListener('submit',handleContact,true);document.addEventListener('submit',handleNewsletter,true);
 /* ---- site chrome (works on every page, even those that do not load js/script.js) ---- */
@@ -353,7 +370,7 @@ async function syncCatalog(){
   syncDetailPage(rows);
 }
 
-document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();injectMarketplaceState();syncCatalog();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
+document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();syncCatalog();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
 /* Never show a stale identity: re-render the account page whenever the tab
    becomes visible again (e.g. after signing in somewhere else). */
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;if(document.getElementById('accountPage'))renderAccount();});

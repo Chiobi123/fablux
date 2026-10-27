@@ -538,11 +538,9 @@ CREATE OR REPLACE FUNCTION public.admin_update_setting(p_key text, p_value text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   PERFORM public.assert_admin();
-  IF p_key NOT IN ('delivery_fee_default','delivery_fee_express_surcharge','marketplace_enabled',
+  IF p_key NOT IN ('delivery_fee_default','delivery_fee_express_surcharge',
                    'store_name','store_contact','store_email','store_address','email_enabled') THEN
     RAISE EXCEPTION 'This setting cannot be changed.'; END IF;
-  IF p_key = 'marketplace_enabled' AND p_value NOT IN ('0','1') THEN
-    RAISE EXCEPTION 'Invalid value.'; END IF;
   IF p_key LIKE 'delivery_fee%' AND (p_value !~ '^[0-9]{1,7}$') THEN
     RAISE EXCEPTION 'Delivery charge must be a whole amount in Naira.'; END IF;
   IF p_key = 'email_enabled' AND p_value NOT IN ('true','false') THEN

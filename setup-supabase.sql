@@ -151,4 +151,3 @@ CREATE INDEX IF NOT EXISTS idx_payments_order ON payment_transactions(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_status_expiry ON payment_transactions(status, expires_at);
 
 -- Initial data
-INSERT INTO settings (key, value, updated_at) VALUES ('marketplace_enabled', '0', NOW()) ON CONFLICT (key) DO NOTHING;

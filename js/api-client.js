@@ -302,12 +302,11 @@
       return {ok:true};
     },
     async publicSettings(){
-      const keys='marketplace_enabled,delivery_fee_default,delivery_fee_express_surcharge,store_name,store_contact,store_email,store_address,email_enabled';
+      const keys='delivery_fee_default,delivery_fee_express_surcharge,store_name,store_contact,store_email,store_address,email_enabled';
       const rows=await rest('/settings?select=key,value&key=in.("'+keys.split(',').join('","')+'")');
       const map={}; (rows||[]).forEach(r=>map[r.key]=r.value);
       const n=(k,d)=>{const v=parseInt(map[k],10);return isNaN(v)?d:v;};
       return {
-        marketplaceEnabled:map.marketplace_enabled==='1',
         deliveryFee:n('delivery_fee_default',2500),
         expressSurcharge:n('delivery_fee_express_surcharge',0),
         store:{name:map.store_name||'FabluX.U.Design',contact:map.store_contact||'',
@@ -357,13 +356,7 @@
       }catch(e){}
       const s=await api.publicSettings();
       return {stats:{products,customers,orders,reviews,pendingAlerts,monthOrders,monthRevenue,lowStock},
-        marketplaceEnabled:s.marketplaceEnabled,settings:s,emailConfigured:s.emailConfigured};
-    },
-    async adminMarketplace(enabled){
-      await api.requireAdmin();
-      await rest('/rpc/admin_update_setting',{method:'POST',
-        body:JSON.stringify({p_key:'marketplace_enabled',p_value:enabled?'1':'0'})});
-      return {marketplaceEnabled:!!enabled};
+        settings:s,emailConfigured:s.emailConfigured};
     },
     async adminUpdateSetting(key,value){
       await api.requireAdmin();

@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const K={users:'fablux_users_v1',user:'fablux_user_v1',orders:'fablux_orders_v1',reviews:'fablux_reviews_v1',addresses:'fablux_addresses_v1',recent:'fablux_recent_v1',newsletter:'fablux_newsletter_v1',market:'fablux_marketplace_enabled_v1'};
+const K={users:'fablux_users_v1',user:'fablux_user_v1',orders:'fablux_orders_v1',reviews:'fablux_reviews_v1',addresses:'fablux_addresses_v1',recent:'fablux_recent_v1',newsletter:'fablux_newsletter_v1'};
 const money=n=>'₦'+Number(n||0).toLocaleString('en-NG');
 const read=(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
 const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -16,14 +16,13 @@ cleanupLegacyPersonalData();
 function injectHeader(){
  const nav=document.querySelector('.nav-links'); if(!nav)return;
  if(!nav.querySelector('[data-pro-link="account"]')){const li=document.createElement('li');li.innerHTML='<a data-pro-link="account" href="login.html">Account</a>';nav.appendChild(li)}
- if(localStorage.getItem(K.market)==='1'&&!nav.querySelector('[data-pro-link="market"]')){const li=document.createElement('li');li.innerHTML='<a data-pro-link="market" href="marketplace.html">Marketplace</a>';nav.appendChild(li)}
  const account=document.querySelector('[data-pro-link="account"]'); if(!account)return;
  if(window.FabluXAPI){
    // Account state always comes from the Supabase session, never from local storage.
    const here=encodeURIComponent(location.pathname+location.search);
    const signedOut=()=>{account.textContent='Sign In';account.href='login.html?return='+here};
    const sync=()=>{ signedOut();
-     window.FabluXAPI.me().then(d=>{ if(d&&d.user){ if(d.user.role==='admin'){account.textContent='Admin Console';account.href='admin.html'}else{account.textContent='My Account';account.href='account.html'} }else{signedOut()} }).catch(signedOut);
+     window.FabluXAPI.me().then(d=>{ if(d&&d.user){ account.textContent='My Account';account.href='account.html' }else{signedOut()} }).catch(signedOut);
    };
    sync();
    window.FabluXSyncAccount=sync;
@@ -56,8 +55,7 @@ function renderInvoice(){/* LEGACY LOCAL INVOICE REMOVED - js/backend-bridge.js 
 function setupOrderSuccess(){/* LEGACY LOCAL CONFIRMATION REMOVED - js/backend-bridge.js confirms orders from Supabase */}
 function setupNewsletter(){/* LEGACY LOCAL SUBSCRIBER LIST REMOVED - no email is ever stored in this browser. Newsletter submissions are sent to Supabase by handleNewsletter() in js/backend-bridge.js. */if(window.FabluXAPI)return;document.querySelectorAll('.newsletter-form').forEach(f=>f.addEventListener('submit',e=>{e.preventDefault();const em=f.querySelector('input[type=email]')?.value.trim().toLowerCase();if(!em)return;let a=read(K.newsletter,[]);if(!a.includes(em))a.push(em);write(K.newsletter,a);f.reset();toast('✓ You are subscribed to FabluX.U.Design updates')}))}
 function setupProductPage(){const id=new URLSearchParams(location.search).get('id');if(id)addRecent((window.FAB_PRODUCTS||[]).find(p=>String(p.id)===String(id))||{id,name:'Product',price:0});}
-function setupMarketplace(){const b=document.getElementById('marketplacePage');if(!b)return;const enabled=localStorage.getItem(K.market)==='1';if(!enabled){b.innerHTML='<div class="pro-empty"><h2>Marketplace is currently unavailable</h2><p>The marketplace can be enabled by the FabluX administrator.</p><a class="btn" href="index.html">Back Home</a></div>';return}b.querySelector('[data-seller]').onclick=()=>toast('Seller onboarding interface is ready for backend connection.');}
-document.addEventListener('DOMContentLoaded',()=>{injectHeader();setupShop();setupProductLinks();setupAuth();setupAccount();setupCheckout();renderOrders();renderInvoice();setupOrderSuccess();setupNewsletter();renderWishlist();renderRecent();setupMarketplace();setupProductPage();});
+document.addEventListener('DOMContentLoaded',()=>{injectHeader();setupShop();setupProductLinks();setupAuth();setupAccount();setupCheckout();renderOrders();renderInvoice();setupOrderSuccess();setupNewsletter();renderWishlist();renderRecent();setupProductPage();});
 })();
 
 /* Extended frontend experience: local/demo only until the backend is connected. */

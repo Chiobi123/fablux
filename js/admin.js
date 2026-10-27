@@ -209,9 +209,7 @@
       '<p>' + (s.emailConfigured
         ? 'Email delivery is enabled. Order alerts are queued for sending.'
         : '<strong>Email is not configured yet.</strong> Order alerts are saved in the outbox as <em>pending</em> and are NOT sent. Configure SMTP/Resend credentials in Supabase to start sending — this system will never claim an email was sent when it was not.') + '</p>' +
-      '<label class="switch"><input id="emailToggle" type="checkbox" ' + (s.emailConfigured ? 'checked' : '') + '> Email sending enabled</label></div>' +
-      '<div class="pro-admin-section"><h3>Marketplace</h3>' +
-      '<label class="switch"><input id="mktToggle" type="checkbox" ' + (dash.marketplaceEnabled ? 'checked' : '') + '> Enable Marketplace</label></div>';
+      '<label class="switch"><input id="emailToggle" type="checkbox" ' + (s.emailConfigured ? 'checked' : '') + '> Email sending enabled</label></div>';
 
     box.querySelector('#feeForm').addEventListener('submit', async function (ev) {
       ev.preventDefault();
@@ -236,10 +234,6 @@
         await window.FabluXAPI.adminUpdateSetting('email_enabled', e.target.checked ? 'true' : 'false');
         toast(e.target.checked ? 'Email sending enabled — alerts will queue for delivery' : 'Email sending disabled — alerts stay pending');
       } catch (err) { e.target.checked = !e.target.checked; toast(err.message); }
-    });
-    box.querySelector('#mktToggle').addEventListener('change', async function (e) {
-      try { await window.FabluXAPI.adminMarketplace(e.target.checked); toast(e.target.checked ? 'Marketplace enabled' : 'Marketplace disabled'); }
-      catch (err) { e.target.checked = !e.target.checked; toast(err.message); }
     });
   }
 

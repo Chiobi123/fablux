@@ -55,17 +55,15 @@
     }
 
     .filter-group{
-
-        flex-direction:column;
-
+        flex-wrap:wrap;
+        gap:9px;
         margin-bottom:30px;
-
     }
 
     .filter-btn{
-
-        width:100%;
-
+        width:auto;
+        padding:9px 15px;
+        font-size:.82rem;
     }
 
     .newsletter-form{
@@ -231,7 +229,7 @@ nav{gap:10px}
     .pro-form input,
     .pro-form select,
     .pro-form textarea{font-size:16px;min-height:48px}
-    .pro-form button,.pro-form .btn{width:100%;min-height:50px}
+    .pro-form button,.pro-form .btn{width:100%;min-height:48px;border-radius:999px}
     .pro-form{gap:16px}
     .pro-auth{margin:34px auto;padding:0 4px}
     .pro-shop-tools{flex-direction:column;align-items:stretch}
@@ -249,13 +247,14 @@ nav{gap:10px}
     section{padding:60px 0}
 }
 
-/* ---------- buttons that are fixed-width on desktop ---------- */
+/* ---------- buttons: compact pills on phones, never stretched bars ---------- */
 @media (max-width:768px){
-    .btn,.btn-outline{width:100%;max-width:420px;height:54px}
+    .btn,.btn-outline{width:auto;max-width:100%;min-width:0;height:auto;min-height:46px;padding:0 22px;border-radius:999px}
+    .product-summary .product-actions{gap:12px}
     .product-summary .product-actions .btn,
-    .product-summary .product-actions .btn-outline{width:100%}
+    .product-summary .product-actions .btn-outline{width:auto;min-width:0;padding:0 20px}
     .pro-card-actions{gap:10px}
-    .pro-card-actions button,.pro-card-link{flex:1 1 auto;text-align:center;min-height:44px}
+    .pro-card-actions button,.pro-card-link{flex:0 1 auto;text-align:center;min-height:44px}
 }
 
 /* ---------- admin console ---------- */
@@ -267,7 +266,7 @@ nav{gap:10px}
     .pro-admin-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
     .pro-admin-nav a,.pro-admin-nav button{min-height:46px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px}
     .fablux-admin-actions{gap:8px}
-    .fablux-admin-actions .btn,.fablux-admin-actions .btn-outline{width:100%;max-width:none}
+    .fablux-admin-actions .btn,.fablux-admin-actions .btn-outline{width:auto;min-width:0;padding:0 18px}
     #adminPage table{font-size:14px}
     #adminPage table th,#adminPage table td{padding:8px 6px}
     .pro-summary-row{gap:10px;font-size:14px;flex-wrap:wrap}
@@ -297,7 +296,7 @@ nav{gap:10px}
     .pro-text-link{display:inline-block;min-height:44px;line-height:44px}
     .waybill-sheet,.wb{max-width:100%!important}
     .wb-actions{gap:10px}
-    .wb-actions .btn{width:100%;max-width:100%}
+    .wb-actions .btn{width:auto;max-width:100%;padding:0 20px}
     .pro-auth .btn,.pro-auth button{width:100%}
     .pro-auth .section-title h2{font-size:30px}
 }
@@ -309,7 +308,7 @@ nav{gap:10px}
     .modal-content{padding:26px 16px;max-height:90vh}
     .fablux-cart-panel{max-width:100%}
     .product-summary .product-actions{grid-template-columns:1fr}
-    .quick-view-btn,.add-to-cart-btn,.wishlist-btn{width:100%;min-height:48px}
+    .quick-view-btn,.add-to-cart-btn,.wishlist-btn{width:auto;min-height:46px;padding:0 20px;border-radius:999px}
 }
 
 /* ---------- small phones ---------- */
@@ -1230,4 +1229,41 @@ nav{height:84px}
 @media (max-width:480px){
     .section-title span{letter-spacing:.24em;font-size:.7rem}
     .product-info{padding:13px 13px 15px}
+}
+
+/* ============================================================
+   PHONE SHOP GRID — Jumia / Temu density
+   Phones show a compact two-column grid (three or four columns on
+   tablets) with square, phone-scaled pictures, so several products
+   are visible per screen instead of one card at a time.
+   ============================================================ */
+@media (max-width:768px){
+    .product-grid{
+        grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+        gap:14px;
+    }
+    .product-image{height:auto;aspect-ratio:1/1}
+    .product-info h3{
+        font-size:.88rem;
+        line-height:1.35;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+    }
+    .product-rating{font-size:.78rem}
+}
+@media (max-width:480px){
+    .product-grid{
+        grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+        gap:10px;
+    }
+    .product-card{border-radius:12px}
+    .product-info{padding:10px 10px 12px}
+    .product-info h3{font-size:.8rem;margin-bottom:3px}
+    .product-info p{font-size:.6rem;letter-spacing:.1em;margin-bottom:5px}
+    .product-rating{font-size:.7rem;margin-bottom:5px}
+    .product-price span{font-size:.86rem}
+    .product-badge{padding:3px 7px;font-size:.6rem;top:6px;left:6px}
+    .quick-view-btn{padding:8px 14px;font-size:11px}
 }
