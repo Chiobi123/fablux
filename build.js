@@ -1,7 +1,7 @@
 /* FabluX.U.Design — safe static build.
  *
  * Produces dist/ containing ONLY files that are safe to serve publicly.
- * Everything sensitive (server/.env, SQL migrations, local DB tools, docs,
+ * Everything sensitive (local secrets, SQL migrations, DB tools, docs,
  * node_modules, git history) is deliberately excluded.
  *
  * Run:  node build.js

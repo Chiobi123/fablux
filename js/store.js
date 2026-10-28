@@ -1,4 +1,5 @@
 (function () {
+    const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     const CART_KEY = 'fablux_cart_v1';
     const WISHLIST_KEY = 'fablux_wishlist_v1';
 
@@ -120,10 +121,10 @@
             list.innerHTML = '<div class="fablux-cart-empty"><i class="fa-solid fa-bag-shopping"></i><p>Your cart is empty.</p><span>Add something you love from the collection.</span></div>';
         } else {
             list.innerHTML = cart.map(item => `
-                <div class="fablux-cart-item" data-id="${item.id}">
-                    <img src="${item.image}" alt="${item.name}">
-                    <div class="fablux-cart-item-info"><h3>${item.name}</h3><p>${formatPrice(item.price)}</p><div class="fablux-qty"><button data-action="minus">−</button><span>${item.quantity}</span><button data-action="plus">+</button></div></div>
-                    <button class="fablux-remove" data-action="remove" aria-label="Remove ${item.name}">&times;</button>
+                <div class="fablux-cart-item" data-id="${esc(item.id)}">
+                    <img src="${esc(item.image)}" alt="${esc(item.name)}">
+                    <div class="fablux-cart-item-info"><h3>${esc(item.name)}</h3><p>${formatPrice(item.price)}</p><div class="fablux-qty"><button data-action="minus">−</button><span>${esc(item.quantity)}</span><button data-action="plus">+</button></div></div>
+                    <button class="fablux-remove" data-action="remove" aria-label="Remove ${esc(item.name)}">&times;</button>
                 </div>`).join('');
         }
         list.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => {

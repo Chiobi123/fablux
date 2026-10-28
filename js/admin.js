@@ -301,6 +301,15 @@
       '</div></article>';
   }
 
+  function featuresText(v) {
+    if (Array.isArray(v)) return v.join('\n');
+    if (typeof v === 'string') {
+      try { var a = JSON.parse(v); if (Array.isArray(a)) return a.join('\n'); } catch (e) {}
+      return v;
+    }
+    return '';
+  }
+
   function prodFormHtml(p) {
     var isNew = !p || !p.id;
     p = p || {};
@@ -311,6 +320,9 @@
       '<label>Price (₦)<input name="price" type="number" min="0" step="1" required value="' + esc(p.price === undefined ? '' : p.price) + '"></label>' +
       '<label>Category<input name="category" required maxlength="60" value="' + esc(p.category || '') + '" placeholder="Statement Menwear"></label>' +
       '<label>Stock available<input name="stock" type="number" min="0" step="1" required value="' + esc(p.stock === undefined ? '' : p.stock) + '"></label>' +
+      '<label class="pro-prod-wide">Description<textarea name="description" rows="3" maxlength="900" placeholder="What the piece is, the fit, how to style it…">' + esc(p.description || '') + '</textarea></label>' +
+      '<label>Material<input name="material" maxlength="120" value="' + esc(p.material || '') + '" placeholder="e.g. 100% cotton"></label>' +
+      '<label class="pro-prod-wide">Features (one per line)<textarea name="features" rows="3" maxlength="600" placeholder="Premium packaging&#10;Secure checkout">' + esc(featuresText(p.features)) + '</textarea></label>' +
       '<label>Visibility<select name="active">' +
       '<option value="1"' + (active ? ' selected' : '') + '>Live — shown in the shop</option>' +
       '<option value="0"' + (active ? '' : ' selected') + '>Hidden — not shown</option></select></label>' +
@@ -349,7 +361,10 @@
           category: form.category.value.trim(),
           stock: Math.max(0, Math.round(Number(form.stock.value))),
           active: form.active.value === '1',
-          image: form.image.value.trim()
+          image: form.image.value.trim(),
+          description: form.description.value.trim(),
+          material: form.material.value.trim(),
+          features: form.features.value.split(/\r?\n|,/).map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 8)
         };
         if (file.files && file.files[0]) {
           var up = await window.FabluXAPI.adminUploadImage(file.files[0]);

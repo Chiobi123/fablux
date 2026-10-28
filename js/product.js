@@ -25,6 +25,35 @@
     return available;
   }
 
+  function renderDetails(row) {
+    var desc = document.querySelector('[data-product-description]');
+    if (desc) {
+      var text = String(row.description || '').trim();
+      desc.textContent = text;
+      desc.hidden = !text;
+    }
+    var materialRow = document.querySelector('[data-product-material-row]');
+    var material = document.querySelector('[data-product-material]');
+    if (materialRow && material) {
+      var m = String(row.material || '').trim();
+      material.textContent = m;
+      materialRow.hidden = !m;
+    }
+    var features = document.querySelector('[data-product-features]');
+    if (features) {
+      var items = Array.isArray(row.features)
+        ? row.features.filter(function (x) { return typeof x === 'string' && x.trim(); }).slice(0, 8)
+        : [];
+      features.textContent = '';
+      items.forEach(function (x) {
+        var d = document.createElement('div');
+        d.textContent = x.trim();
+        features.appendChild(d);
+      });
+      features.hidden = !items.length;
+    }
+  }
+
   function apply(row) {
     var title = document.querySelector('.product-summary h1');
     var price = document.querySelector('.product-summary .price');
@@ -34,6 +63,7 @@
     if (row.name) title.textContent = row.name;
     price.textContent = '₦' + (Number(row.price) || 0).toLocaleString('en-NG');
     if (image && row.image) { image.src = row.image; image.alt = row.name || ''; }
+    renderDetails(row);
     document.title = 'FabluX.U.Design | ' + (row.name || 'Product');
 
     var available = stockLine(row);
@@ -101,8 +131,18 @@
       image: (image && image.getAttribute('src')) || ''
     };
 
+    if (!bound.price) {
+      addButton.setAttribute('aria-disabled', 'true');
+      addButton.classList.add('is-disabled');
+      addButton.textContent = 'Unavailable';
+    }
+
     addButton.addEventListener('click', function (e) {
       e.preventDefault();
+      if (!bound.price) {
+        window.FabluXStore?.toast('Live price is still loading — please refresh.');
+        return;
+      }
       if (addButton.classList.contains('is-disabled')) {
         window.FabluXStore?.toast('This piece is sold out');
         return;

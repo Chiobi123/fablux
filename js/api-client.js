@@ -196,7 +196,7 @@
       return {user:u,addresses:addresses||[]};
     },
     async products(params){
-      let rows=await rest('/products?select=id,name,price,category,image,active,stock,reserved_stock,created_at,updated_at&active=eq.1&order=id');
+      let rows=await rest('/products?select=id,name,price,category,image,active,stock,reserved_stock,description,material,features,created_at,updated_at&active=eq.1&order=id');
       const q=new URLSearchParams(params||'');
       const search=(q.get('search')||'').trim().toLowerCase();
       const category=(q.get('category')||'').trim();
@@ -532,6 +532,8 @@
       const now=new Date().toISOString();
       const row={id:String(body.id||newId('prod')),name:body.name,price:Number(body.price)||0,
         category:body.category||'General',image:String(body.image||''),
+        description:String(body.description||''),material:String(body.material||''),
+        features:Array.isArray(body.features)?body.features:[],
         active:body.active===false?0:1,stock:Number(body.stock)||0,reserved_stock:0,
         created_at:now,updated_at:now};
       await rest('/products',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(row)});
@@ -540,7 +542,9 @@
     async adminUpdateProduct(id,body){
       const u=await sessionUser(); if(!u||u.role!=='admin') throw new Error('Admin access required.');
       const row={name:body.name,price:Number(body.price)||0,category:body.category||'General',
-        image:String(body.image||''),active:body.active===false?0:1,stock:Number(body.stock)||0,
+        image:String(body.image||''),description:String(body.description||''),
+        material:String(body.material||''),features:Array.isArray(body.features)?body.features:[],
+        active:body.active===false?0:1,stock:Number(body.stock)||0,
         updated_at:new Date().toISOString()};
       await rest('/products?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(row)});
       return {product:Object.assign({id},row)};

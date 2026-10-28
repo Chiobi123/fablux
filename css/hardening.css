@@ -170,6 +170,16 @@ textarea:focus-visible,
   color: #B07BE0;
 }
 
+/* Keep a single, obvious primary CTA in the hero; secondary action is a link. */
+.hero-secondary {
+  display: inline-block;
+  margin-top: 14px;
+  color: #B07BE0;
+  text-decoration: underline;
+  font-size: .95rem;
+}
+.hero-secondary:hover { color: #d3b3f0; }
+
 /* Shop filters and text links sit on dark panels. */
 .filter-btn { color: #d8d1e2; }
 .filter-btn:hover,
@@ -184,6 +194,13 @@ textarea:focus-visible,
 
 /* Placeholder contrast */
 ::placeholder { color: #a9a2b8; opacity: 1; }
+
+/* Contrast fixes for hero labels and contact-card links. */
+.shop-content .shop-small-title { color: #ffffff; }
+.contact-card a {
+  color: #d9b3ff;
+  text-decoration: underline;
+}
 
 /* Do not fight people who ask for less motion */
 @media (prefers-reduced-motion: reduce) {

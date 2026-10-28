@@ -26,11 +26,11 @@
 ## 3. Manual logical backup (works on any plan)
 
 Run from a trusted machine, never from the browser. The helper reads
-`fab7/server/.env`, so it does not contain credentials itself.
+`_private-tools/.env`, so it does not contain credentials itself.
 
 ```powershell
-# from the workspace folder that contains fab7/
-$envFile = "fab7\server\.env"
+# from the workspace folder that contains fab7/ and _private-tools/
+$envFile = "_private-tools\.env"
 $vars = @{}
 Get-Content $envFile | ForEach-Object {
   if ($_ -match '^\s*([A-Za-z0-9_]+)\s*=\s*(.*)\s*$') { $vars[$matches[1]] = $matches[2] }

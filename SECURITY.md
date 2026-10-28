@@ -77,9 +77,10 @@ These cannot be set from the repository. Do them in the Supabase dashboard:
 
 ## 4. Deploying safely (read this before every launch)
 
-The repository root contains **server-side material**: `server/.env`, SQL
-migrations, and (previously) local DB helper scripts. **Never upload or publish
-the repository root.**
+The repository root contains **server-side material**: SQL migrations and
+local-only helper scripts. Secrets (service-role key, database password) live
+outside the web root in `_private-tools/.env`, which is never deployed.
+**Never upload or publish the repository root.**
 
 ```bash
 node build.js        # creates dist/ with public files only
@@ -111,9 +112,9 @@ scripts, treat it as exposed if you ever:
 If so:
 
 1. Supabase → Project Settings → Database → **Reset database password**. Update
-   `SUPABASE_DB_PASSWORD` in `server/.env`.
+   `SUPABASE_DB_PASSWORD` in `_private-tools/.env`.
 2. Supabase → Project Settings → API → **roll the service-role key** if it was
-   ever exposed. Update `server/.env`.
+   ever exposed. Update `_private-tools/.env`.
 3. Rotate `ADMIN_PASSWORD`, Paystack and Resend keys.
 4. Sign out all sessions (Authentication → Sessions).
 

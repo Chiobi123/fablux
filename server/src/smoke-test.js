@@ -1,5 +1,0 @@
-const http=require('node:http');const fs=require('node:fs');const path=require('node:path');
-const root=path.join(__dirname,'..','..');const port=5099;
-process.env.PORT=String(port);process.env.HOST='127.0.0.1';
-const server=require('./app');require('./seed');
-server.listen(port,'127.0.0.1',async()=>{try{const get=p=>new Promise((resolve,reject)=>{http.get(`http://127.0.0.1:${port}${p}`,r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>resolve({status:r.statusCode,body:d}))}).on('error',reject)});const health=await get('/api/health');if(health.status!==200)throw new Error('Health check failed');const products=await get('/api/products');if(products.status!==200||!JSON.parse(products.body).products.length)throw new Error('Product API failed');const home=await get('/');if(home.status!==200||!home.body.includes('FabluX'))throw new Error('Frontend serving failed');console.log('SMOKE TEST PASSED');console.log('Health:',health.status,'Products:',JSON.parse(products.body).products.length,'Home:',home.status);server.close(()=>process.exit(0))}catch(e){console.error('SMOKE TEST FAILED',e);server.close(()=>process.exit(1))}});
