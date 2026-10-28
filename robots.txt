@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Private areas are kept out of search results. They are still protected by
+# authentication and row-level security; robots.txt is not a security control.
+Disallow: /admin.html
+Disallow: /account.html
+Disallow: /checkout.html
+Disallow: /orders.html
+Disallow: /invoice.html
+Disallow: /order-success.html
+Disallow: /payment-callback.html
+Disallow: /reset-password.html
+Disallow: /forgot-password.html
+
+Sitemap: https://fablux.pages.dev/sitemap.xml

@@ -1,0 +1,198 @@
+/* ============================================================================
+   FabluX.U.Design — hardening / accessibility layer
+   Loaded last so it can improve contrast, focus and legal-page typography
+   without touching the main design tokens.
+   ============================================================================ */
+
+/* Visible keyboard focus everywhere */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #e7c766;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Skip link (also injected by js/consent.js for safety) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100000;
+  background: #ffffff;
+  color: #111111;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.skip-link:focus { left: 8px; }
+
+/* Screen-reader-only text */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Consent rows on forms */
+.consent-row {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 12px 0;
+  font-size: .85rem;
+  line-height: 1.45;
+  color: #e6e1ee;
+}
+.consent-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+  accent-color: #7B2CBF;
+}
+.consent-row a { color: #e7c766; text-decoration: underline; }
+
+/* Google sign-in */
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 1px solid #d7d2e0 !important;
+  font-weight: 600;
+}
+.btn-google:hover { background: #f4f2f8 !important; }
+.btn-google i { color: #DB4437; }
+
+.pro-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: #b9b3c6;
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+.pro-divider::before,
+.pro-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,.16);
+}
+
+/* Checkout clarity */
+.checkout-pay-note {
+  margin: 10px 0 16px;
+  font-size: .85rem;
+  line-height: 1.5;
+  color: #dcd6e6;
+  background: rgba(123,44,191,.12);
+  border-left: 3px solid #7B2CBF;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+/* Legal / policy pages */
+.pro-card.legal {
+  display: block;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 34px clamp(18px, 4vw, 44px);
+  line-height: 1.7;
+}
+.pro-card.legal h2 {
+  margin: 28px 0 10px;
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+.pro-card.legal h2:first-of-type { margin-top: 6px; }
+.pro-card.legal p,
+.pro-card.legal li { color: #e4dfec; font-size: .95rem; }
+.pro-card.legal ul,
+.pro-card.legal ol { padding-left: 22px; margin: 0 0 14px; }
+.pro-card.legal li { margin: 6px 0; }
+.pro-card.legal a { color: #e7c766; text-decoration: underline; }
+.pro-card.legal code {
+  background: rgba(255,255,255,.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: .85em;
+}
+.legal-updated {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #b9b3c6;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  padding-bottom: 14px;
+}
+.legal-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 14px 0 22px;
+}
+.legal-actions [role="status"] { font-size: .85rem; color: #cfc8dc; }
+
+/* Footer legal row */
+.footer-legal,
+.footer-note {
+  font-size: .8rem;
+  line-height: 1.7;
+  color: #cfcfcf;
+  margin-top: 8px;
+}
+.footer-legal a,
+.footer-note a { color: #e7c766; text-decoration: underline; }
+
+/* Contrast fix: the brand purple (#7B2CBF) is only ~2.8:1 on the near-black
+   background, which fails WCAG AA for text. Use a lighter tint for *text*
+   while keeping the original purple for fills, borders and buttons. */
+.logo span,
+.small-title,
+.section-title span,
+.newsletter-content span,
+.about-content span,
+.footer-box h2 span {
+  color: #B07BE0;
+}
+
+/* Shop filters and text links sit on dark panels. */
+.filter-btn { color: #d8d1e2; }
+.filter-btn:hover,
+.filter-btn.active { color: #ffffff; }
+.pro-text-link { color: #B07BE0; text-decoration: underline; }
+.pro-text-link:hover { color: #d3b3f0; }
+/* Content links inside dark cards (FAQ, help, empty states).
+   Scoped to prose so it never repaints action buttons/links. */
+.pro-card p a:not(.btn),
+.pro-card li a:not(.btn),
+.pro-empty p a:not(.btn) { color: #B07BE0; text-decoration: underline; }
+
+/* Placeholder contrast */
+::placeholder { color: #a9a2b8; opacity: 1; }
+
+/* Do not fight people who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

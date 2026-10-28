@@ -28,3 +28,6 @@ peek.txt
 tmp-*.js
 tmp-*.css
 tmp-*.txt
+
+# Static build output
+dist/

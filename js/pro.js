@@ -39,6 +39,17 @@ function setupShop(){
  let toolbar=document.getElementById('proShopTools');
  if(!toolbar){toolbar=document.createElement('div');toolbar.id='proShopTools';toolbar.className='pro-shop-tools';toolbar.innerHTML='<input id="productSearch" type="search" placeholder="Search products..." aria-label="Search products"><select id="productSort"><option value="relevance">Sort: Relevance</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="new">Newest</option></select><a class="pro-text-link" href="wishlist.html">♡ Wishlist</a>';grid.parentElement.insertBefore(toolbar,grid)}
  const search=document.getElementById('productSearch'),sort=document.getElementById('productSort');
+  /* Deep links: shop.html?category=men opens the shop already filtered. */
+  if(!window._fabFilterInit){
+    window._fabFilterInit=1;
+    const cat=new URLSearchParams(location.search).get('category');
+    if(cat&&/^[a-z]+$/.test(cat)){
+      window._fabFilter=cat;
+      document.querySelectorAll('.filter-btn').forEach(function(x){x.classList.remove('active')});
+      const b=document.querySelector('.filter-btn[data-filter="'+cat+'"]');
+      if(b)b.classList.add('active');
+    }
+  }
  /* The live catalogue (syncCatalog in js/backend-bridge.js) replaces the grid's
     cards with the rows fetched from Supabase, so always read the CURRENT cards
     from the DOM. A reference captured at load time would go stale the moment the
@@ -48,7 +59,7 @@ function setupShop(){
     actually reflected in the DOM (display toggling alone never reorders). */
  list.forEach(c=>grid.appendChild(c));let empty=grid.querySelector('.pro-no-results');if(!list.length){if(!empty){empty=document.createElement('div');empty.className='pro-no-results';empty.innerHTML='<h3>No products found</h3><p>Try another search or category.</p>';grid.appendChild(empty)}}else empty?.remove()}
  window.FabluXApplyShop=apply;
- search.addEventListener('input',apply);sort.addEventListener('change',apply);document.querySelectorAll('.filter-btn').forEach(b=>b.addEventListener('click',()=>{window._fabFilter=b.dataset.filter||'all';setTimeout(apply,0)}));apply();
+ search.addEventListener('input',apply);sort.addEventListener('change',apply);document.querySelectorAll('.filter-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');window._fabFilter=b.dataset.filter||'all';setTimeout(apply,0)}));apply();
 }
 function setupProductLinks(){
  const grid=document.querySelector('.shop-products .product-grid');

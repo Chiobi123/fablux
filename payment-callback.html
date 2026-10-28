@@ -1,5 +1,22 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FabluX.U.Design | Payment</title><link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/pro.css">
-<link rel="stylesheet" href="css/responsive.css"></head><body><main><section class="featured"><div class="container"><div class="pro-auth" id="paymentStatus"><div class="section-title"><span>PAYMENT</span><h2>Checking your payment…</h2><p>Please wait while we verify the transaction.</p></div></div></div></section></main><script src="js/store.js"></script><script src="js/api-client.js"></script><script src="js/pro.js"></script><script src="js/backend-bridge.js"></script><script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FabluX.U.Design | Payment</title><link rel="stylesheet" href="css/style.css?v=20261028f"><link rel="stylesheet" href="css/pro.css?v=20261028f">
+<link rel="stylesheet" href="css/responsive.css?v=20261028f"><!-- seo-hardening -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="Payment status at FabluX.U.Design.">
+    <link rel="canonical" href="https://fablux.pages.dev/payment-callback.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="FabluX.U.Design">
+    <meta property="og:title" content="FabluX.U.Design | Payment">
+    <meta property="og:description" content="Payment status at FabluX.U.Design.">
+    <meta property="og:url" content="https://fablux.pages.dev/payment-callback.html">
+    <meta property="og:image" content="https://fablux.pages.dev/images/hero1.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FabluX.U.Design | Payment">
+    <meta name="twitter:description" content="Payment status at FabluX.U.Design.">
+    <meta name="twitter:image" content="https://fablux.pages.dev/images/hero1.jpg">
+<link rel="stylesheet" href="css/hardening.css?v=20261028f">
+</head><body><main><section class="featured"><div class="container"><div class="pro-auth" id="paymentStatus"><div class="section-title"><span>PAYMENT</span><h2>Checking your payment…</h2><p>Please wait while we verify the transaction.</p></div></div></div></section></main><script src="js/store.js?v=20261028f"></script><script src="js/api-client.js?v=20261028f"></script><script src="js/pro.js?v=20261028f"></script><script src="js/backend-bridge.js?v=20261028f"></script><script>
 (async()=>{
 const box=document.getElementById('paymentStatus');
 const q=new URLSearchParams(location.search);
@@ -16,4 +33,8 @@ try{
   box.innerHTML='<div class="section-title"><span>PAYMENT CHECK</span><h2>We could not verify this payment yet.</h2><p>'+String(e&&e.message||'Please try again in a moment.')+'</p><p>Card checkout is only available once payment-gateway credentials are configured for this store. Until then please use Pay on Delivery or Bank Transfer at checkout.</p><a class="btn" href="orders.html">View My Orders</a></div>';
 }
 })();
-</script></body></html>
+</script><!-- a11y/consent/logging -->
+<script src="js/consent.js?v=20261028f" defer></script>
+<script src="js/a11y.js?v=20261028f" defer></script>
+<script src="js/error-log.js?v=20261028f" defer></script>
+</body></html>

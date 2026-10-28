@@ -1,0 +1,35 @@
+# ============================================================================
+# FabluX.U.Design — HTTP security headers
+# Works on Netlify and Cloudflare Pages (both read `_headers` at the root).
+# For other hosts see nginx.conf.example / vercel.json.
+# ============================================================================
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://msisbmcowtggbvasubla.supabase.co; upgrade-insecure-requests
+
+# Assets are NOT content-hashed, so they must revalidate quickly.
+# (Revisit and switch to immutable only after adding hashed filenames.)
+/images/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/css/*
+  Cache-Control: public, max-age=300, must-revalidate
+
+/js/*
+  Cache-Control: public, max-age=300, must-revalidate
+
+# HTML is always revalidated so updates appear immediately
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/robots.txt
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600

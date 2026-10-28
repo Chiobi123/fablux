@@ -156,31 +156,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Shop filter functionality
-    filterBtns.forEach(btn => {
-        btn.addEventListener("click", function () {
-            filterBtns.forEach(b => b.classList.remove("active"));
-            this.classList.add("active");
-
-            const filterValue = this.getAttribute("data-filter");
-
-            productCards.forEach(card => {
-                if (filterValue === "all" || card.getAttribute("data-category") === filterValue) {
-                    card.style.display = "block";
-                    setTimeout(() => {
-                        card.style.opacity = "1";
-                        card.style.transform = "scale(1)";
-                    }, 50);
-                } else {
-                    card.style.opacity = "0";
-                    card.style.transform = "scale(0.95)";
-                    setTimeout(() => {
-                        card.style.display = "none";
-                    }, 300);
-                }
-            });
-        });
-    });
+    // Shop filtering is owned by js/pro.js so it keeps working after the
+    // live Supabase catalogue replaces the static cards.
 
     // Set initial product card styles
     productCards.forEach(card => {

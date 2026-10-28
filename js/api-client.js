@@ -196,7 +196,7 @@
       return {user:u,addresses:addresses||[]};
     },
     async products(params){
-      let rows=await rest('/products?select=*&active=eq.1&order=id');
+      let rows=await rest('/products?select=id,name,price,category,image,active,stock,reserved_stock,created_at,updated_at&active=eq.1&order=id');
       const q=new URLSearchParams(params||'');
       const search=(q.get('search')||'').trim().toLowerCase();
       const category=(q.get('category')||'').trim();
@@ -288,18 +288,36 @@
         details:body.details||'',status:'requested',created_at:new Date().toISOString()})});
       return {returnRequest:{status:'requested'}};
     },
+    /* Contact + newsletter go through SECURITY DEFINER RPCs so the database can
+       enforce rate limiting, the honeypot and the consent flag. The browser can
+       never write to these tables directly. */
     async contact(body){
       if(!body.email||!body.message) throw new Error('Please complete the contact form.');
-      await rest('/contacts',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({
-        id:newId('msg'),name:body.name||'Guest',email:body.email,subject:body.subject||'Enquiry',
-        message:body.message,created_at:new Date().toISOString()})});
-      return {ok:true};
+      return rest('/rpc/submit_contact',{method:'POST',body:JSON.stringify({
+        p_name:body.name||'Guest',p_email:body.email,p_subject:body.subject||'Enquiry',
+        p_message:body.message,p_consent:!!body.consent,p_honeypot:body.honeypot||'',
+        p_user_agent:(navigator&&navigator.userAgent)||''})});
     },
     async newsletter(body){
       if(!body||!body.email) throw new Error('Please enter your email address.');
-      await rest('/newsletter_subscribers',{method:'POST',headers:{Prefer:'return=minimal'},
-        body:JSON.stringify({id:newId('sub'),email:body.email,created_at:new Date().toISOString()})});
-      return {ok:true};
+      return rest('/rpc/subscribe_newsletter',{method:'POST',body:JSON.stringify({
+        p_email:body.email,p_consent:!!body.consent,p_honeypot:body.honeypot||''})});
+    },
+    async unsubscribe(email){
+      return rest('/rpc/unsubscribe_newsletter',{method:'POST',body:JSON.stringify({p_email:email})});
+    },
+    /* Customer self-service deletion: personal rows removed, orders anonymised. */
+    async deleteMyData(){
+      return rest('/rpc/delete_my_data',{method:'POST',body:JSON.stringify({})});
+    },
+    /* Google sign-in via Supabase OAuth. Enable the Google provider in
+       Supabase → Authentication → Providers and add this origin to the
+       allowed redirect URLs. Tokens come back in the URL hash (implicit flow)
+       and are captured by captureHashToken() above. */
+    loginWithGoogle(returnTo){
+      const to=returnTo||'account.html';
+      const here=(location.origin||'')+'/'+String(to).replace(/^\//,'');
+      location.href=AUTH+'/authorize?provider=google&redirect_to='+encodeURIComponent(here);
     },
     async publicSettings(){
       const keys='delivery_fee_default,delivery_fee_express_surcharge,store_name,store_contact,store_email,store_address,email_enabled';
