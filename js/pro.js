@@ -38,11 +38,40 @@ function setupShop(){
  const grid=document.querySelector('.shop-products .product-grid');if(!grid)return;
  let toolbar=document.getElementById('proShopTools');
  if(!toolbar){toolbar=document.createElement('div');toolbar.id='proShopTools';toolbar.className='pro-shop-tools';toolbar.innerHTML='<input id="productSearch" type="search" placeholder="Search products..." aria-label="Search products"><select id="productSort"><option value="relevance">Sort: Relevance</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="new">Newest</option></select><a class="pro-text-link" href="wishlist.html">♡ Wishlist</a>';grid.parentElement.insertBefore(toolbar,grid)}
- const search=document.getElementById('productSearch'),sort=document.getElementById('productSort'),cards=[...grid.querySelectorAll('.shop-product-card')];
- function apply(){const q=(search.value||'').toLowerCase().trim();let list=cards.filter(c=>(!q||`${c.dataset.productName} ${c.dataset.productCategory}`.toLowerCase().includes(q))&&(!window._fabFilter||window._fabFilter==='all'||c.dataset.category===window._fabFilter));list.sort((a,b)=>{const pa=Number(a.dataset.productPrice.replace(/[^0-9.]/g,'')),pb=Number(b.dataset.productPrice.replace(/[^0-9.]/g,''));if(sort.value==='low')return pa-pb;if(sort.value==='high')return pb-pa;if(sort.value==='new')return Number(b.dataset.productId)-Number(a.dataset.productId);return 0});cards.forEach(c=>c.style.display=list.includes(c)?'':'none');let empty=grid.querySelector('.pro-no-results');if(!list.length){if(!empty){empty=document.createElement('div');empty.className='pro-no-results';empty.innerHTML='<h3>No products found</h3><p>Try another search or category.</p>';grid.appendChild(empty)}}else empty?.remove()}
+ const search=document.getElementById('productSearch'),sort=document.getElementById('productSort');
+ /* The live catalogue (syncCatalog in js/backend-bridge.js) replaces the grid's
+    cards with the rows fetched from Supabase, so always read the CURRENT cards
+    from the DOM. A reference captured at load time would go stale the moment the
+    grid is re-rendered, and the search/sort would silently filter nothing. */
+ function apply(){const cards=[...grid.querySelectorAll('.shop-product-card')];const q=(search.value||'').toLowerCase().trim();let list=cards.filter(c=>(!q||`${c.dataset.productName} ${c.dataset.productCategory}`.toLowerCase().includes(q))&&(!window._fabFilter||window._fabFilter==='all'||String(c.dataset.category||'').split(/\s+/).includes(window._fabFilter)));list.sort((a,b)=>{const pa=Number(a.dataset.productPrice.replace(/[^0-9.]/g,'')),pb=Number(b.dataset.productPrice.replace(/[^0-9.]/g,''));if(sort.value==='low')return pa-pb;if(sort.value==='high')return pb-pa;if(sort.value==='new')return Number(b.dataset.productId)-Number(a.dataset.productId);return 0});cards.forEach(c=>c.style.display=list.includes(c)?'':'none');
+ /* Re-append the matching cards in the computed order so the sort choice is
+    actually reflected in the DOM (display toggling alone never reorders). */
+ list.forEach(c=>grid.appendChild(c));let empty=grid.querySelector('.pro-no-results');if(!list.length){if(!empty){empty=document.createElement('div');empty.className='pro-no-results';empty.innerHTML='<h3>No products found</h3><p>Try another search or category.</p>';grid.appendChild(empty)}}else empty?.remove()}
+ window.FabluXApplyShop=apply;
  search.addEventListener('input',apply);sort.addEventListener('change',apply);document.querySelectorAll('.filter-btn').forEach(b=>b.addEventListener('click',()=>{window._fabFilter=b.dataset.filter||'all';setTimeout(apply,0)}));apply();
 }
-function setupProductLinks(){document.querySelectorAll('.shop-product-card').forEach(c=>{const p=productFromCard(c);c.querySelector('h3')?.addEventListener('click',()=>{addRecent(p);location.href='product.html?id='+encodeURIComponent(p.id)});c.querySelector('img')?.addEventListener('click',()=>{addRecent(p)});c.style.cursor='default'})}
+function setupProductLinks(){
+ const grid=document.querySelector('.shop-products .product-grid');
+ /* Clicks are handled by delegation on the grid itself, which survives the
+    live catalogue re-render — binding each card once would stop working as
+    soon as syncCatalog replaces the grid's cards with Supabase rows. */
+ if(grid&&!grid.dataset.fxNavBound){
+   grid.dataset.fxNavBound='1';
+   grid.addEventListener('click',function(e){
+     const c=e.target.closest('.shop-product-card');if(!c||!c.dataset.productId)return;
+     const p=productFromCard(c);
+     if(e.target.closest('h3')){addRecent(p);location.href='product.html?id='+encodeURIComponent(p.id);return}
+     if(e.target.closest('img'))addRecent(p);
+   });
+ }
+ document.querySelectorAll('.shop-product-card').forEach(c=>{
+   if(grid&&grid.contains(c))return;
+   const p=productFromCard(c);
+   c.querySelector('h3')?.addEventListener('click',()=>{addRecent(p);location.href='product.html?id='+encodeURIComponent(p.id)});
+   c.querySelector('img')?.addEventListener('click',()=>{addRecent(p)});
+   c.style.cursor='default';
+ });
+}
 function renderWishlist(){const box=document.getElementById('wishlistGrid');if(!box)return;const list=read('fablux_wishlist_v1',[]);if(!list.length){box.innerHTML='<div class="pro-empty"><h2>Your wishlist is empty</h2><p>Save pieces you love and find them here later.</p><a class="btn" href="shop.html">Explore Shop</a></div>';return}box.innerHTML=list.map(p=>`<article class="pro-card"><img src="${p.image}" alt="${p.name}"><div><h3>${p.name}</h3><p>${p.category||''}</p><strong>${money(p.price)}</strong><div class="pro-card-actions"><button data-cart="${p.id}">Add to Cart</button><button data-remove="${p.id}">Remove</button></div></div></article>`).join('');box.querySelectorAll('[data-cart]').forEach(b=>b.onclick=()=>{const p=list.find(x=>String(x.id)===b.dataset.cart);window.FabluXStore?.addToCart(p);});box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{let a=read('fablux_wishlist_v1',[]).filter(x=>String(x.id)!==b.dataset.remove);write('fablux_wishlist_v1',a);renderWishlist();toast('Removed from wishlist')})}
 function renderRecent(){const box=document.getElementById('recentGrid');if(!box)return;const list=read(K.recent,[]);box.innerHTML=list.length?list.map(p=>`<article class="pro-card"><img src="${p.image}" alt="${p.name}"><div><h3>${p.name}</h3><strong>${money(p.price)}</strong><a class="pro-card-link" href="product.html?id=${p.id}">View Product</a></div></article>`).join(''):'<div class="pro-empty"><p>No recently viewed products yet.</p></div>'}
 function setupAuth(){/* LEGACY LOCAL SIGN-UP REMOVED.

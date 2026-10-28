@@ -414,6 +414,9 @@ async function syncCatalog(){
   });
   syncFeaturedGrid(rows);
   syncDetailPage(rows);
+  /* The grid's cards were just replaced, so re-apply whatever the shopper had
+     already typed or selected — otherwise the live refresh silently clears it. */
+  try{ if(typeof window.FabluXApplyShop==='function') window.FabluXApplyShop(); }catch(e){}
 }
 
 document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();syncCatalog();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
