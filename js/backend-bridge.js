@@ -158,7 +158,10 @@ document.addEventListener('click',function(event){
 function initSiteChrome(){
   /* Persistent Back / Home dock — one control that works on every page,
      regardless of how the visitor arrived or how many tabs are open. */
-  if(!document.getElementById('navDock')&&document.body){
+  /* The floating dock overlaps the Google button on small phones, and auth pages
+     already have header navigation — skip it there. */
+  const isAuthPage=!!(document.getElementById('loginForm')||document.getElementById('registerForm')||document.getElementById('forgotForm')||document.getElementById('resetForm'));
+  if(!isAuthPage&&!document.getElementById('navDock')&&document.body){
     let canBack=false;
     try{
       canBack=history.length>1||(!!document.referrer&&new URL(document.referrer).origin===location.origin);

@@ -21,3 +21,12 @@
 .pro-admin-nav a,.pro-admin-nav button{display:inline-block}
 #adminPage table th,#adminPage table td{padding:8px;border-bottom:1px solid rgba(0,0,0,.12);vertical-align:top}
 #adminPage tr[data-ref]:hover{background:rgba(0,0,0,.04)}
+
+/* password field: toggle sits beside the input, never over it */
+.password-row{display:flex;align-items:center;gap:8px;width:100%;max-width:100%;min-width:0}
+.password-row input{flex:1 1 auto;min-width:0;width:auto}
+.pro-form .password-toggle{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;min-height:46px;max-width:46px;padding:0;margin:0;border-radius:12px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.07);color:#e9e6f2;cursor:pointer;line-height:0}
+.pro-form .password-toggle:hover{background:rgba(255,255,255,.16)}
+.pro-form .password-toggle:focus-visible{outline:2px solid #9D4EDD;outline-offset:2px}
+.pro-form .password-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:768px){.pro-form .password-toggle{width:48px;height:48px;min-height:48px;max-width:48px}}

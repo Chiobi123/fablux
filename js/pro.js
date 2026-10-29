@@ -113,15 +113,20 @@ function productList(){return window.FAB_PRODUCTS||[]}
 function saveAddressForm(form){if(window.FabluXAPI)return;/* Supabase address book */const u=current();if(!u)return;const all=rd(X.addresses,[]);const a=Object.fromEntries(new FormData(form).entries());a.id='ADDR-'+Date.now();a.userId=u.id;all.push(a);wr(X.addresses,all);renderAddresses();form.reset();window.FabluXStore?.toast('✓ Address saved');}
 function renderAddresses(){if(window.FabluXAPI)return;/* legacy localStorage version removed */}
 function enhanceAccount(){if(window.FabluXAPI)return;/* legacy localStorage version removed */}
+const PW_EYE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.6 12S5.2 5.6 12 5.6 22.4 12 22.4 12 18.8 18.4 12 18.4 1.6 12 1.6 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>';
+const PW_EYE_OFF='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.6 12S5.2 5.6 12 5.6 22.4 12 22.4 12 18.8 18.4 12 18.4 1.6 12 1.6 12Z"/><circle cx="12" cy="12" r="3.2"/><path d="M3.5 3.5l17 17"/></svg>';
 function enhancePassword(){
  document.querySelectorAll('input[type="password"]').forEach(input=>{
   if(input.dataset.passwordEnhanced)return; input.dataset.passwordEnhanced='1';
-  const wrap=input.parentElement||input.parentNode; const btn=document.createElement('button'); btn.type='button'; btn.className='password-toggle'; btn.setAttribute('aria-label','Show password'); btn.innerHTML='👁';
-  wrap.style.position='relative'; wrap.appendChild(btn); btn.style.cssText='position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:1rem;';
-  btn.addEventListener('click',()=>{const visible=input.type==='text';input.type=visible?'password':'text';btn.setAttribute('aria-label',visible?'Show password':'Hide password');});
+  /* Toggle sits beside the field in its own row, so it can never cover the input. */
+  const row=document.createElement('span'); row.className='password-row';
+  input.parentNode.insertBefore(row,input); row.appendChild(input);
+  const btn=document.createElement('button'); btn.type='button'; btn.className='password-toggle'; btn.setAttribute('aria-label','Show password'); btn.setAttribute('aria-pressed','false'); btn.innerHTML=PW_EYE;
+  row.appendChild(btn);
+  btn.addEventListener('click',()=>{const visible=input.type==='text';input.type=visible?'password':'text';btn.setAttribute('aria-pressed',String(!visible));btn.setAttribute('aria-label',visible?'Show password':'Hide password');btn.innerHTML=visible?PW_EYE:PW_EYE_OFF;});
  });
  const f=document.getElementById('registerForm'); if(!f)return; const input=f.querySelector('[name=password]'); if(!input||document.getElementById('passwordMeter'))return;
- const meter=document.createElement('div');meter.innerHTML='<div class="password-meter" id="passwordMeter"><span></span></div><small id="passwordHint">Password strength: —</small>';input.parentElement.appendChild(meter);
+ const meter=document.createElement('div');meter.innerHTML='<div class="password-meter" id="passwordMeter"><span></span></div><small id="passwordHint">Password strength: —</small>';input.parentElement.after(meter);
  input.addEventListener('input',()=>{let v=input.value,score=0;if(v.length>=8)score++;if(/[A-Z]/.test(v))score++;if(/[0-9]/.test(v))score++;if(/[^A-Za-z0-9]/.test(v))score++;const labels=['Weak','Fair','Good','Strong'];document.querySelector('#passwordMeter span').style.width=(score*25)+'%';document.querySelector('#passwordHint').textContent='Password strength: '+(labels[Math.max(0,score-1)]||'—');});
 }
 
