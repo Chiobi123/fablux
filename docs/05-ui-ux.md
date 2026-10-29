@@ -50,10 +50,13 @@ Type scale (desktop → mobile):
   that variable so nothing is ever hidden under the header when nav links wrap.
   Below 1200 px the nav wraps onto a second row; the header grows; the CSS var
   follows (via `site-tools.js` `syncHeader()`).
-- **Hero:** full-bleed image slider with a gradient `.overlay`.
+- **Hero:** full-bleed image slider with a gradient `.overlay`. The section starts
+  below the fixed header (`margin-top: var(--header-h)`), so the top of the
+  photograph — the model's face — is never hidden behind the bar.
   - Dark: `rgba(5,5,5,.72 → .35 → .85)`.
-  - Light: `rgba(255,255,255,.72 → .54 → .84)` so the photograph is still visible
-    but text stays readable on the dark-ink heading.
+  - Light: a soft lilac wash that is strong on the copy side and almost clear over
+    the photograph (`rgba(247,243,255,.95)` left → `rgba(240,232,252,.05)` right on
+    desktop; a vertical 0.92 → 0.58 gradient under 768 px).
 - **Product grid:** auto-fill, min 260 px, gap 24 px; 1 column under 520 px.
 - **Shop hero:** shorter band, `padding-top: calc(var(--header-h) + 28px)`.
 
@@ -80,6 +83,12 @@ Type scale (desktop → mobile):
 - Language panel: `<details>` + `<summary>` pill (`EN` + globe). Panel is a
   two-column scrollable grid of 79 languages with native names, marked
   `translate="no"` so the switcher itself is never machine-translated.
+- Switching is in-page: the pill sets the hidden Google widget's `select` value and
+  dispatches a bubbling `change`. No reload, no loading screen, and the previous
+  language is never shown in between. The `googtrans` cookie is still written so
+  the next page opens in the same language. Choosing English clears the cookie and
+  restores the original text; if the widget does not restore it, the page reloads
+  once (English is then guaranteed).
 
 ---
 
@@ -91,7 +100,7 @@ Type scale (desktop → mobile):
 | Empty cart | illustration-free message + "Continue shopping" |
 | Error | inline sentence + retry action; never a stack trace |
 | Success | toast + persistent confirmation card |
-| Translating | full-page cover with "Translating…" (max 10 s), then either the page or a notice |
+| Language loading | the pill shows the new code; the page translates in place once the widget is ready (first use only) |
 | Offline | network message from `friendly()` in `api-client.js` |
 
 ---

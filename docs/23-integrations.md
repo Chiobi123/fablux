@@ -65,11 +65,15 @@ scope** today: no cardholder data environment exists.
 
 ## 3. Google Translate
 
-- Loaded only when `localStorage.fablux_lang` is not `en`.
-- Target language is applied with the `googtrans=/en/<code>` cookie **before** the page
-  loads; the widget is not patched after the fact (that did not work reliably).
-- A cover prevents an English flash; it is removed when `<font>` elements appear or
-  after 10 s, with a notice on failure.
+- Loaded on demand the first time a visitor picks a language (or on load when one is
+  already saved); English pages never fetch it.
+- The chosen language is applied in place: `site-tools.js` sets the widget's hidden
+  `.goog-te-combo` value and dispatches a bubbling `change`. No reload, no cover, and
+  the previous language never reappears in between.
+- `googtrans=/en/<code>` is still written, so a newly opened page starts in the saved
+  language. Choosing English deletes the cookie and restores the original text.
+- If the widget never populates its select, `site-tools.js` re-creates it once (~10 s)
+  and then gives up quietly, leaving the page in English.
 - The switcher UI is marked `translate="no"` so it is never translated.
 - CSP allows `translate.google.com`, `translate.googleapis.com`,
   `translate-pa.googleapis.com`.

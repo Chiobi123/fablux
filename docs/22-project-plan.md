@@ -76,7 +76,7 @@ Decision:          approved / rejected / deferred   By:   Date:
 
 | Date | Request | Decision | Note |
 |---|---|---|---|
-| 2026-10-29 | Language switch returns to English first | Approved | fixed with the translating cover |
+| 2026-10-29 | Language switch lagged and showed a translating screen | Approved | in-place widget switch (ADR-07) |
 | 2026-10-29 | Google sign-in not working | Approved (partial) | provider blocked; UX fixed; owner action recorded |
 | 2026-10-29 | Produce the 62-document set | Approved | `docs/` created |
 | 2026-10-29 | Clear signed-in accounts and logs | Approved | catalogue preserved |

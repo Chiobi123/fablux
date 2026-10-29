@@ -55,8 +55,10 @@
   applyTheme(get(THEME_KEY) === 'light' ? 'light' : 'dark');
 
   /* ---- language (Google website translator) ---- */
-  /* Google reads the googtrans cookie when the page loads, so the choice is
-     written before a reload — never patched into the widget afterwards. */
+  /* Switching happens inside the page: set the widget's hidden select and fire
+     a bubbling 'change'. Google swaps the text immediately, so there is no
+     reload, no "Translating…" screen and no flash of the previous language.
+     The googtrans cookie is still written so the next page opens translated. */
   function googleCookie(code) {
     if (code === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
@@ -92,6 +94,46 @@
     s.async = true;
     s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     document.body.appendChild(s);
+  }
+
+  /* The widget is ready once its language select is populated. */
+  function translatorCombo() {
+    var c = document.querySelector('.goog-te-combo');
+    return c && c.options && c.options.length > 1 ? c : null;
+  }
+
+  /* Re-create the widget if it loaded but never populated its select. */
+  function restartTranslator() {
+    var s = document.getElementById('gt-script');
+    if (s) s.parentNode.removeChild(s);
+    var host = document.getElementById('google_translate_element');
+    if (host) host.innerHTML = '';
+    loadTranslator();
+  }
+
+  var langRetried = false;
+  function applyLang(code, attempt) {
+    attempt = attempt || 0;
+    var combo = translatorCombo();
+    if (!combo) {
+      if (attempt > 80) return;                       /* ~20s, give up quietly */
+      if (attempt === 40 && !langRetried) { langRetried = true; restartTranslator(); }
+      else loadTranslator();
+      setTimeout(function () { applyLang(code, attempt + 1); }, 250);
+      return;
+    }
+    var target = code === 'en' ? '' : code;
+    if (combo.value !== target) {
+      combo.value = target;
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    if (code === 'en') {
+      /* Restoring the original text is instant in the widget; if it did not
+         happen, a plain reload is guaranteed English (the cookie is cleared). */
+      setTimeout(function () {
+        if (document.querySelector('font')) location.reload();
+      }, 1200);
+    }
   }
 
   /* ---- build controls ---- */
@@ -138,16 +180,23 @@
     var menu = wrap.querySelector('#langMenu');
     var panel = menu.querySelector('.lang-panel');
     var codeEl = menu.querySelector('.lang-code');
+    var current = savedCode;
     [].forEach.call(panel.querySelectorAll('button'), function (b) {
-      if (b.getAttribute('data-code') === savedCode) b.setAttribute('aria-current', 'true');
+      if (b.getAttribute('data-code') === current) b.setAttribute('aria-current', 'true');
       b.addEventListener('click', function () {
         var code = b.getAttribute('data-code');
+        menu.open = false;
+        if (code === current) return;
+        current = code;
         set(LANG_KEY, code);
         root.lang = code;
         codeEl.textContent = code.toUpperCase();
-        try { sessionStorage.removeItem('fablux_lang_sync'); } catch (e) {}
+        [].forEach.call(panel.querySelectorAll('button'), function (o) {
+          if (o === b) o.setAttribute('aria-current', 'true');
+          else o.removeAttribute('aria-current');
+        });
         googleCookie(code);
-        location.reload();
+        applyLang(code);
       });
     });
     document.addEventListener('click', function (e) {
@@ -192,49 +241,17 @@
     update();
   }
 
-  /* The page is served in English, then Google swaps the text in. Hold a
-     "Translating…" cover until that swap happens so the visitor never sees
-     English flash first. A failed/slow translation reveals the page anyway. */
-  function watchTranslation(code) {
-    var started = Date.now();
-    var timer = setInterval(function () {
-      var combo = document.querySelector('.goog-te-combo');
-      var translated = combo && combo.value === code && document.querySelector('font');
-      if (translated) {
-        clearInterval(timer);
-        root.removeAttribute('data-lang-pending');
-        try { sessionStorage.removeItem('fablux_lang_sync'); } catch (e) {}
-        return;
-      }
-      if (Date.now() - started > 10000) {
-        clearInterval(timer);
-        root.removeAttribute('data-lang-pending');
-        root.setAttribute('data-lang-failed', '1');
-        setTimeout(function () { root.removeAttribute('data-lang-failed'); }, 3200);
-        try { sessionStorage.removeItem('fablux_lang_sync'); } catch (e) {}
-      }
-    }, 250);
-  }
-
   function init() {
     build();
     var saved = get(LANG_KEY) || 'en';
     root.lang = saved;
     if (saved !== 'en') {
-      /* The cookie must exist before this page loads for Google to act on it.
-         If local storage and the cookie disagree (cleared cookies, new device
-         settings), repair the cookie and load once more. */
-      if (cookieLang() !== saved && !sessionStorage.getItem('fablux_lang_sync')) {
-        try { sessionStorage.setItem('fablux_lang_sync', '1'); } catch (e) {}
-        googleCookie(saved);
-        location.reload();
-        return;
-      }
-      loadTranslator();
-      watchTranslation(saved);
-    } else {
-      root.removeAttribute('data-lang-pending');
-      if (cookieLang()) googleCookie('en');
+      /* The cookie lets the next page open already translated; applying the
+         widget now also covers a missing or stale cookie. */
+      googleCookie(saved);
+      applyLang(saved);
+    } else if (cookieLang()) {
+      googleCookie('en');
     }
     refreshTheme();
     initProgress();

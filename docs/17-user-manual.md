@@ -90,8 +90,8 @@ provider. Use email and password in the meantime.
 
 - The globe pill on the right edge opens the language list (79 languages, shown with
   their native names).
-- Choosing a language reloads the page in that language. A short "Translating…" cover
-  appears while it loads; this prevents the page flashing English first.
+- Choosing a language translates the page immediately, without reloading it or
+  flashing English first. Your choice is remembered on every page.
 - Choosing **English** returns to the original text.
 - Translation is automatic and may be imperfect; the English version is the
   authoritative one for prices and policies.

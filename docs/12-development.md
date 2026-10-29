@@ -124,8 +124,8 @@ Release steps: see `15-deployment.md` §5.
 | ADR-04 | Admin by email allow-list in SQL, not a UI role toggle | no privilege escalation path | adding an admin needs a SQL deploy |
 | ADR-05 | Implicit OAuth flow (hash token) | the client calls `/authorize` directly, no SDK | cannot switch to PKCE without supabase-js |
 | ADR-06 | Google Translate widget instead of hand-written i18n | 79 languages immediately, no translation maintenance | machine quality, external dependency, 1–10 s first switch |
-| ADR-07 | Language choice applied via cookie + reload | Google reads the cookie at load; patching the widget afterwards does not translate | full page reload per language change |
-| ADR-08 | "Translating…" cover instead of showing English then swapping | the English flash was the reported bug | up to 10 s cover on a slow network |
+| ADR-07 | Language switch drives the widget's own `select` in place (bubbling `change`) | Google swaps the text without a reload; switching is instant, never shows the previous language, and cannot drift to an unasked-for language | depends on the widget's private DOM; English falls back to one reload if the widget will not restore |
+| ADR-08 | ~~"Translating…" cover instead of showing English then swapping~~ — superseded by ADR-07 (no cover) | the cover made every switch feel like a page load | brief old-language view while the widget first loads |
 | ADR-09 | No hamburger menu; nav wraps | hiding navigation hurt discoverability more than a two-row header | header height varies; solved with `--header-h` |
 | ADR-10 | Dark default, light opt-in | brand reads as premium in dark | two theme token sets to maintain |
 | ADR-11 | Pay-on-delivery + bank transfer only | no PCI scope, no processor fees at launch | no instant card payment |

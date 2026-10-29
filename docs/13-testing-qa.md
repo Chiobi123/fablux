@@ -40,7 +40,7 @@ what remains unverified. It is honest about the gap rather than implying coverag
 | T-15 | Admin console loads for an admin, denied for a customer | Pass (pre-wipe) |
 | T-16 | Theme toggle persists and both themes are readable | Pass |
 | T-17 | Language menu translates the page (Igbo, French verified) | Pass, with the caveat in §3 |
-| T-18 | Language switch shows no English flash | Pass (cover appears before text) |
+| T-18 | Language switch is in place: no reload and no English flash | Pass (FR, then DE, same document); English restored via the one-reload fallback |
 | T-19 | Google button explains the disabled provider instead of navigating | Pass |
 | T-20 | Reading-progress ring tracks scroll and returns to top | Pass |
 | T-21 | Header never covers page content at 360–1440 px | Pass |
@@ -52,8 +52,9 @@ what remains unverified. It is honest about the gap rather than implying coverag
 
 - Google Translate depends on `translate.google.com`; in the test environment the
   proxy intermittently returned `ERR_TUNNEL_CONNECTION_FAILED`. French and Igbo
-  translated successfully; one German attempt did not. The failure path (10 s cover,
-  then a notice) was exercised.
+  translated successfully; one German attempt did not. After the in-place rewrite,
+  FR then DE switched in the same document with no reload; English reloaded once
+  because the widget did not restore the original text in time.
 - Admin and order tests ran before the 2026-10-29 account wipe. They must be re-run
   after the owner re-creates the admin account.
 - `python -m http.server` ignores `_headers`, so CSP behaviour is untested locally.

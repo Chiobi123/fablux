@@ -124,7 +124,7 @@ Acceptance:
 
 Acceptance:
 - The globe pill lists languages with native names.
-- Choosing one reloads into that language without an English flash.
+- Choosing one translates the page in place: no reload, no English flash.
 - Choosing English removes the translation cookie.
 
 ### US-13 Read comfortably at night (Ada)

@@ -67,16 +67,18 @@ Chronological, newest first. Conventional prefixes match the commit history.
 
 - `feat(site)`: 79-language switcher (native names), theme toggle, reading-progress
   ring; injected into all 28 pages.
-- `fix(site)`: language change no longer shows English first — a "Translating…" cover
-  is applied from `<head>` and removed when the translation lands (10 s cap, with a
-  notice on failure).
-- `fix(site)`: language choice now writes the `googtrans` cookie before reload and
-  self-heals if local storage and the cookie disagree.
+- `fix(site)`: language changes now happen in place — the switcher drives Google's
+  hidden `select` (bubbling `change`) instead of reloading. No loading cover, no
+  English flash, no drift to a language that was not picked; the cookie is still
+  written for the next page.
+- `fix(site)`: light-mode hero wash is lilac and left-weighted, so the photograph
+  stays visible instead of being whitened out.
+- `fix(site)`: the hero starts below the fixed header, so the model's face is no
+  longer covered by the navigation.
 - `fix(auth)`: Google button probes the provider and explains "not enabled" instead
   of navigating to a JSON error; OAuth error params are surfaced on return.
 - `fix(site)`: header height measured into `--header-h` so page tops are never
   hidden when the nav wraps.
-- `feat(site)`: light-mode hero fade keeps the photograph visible.
 - `fix(a11y)`: password eye toggle placed beside the field.
 - `fix(mobile)`: Google button visible on auth pages above the mobile dock.
 - `chore(security)`: CSP extended to Google Translate hosts.
@@ -107,10 +109,12 @@ Earlier history: `git log --oneline`.
 
 ### Release 2026-10-29 — "Language and comfort"
 
-- **New:** pick from 79 languages; the site switches cleanly, without flashing
-  English first.
-- **New:** light mode for daytime reading, with the hero photograph still visible.
+- **New:** pick from 79 languages; switching is instant and never reloads the page.
+- **New:** light mode for daytime reading, with the hero photograph still visible
+  behind a soft lilac wash.
 - **New:** reading-progress ring that returns you to the top.
+- **Fixed:** the home hero now starts below the navigation, so the model's face is
+  fully visible.
 - **Fixed:** the password field's eye button no longer covers the text you type.
 - **Fixed:** the Google button is visible on phones.
 - **Changed:** the Google button now tells you when Google sign-in is unavailable

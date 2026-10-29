@@ -86,7 +86,7 @@ Postgres Row Level Security and `SECURITY DEFINER` functions.
 |---|---|
 | FR-7.1 | Light/dark toggle persisted in `localStorage.fablux_theme`; dark is default. |
 | FR-7.2 | Language switcher offers 79 languages; choice persisted in `localStorage.fablux_lang`. |
-| FR-7.3 | A "Translating…" cover prevents an English flash while the switch is applied. |
+| FR-7.3 | Switching languages happens in place (no reload, no cover) and applies exactly the chosen language. |
 | FR-7.4 | Reading-progress ring reflects scroll position and returns to top on activation. |
 | FR-7.5 | The header never overlays page content, at any width. |
 
