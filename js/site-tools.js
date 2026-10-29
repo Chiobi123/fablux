@@ -55,35 +55,22 @@
   applyTheme(get(THEME_KEY) === 'light' ? 'light' : 'dark');
 
   /* ---- language (Google website translator) ---- */
+  /* Google reads the googtrans cookie when the page loads, so the choice is
+     written before a reload — never patched into the widget afterwards. */
   function googleCookie(code) {
-    var d = location.hostname;
     if (code === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.' + d;
     } else {
-      document.cookie = 'googtrans=/en/' + code + '; path=/';
-      document.cookie = 'googtrans=/en/' + code + '; path=/; domain=.' + d;
+      document.cookie = 'googtrans=/en/' + code + '; path=/; max-age=31536000';
     }
   }
-  /* Google translates on load from the googtrans cookie; driving its own
-     hidden <select> afterwards is the reliable fallback when the cookie is
-     ignored (private mode, blocked storage, host quirks). */
-  function applyTranslator(code, attempt) {
-    attempt = attempt || 0;
-    var combo = document.querySelector('.goog-te-combo');
-    if (combo) {
-      if (combo.value !== code) {
-        combo.value = code;
-        combo.dispatchEvent(new Event('change'));
-      }
-      return;
-    }
-    if (attempt < 24) setTimeout(function () { applyTranslator(code, attempt + 1); }, 250);
+  function cookieLang() {
+    var m = document.cookie.match(/(?:^|;\s*)googtrans=\/en\/([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
   }
 
-  function loadTranslator(code) {
-    var existing = document.getElementById('gt-script');
-    if (existing) { applyTranslator(code); return; }
+  function loadTranslator() {
+    if (document.getElementById('gt-script')) return;
     var host = document.getElementById('google_translate_element');
     if (!host) {
       host = document.createElement('div');
@@ -99,7 +86,6 @@
           'google_translate_element'
         );
       } catch (e) {}
-      if (code && code !== 'en') applyTranslator(code);
     };
     var s = document.createElement('script');
     s.id = 'gt-script';
@@ -159,6 +145,7 @@
         set(LANG_KEY, code);
         root.lang = code;
         codeEl.textContent = code.toUpperCase();
+        try { sessionStorage.removeItem('fablux_lang_sync'); } catch (e) {}
         googleCookie(code);
         location.reload();
       });
@@ -205,12 +192,50 @@
     update();
   }
 
+  /* The page is served in English, then Google swaps the text in. Hold a
+     "Translating…" cover until that swap happens so the visitor never sees
+     English flash first. A failed/slow translation reveals the page anyway. */
+  function watchTranslation(code) {
+    var started = Date.now();
+    var timer = setInterval(function () {
+      var combo = document.querySelector('.goog-te-combo');
+      var translated = combo && combo.value === code && document.querySelector('font');
+      if (translated) {
+        clearInterval(timer);
+        root.removeAttribute('data-lang-pending');
+        try { sessionStorage.removeItem('fablux_lang_sync'); } catch (e) {}
+        return;
+      }
+      if (Date.now() - started > 10000) {
+        clearInterval(timer);
+        root.removeAttribute('data-lang-pending');
+        root.setAttribute('data-lang-failed', '1');
+        setTimeout(function () { root.removeAttribute('data-lang-failed'); }, 3200);
+        try { sessionStorage.removeItem('fablux_lang_sync'); } catch (e) {}
+      }
+    }, 250);
+  }
+
   function init() {
     build();
     var saved = get(LANG_KEY) || 'en';
     root.lang = saved;
-    if (saved !== 'en') loadTranslator(saved);
-    else if (/(^|;\s*)googtrans=/.test(document.cookie)) googleCookie('en');
+    if (saved !== 'en') {
+      /* The cookie must exist before this page loads for Google to act on it.
+         If local storage and the cookie disagree (cleared cookies, new device
+         settings), repair the cookie and load once more. */
+      if (cookieLang() !== saved && !sessionStorage.getItem('fablux_lang_sync')) {
+        try { sessionStorage.setItem('fablux_lang_sync', '1'); } catch (e) {}
+        googleCookie(saved);
+        location.reload();
+        return;
+      }
+      loadTranslator();
+      watchTranslation(saved);
+    } else {
+      root.removeAttribute('data-lang-pending');
+      if (cookieLang()) googleCookie('en');
+    }
     refreshTheme();
     initProgress();
     syncHeader();

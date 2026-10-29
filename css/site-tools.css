@@ -73,6 +73,30 @@ html[data-theme="light"] .site-lang[open] .site-lang-btn{background:rgba(0,0,0,.
 iframe.skiptranslate{display:none!important}
 body{top:0!important}
 
+/* While a non-English language is being applied, the page is still English
+   underneath. Cover it until the translation lands (cleared by site-tools.js,
+   with a 10s safety timeout). */
+html[data-lang-pending] body{visibility:hidden}
+html[data-lang-pending]::before{
+  content:"Translating…";
+  position:fixed;inset:0;z-index:99999;
+  display:grid;place-items:center;
+  background:#050505;color:#c9c4d6;
+  font:600 15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.03em;
+  visibility:visible;
+}
+html[data-lang-pending][data-theme="light"]::before{background:#f4f2f7;color:#4c4658}
+
+/* If Google never answers, say so instead of silently showing English. */
+html[data-lang-failed]::after{
+  content:"Translation is unavailable right now — showing English.";
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+  z-index:99999;padding:12px 18px;border-radius:10px;
+  background:#1b1a23;color:#f0eef7;border:1px solid rgba(255,255,255,.18);
+  font:600 13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  max-width:min(92vw,420px);text-align:center;box-shadow:0 14px 34px rgba(0,0,0,.4);
+}
+
 /* Reserve room for the fixed bottom dock so page content never hides under it. */
 @media (max-width:640px){
   body{padding-bottom:calc(82px + env(safe-area-inset-bottom, 0px))}

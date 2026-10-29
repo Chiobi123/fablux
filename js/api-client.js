@@ -319,6 +319,26 @@
       const here=(location.origin||'')+'/'+String(to).replace(/^\//,'');
       location.href=AUTH+'/authorize?provider=google&redirect_to='+encodeURIComponent(here);
     },
+    /* Google sign-in only works once the provider is enabled in Supabase.
+       Probe it so the button explains the real reason instead of showing
+       the raw "Unsupported provider" JSON page. */
+    async googleAvailable(){
+      const url=AUTH+'/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/account.html');
+      try{
+        const res=await fetch(url,{redirect:'manual'});
+        if(res.status===400){
+          const d=await res.json().catch(()=>null);
+          const raw=(d&&(d.msg||d.message))||'';
+          const msg=/not enabled|unsupported provider/i.test(raw)
+            ? 'Google sign-in is not enabled yet'
+            : (raw||'Google sign-in is unavailable');
+          return {ok:false,message:msg};
+        }
+        return {ok:true};
+      }catch(e){
+        return {ok:false,message:'Could not reach the sign-in service'};
+      }
+    },
     async publicSettings(){
       const keys='delivery_fee_default,delivery_fee_express_surcharge,store_name,store_contact,store_email,store_address,email_enabled';
       const rows=await rest('/settings?select=key,value&key=in.("'+keys.split(',').join('","')+'")');

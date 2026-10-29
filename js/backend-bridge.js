@@ -152,8 +152,31 @@ document.addEventListener('click',function(event){
   event.preventDefault();
   if(!window.FabluXAPI||!api.loginWithGoogle){toast('Google sign-in is not available right now');return}
   const ret=new URLSearchParams(location.search).get('return');
-  api.loginWithGoogle(ret||(location.pathname.split('/').pop()==='order-success.html'?'account.html':'account.html'));
+  const dest=ret||(location.pathname.split('/').pop()==='order-success.html'?'account.html':'account.html');
+  const go=function(){ api.loginWithGoogle(dest); };
+  /* The provider has to be enabled in Supabase; saying so is better than
+     sending the visitor to a raw JSON error page. */
+  if(!api.googleAvailable){ go(); return; }
+  btn.setAttribute('aria-busy','true');
+  api.googleAvailable().then(function(r){
+    btn.removeAttribute('aria-busy');
+    if(r.ok){ go(); return; }
+    toast((r.message||'Google sign-in is not enabled yet')+'. Please sign in with your email instead.');
+  }).catch(function(){ btn.removeAttribute('aria-busy'); go(); });
 },true);
+
+/* Surface OAuth failures (provider disabled, redirect URL not allow-listed)
+   on whichever page the visitor lands on, rather than failing silently. */
+(function reportOAuthError(){
+  const q=new URLSearchParams(location.search);
+  const h=new URLSearchParams((location.hash||'').replace(/^#/,''));
+  if(h.get('access_token')||q.get('access_token')) return;
+  const err=q.get('error')||h.get('error');
+  const desc=q.get('error_description')||h.get('error_description')||q.get('error_code');
+  if(!err&&!desc) return;
+  const msg=String(desc||err).replace(/\+/g,' ');
+  setTimeout(function(){ if(typeof toast==='function') toast(msg); },400);
+})();
 /* ---- site chrome (works on every page, even those that do not load js/script.js) ---- */
 function initSiteChrome(){
   /* Persistent Back / Home dock — one control that works on every page,
