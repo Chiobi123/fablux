@@ -111,29 +111,34 @@
     loadTranslator();
   }
 
-  var langRetried = false;
-  function applyLang(code, attempt) {
-    attempt = attempt || 0;
-    var combo = translatorCombo();
-    if (!combo) {
-      if (attempt > 80) return;                       /* ~20s, give up quietly */
-      if (attempt === 40 && !langRetried) { langRetried = true; restartTranslator(); }
-      else loadTranslator();
-      setTimeout(function () { applyLang(code, attempt + 1); }, 250);
-      return;
-    }
-    var target = code === 'en' ? '' : code;
-    if (combo.value !== target) {
-      combo.value = target;
-      combo.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    if (code === 'en') {
-      /* Restoring the original text is instant in the widget; if it did not
-         happen, a plain reload is guaranteed English (the cookie is cleared). */
-      setTimeout(function () {
-        if (document.querySelector('font')) location.reload();
-      }, 1200);
-    }
+  var langRetried = false, langSeq = 0;
+  /* Only the newest pick may apply: a slower retry from an earlier choice is
+     dropped, so the page can never drift to a language that was not asked. */
+  function applyLang(code) {
+    var seq = ++langSeq;
+    (function tick(attempt) {
+      if (seq !== langSeq) return;
+      var combo = translatorCombo();
+      if (!combo) {
+        if (attempt > 80) return;                     /* ~20s, give up quietly */
+        if (attempt === 40 && !langRetried) { langRetried = true; restartTranslator(); }
+        else loadTranslator();
+        setTimeout(function () { tick(attempt + 1); }, 250);
+        return;
+      }
+      var target = code === 'en' ? '' : code;
+      if (combo.value !== target) {
+        combo.value = target;
+        combo.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (code === 'en') {
+        /* Restoring the original text is instant in the widget; if it did not
+           happen, a plain reload is guaranteed English (the cookie is cleared). */
+        setTimeout(function () {
+          if (seq === langSeq && document.querySelector('font')) location.reload();
+        }, 1200);
+      }
+    })(0);
   }
 
   /* ---- build controls ---- */
