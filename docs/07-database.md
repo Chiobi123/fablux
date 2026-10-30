@@ -57,7 +57,7 @@ newsletter_subscribers  — standalone
 | `orders` | `id`, `reference` UNIQUE, `user_id`→users, `status`, `subtotal`, `delivery_fee`, `discount`, `promo_code`, `total`, `payment_method`, `payment_status`, `delivery_method`, `customer_name`, `email`, `phone`, `address`, `city`, `state`, `landmark`, `instructions`, `notes`, `currency` (NGN), `tracking_token` UNIQUE, `idempotency_key` UNIQUE, `courier`, `courier_tracking`, `dispatched_at`, `delivered_at`, `cancelled_at`, `status_updated_at`, `payment_updated_at`, `created_at`, `updated_at` |
 | `order_items` | `id` BIGSERIAL, `order_id`→orders CASCADE, `product_id`, `name`, `price`, `quantity` (>0) — price/name are snapshots at purchase time |
 | `order_events` | `id`, `order_id`→orders CASCADE, `event`, `label`, `actor`, `created_at` |
-| `payment_transactions` | `id`, `order_id`→orders CASCADE, `provider`, `reference` UNIQUE, `amount`, `currency`, `status`, `provider_status`, `expires_at`, `verified_at`, timestamps |
+| `payment_transactions` | `id`, `order_id`→orders CASCADE, `provider`, `reference` UNIQUE, `amount` (**kobo**), `currency`, `status`, `provider_status`, `expires_at`, `verified_at`, timestamps. One live `pending` row per order (`idx_payment_tx_live`). Written only by the payments Edge Function. |
 | `returns` | `id`, `user_id`→users CASCADE, `order_id`, `reason`, `details`, `status` (`requested`…), `created_at` |
 
 ### 2.4 Operations

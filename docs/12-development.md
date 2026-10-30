@@ -129,7 +129,8 @@ Release steps: see `15-deployment.md` §5.
 | ADR-09 | No hamburger menu; nav wraps | hiding navigation hurt discoverability more than a two-row header | header height varies; solved with `--header-h` |
 | ADR-10 | Dark default, light opt-in | brand reads as premium in dark | two theme token sets to maintain |
 | ADR-11 | Pay-on-delivery + bank transfer only | no PCI scope, no processor fees at launch | no instant card payment |
-| ADR-12 | No automated test framework | no build step or runner to maintain for a 28-page static site | manual regression checklist (see debt TD-06) |
+| ADR-12 | Payments run in a Supabase Edge Function, not the browser | the Paystack secret key must stay server-side, and settlement must be idempotent | one more deploy target; Deno toolchain |
+| ADR-13 | No automated test framework | no build step or runner to maintain for a 28-page static site | manual regression checklist (see debt TD-06) |
 
 ## 7. Dependency and licence inventory
 

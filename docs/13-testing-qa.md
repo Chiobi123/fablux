@@ -46,6 +46,9 @@ what remains unverified. It is honest about the gap rather than implying coverag
 | T-21 | Header never covers page content at 360–1440 px | Pass |
 | T-22 | Light-mode hero photo remains visible | Pass |
 | T-23 | Password eye toggle sits beside the field, no overlap | Pass |
+| T-24 | `confirm_payment` settles once, replays return `already:true`, one event written | Pass (SQL test, rolled back) |
+| T-25 | Checkout rejects an unknown `payment_method` | Pass (constraint applied) |
+| T-26 | Paystack redirect + webhook + callback | Not run (function not deployed; needs keys) |
 | T-24 | Mobile Google button is visible on auth pages | Pass |
 
 ## 3. Known test caveats

@@ -103,6 +103,20 @@ port the same header block from `nginx.conf.example`; `vercel.json` covers Verce
 Cloudflare Pages keeps previous deployments: *Deployments → … → Rollback*. Database
 changes are not rolled back by that action; use `16-operations.md` §2.
 
+### 4.3 Edge Functions (payments)
+
+Requires the Supabase CLI and an access token (`supabase login` or
+`SUPABASE_ACCESS_TOKEN`).
+
+```
+supabase functions deploy payments --no-verify-jwt --project-ref msisbmcowtggbvasubla
+supabase secrets set PAYSTACK_SECRET_KEY=sk_live_... SITE_URL=https://fablux.pages.dev
+```
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected by the platform; never put
+them in the repo. After the first successful test charge, set `PAYSTACK_ENABLED = true`
+in `js/api-client.js`, bump the asset token and redeploy the site.
+
 ## 5. Release process
 
 1. Implement + verify locally.

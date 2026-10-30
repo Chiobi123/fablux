@@ -8,7 +8,12 @@
   const KEY='sb_publishable_E0_BuUK9piwZfNdvlwpbAA_-CM03cNs';
   const REST=BASE+'/rest/v1';
   const AUTH=BASE+'/auth/v1';
+  const FUNCTIONS=BASE+'/functions/v1';
   const IMAGE_BUCKET='product-images';
+
+  /* Paystack goes live only after `supabase functions deploy payments` and the
+     gateway secret are set in Supabase. Flip to true in that same release. */
+  const PAYSTACK_ENABLED=false;
 
   const token=()=>localStorage.getItem(TOKEN_KEY);
   const setToken=t=>{t?localStorage.setItem(TOKEN_KEY,t):localStorage.removeItem(TOKEN_KEY);};
@@ -258,7 +263,28 @@
     async track(ref,token){
       return rest('/rpc/track_order',{method:'POST',body:JSON.stringify({p_ref:ref,p_token:token})});
     },
-    async verifyPaystack(){return {paid:false};},
+    async verifyPaystack(reference){
+      if(!reference) return {paid:false};
+      try{
+        const res=await fetch(FUNCTIONS+'/payments?action=verify&reference='+encodeURIComponent(reference),
+          {headers:{apikey:KEY}});
+        return await res.json();
+      }catch(e){return {paid:false,error:'Verification is unavailable.'};}
+    },
+    paystackEnabled(){return PAYSTACK_ENABLED;},
+    /* Starts a card payment. Returns the gateway's hosted checkout URL; the
+       browser never sees the secret key or the amount calculation. */
+    async paystackInitialize(reference,token){
+      if(!PAYSTACK_ENABLED) throw new Error('Card payments are not switched on yet.');
+      const res=await fetch(FUNCTIONS+'/payments?action=initialize',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',apikey:KEY},
+        body:JSON.stringify({reference,token})
+      });
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.authorization_url) throw new Error(data.error||'Could not start the card payment.');
+      return data;
+    },
     async orders(){
       const u=await sessionUser(); if(!u) throw new Error('Please sign in first.');
       const rows=await rest('/orders?select=*,order_items(*)&user_id=eq.'+encodeURIComponent(u.id)+'&order=created_at.desc');

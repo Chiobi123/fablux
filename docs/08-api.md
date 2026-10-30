@@ -86,12 +86,21 @@ A wrong token returns no row. No authentication required.
 |---|---|---|
 | `delete_my_data` | `{}` | deletes addresses, reviews, returns and the `public.users` row for `auth.uid()`; orders are retained for financial records |
 
-### 2.6 Admin (all call `assert_admin()`)
+### 2.6 Payments (service role only)
+
+| Function | Body | Notes |
+|---|---|---|
+| `confirm_payment` | `{p_reference, p_amount, p_provider_status}` | idempotent; rejects an amount that differs from the stored kobo amount; flips the order to `payment_confirmed` + `successful`, writes an event, an audit row and the notification outbox rows |
+| `expire_stale_payments` | `{}` | marks `pending` attempts past `expires_at` as `abandoned`; returns the count |
+
+Neither is executable by `anon` or `authenticated`; only `service_role`.
+
+### 2.7 Admin (all call `assert_admin()`)
 
 | RPC | Body |
 |---|---|
 | `admin_set_order_status` | `{p_ref, p_new_status}` |
-| `admin_set_payment_status` | `{p_ref, p_new_status}` |
+| `admin_set_payment_status` | `{p_ref, p_new_status}` — refuses to mark a `paystack` order paid; only the gateway may |
 | `admin_set_courier` | `{p_ref, p_courier, p_tracking, p_dispatched_at, p_notes}` |
 | `admin_update_setting` | `{p_key, p_value}` |
 

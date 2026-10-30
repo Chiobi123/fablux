@@ -48,13 +48,16 @@ on request."
 |---|---|
 | Prices are in naira and include VAT where applicable | prices are integers; VAT treatment is a business decision, confirm before launch |
 | Delivery fees are shown at checkout | `delivery_fee_default` + express surcharge |
-| Payment is on delivery or by bank transfer | matches `payment_method` values |
+| Payment is on delivery, by bank transfer, or by card/transfer through Paystack (once enabled) | matches `payment_method` values |
 | Orders may be cancelled before dispatch | `admin_set_order_status` + stock release |
 | Returns follow the Returns Policy | `returns` table + admin workflow |
 | We may refuse fraudulent orders | manual, via admin |
 | Liability is limited to the order value | business/legal decision, not code |
 
-No card payments are taken, so there are no card-scheme terms to disclose.
+Card details are entered on Paystack\u2019s hosted checkout, never on this site; the
+store therefore holds no card data. Paystack\u2019s own terms and privacy notice apply to
+the payment step. While the gateway is not deployed, the store takes payment on
+delivery or by bank transfer only.
 
 ## 4. Cookie Policy — actual storage
 

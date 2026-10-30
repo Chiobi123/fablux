@@ -19,49 +19,65 @@
 | Email provider | order alerts / resets | none | — | **not connected** |
 | Payment processor | card payments | none | — | **not used** |
 
-## 2. Payments — what exists and how it is verified
+## 2. Payments
+
+**Status:** gateway code written, **not deployed** — waiting on a Supabase access
+token (to deploy the function) and the Paystack secret key. Until then the card
+option is hidden in checkout and the store runs on the two manual methods.
 
 ### 2.1 Methods
 
-| Method | Value in `orders.payment_method` | Money moves |
-|---|---|---|
-| Pay on delivery | `pay-on-delivery` | cash/transfer to the courier or on handover |
-| Bank transfer | `bank-transfer` | customer transfers, owner confirms manually |
+| Method | `orders.payment_method` | Money moves | When live |
+|---|---|---|---|
+| Pay on delivery | `pay-on-delivery` | cash/transfer on handover | now |
+| Bank transfer | `bank-transfer` | customer transfers, owner confirms | now |
+| Paystack | `paystack` | card/transfer at the gateway, settled by webhook | after deploy + keys |
 
-No card data is collected, transmitted or stored. There is therefore **no PCI-DSS
-scope** today: no cardholder data environment exists.
+`orders_payment_method_check` rejects anything else, so a dead "card" option can
+no longer create an unpayable order. No card data touches the site: the customer
+pays on Paystack's hosted page (SAQ A, no cardholder data environment).
 
-### 2.2 Flow
+### 2.2 Gateway flow
 
-1. Checkout records the order with `payment_status = 'pending'`.
-2. The owner confirms the transfer in the bank app.
-3. The owner sets payment status to `successful` in the admin console
-   (`admin_set_payment_status`), which writes an `order_event` and an `audit_log` row.
-4. Delivery proceeds; the order is marked `delivered`.
+1. Checkout calls `create_order` (database computes prices) and receives the order
+   reference and tracking token.
+2. `POST /functions/v1/payments?action=initialize` with `{reference, token}`:
+   the function proves the caller holds the order, reads the total **from the
+   database**, creates a Paystack transaction (`amount = total × 100` kobo) and
+   inserts a `payment_transactions` row (`pending`, 30-minute expiry).
+3. The browser is redirected to `authorization_url`. It never sees the secret key.
+4. Paystack calls `?action=webhook`: HMAC-SHA512 of the raw body is compared with
+   `x-paystack-signature`; `charge.success` is re-verified with
+   `GET /transaction/verify/:reference`, then `confirm_payment` settles the
+   transaction and the order.
+5. `payment-callback.html` calls `?action=verify&reference=…` for the customer's
+   screen. The callback is a convenience only; the webhook is authoritative.
 
-`payment_transactions` exists for a future processor: `provider`, `reference`
-(unique), `amount`, `currency`, `status`, `provider_status`, `expires_at`,
-`verified_at`. Nothing writes to it yet.
+### 2.3 Safety rules
 
-### 2.3 Verification rules
+- Settlement is idempotent: a replayed webhook returns `already: true` and writes
+  nothing (`confirm_payment` locks the row).
+- Amount mismatch raises and leaves the order untouched.
+- `admin_set_payment_status` refuses to mark a `paystack` order paid.
+- One live attempt per order; expired attempts are marked `abandoned` by
+  `expire_stale_payments` before a retry.
+- Manual refunds in the Paystack dashboard, recorded in the order notes (no refund
+  API yet — accepted at this size).
 
-- Never mark `successful` from a customer's screenshot alone; confirm in the bank.
-- Match the **amount** and the **reference** (the order reference is the narration).
-- Partial payments keep the order `pending`; note the shortfall in `orders.notes`.
-- Refunds are manual and recorded in the order's notes until a processor is added.
-- `payment-callback.html` exists for a future processor callback; it must not be
-  trusted without a signature check when that integration is built.
+### 2.4 Deploying it (owner)
 
-### 2.4 Adding a processor later (outline)
+```
+supabase login                                  # or SUPABASE_ACCESS_TOKEN in the env
+supabase functions deploy payments --no-verify-jwt --project-ref msisbmcowtggbvasubla
+supabase secrets set PAYSTACK_SECRET_KEY=sk_live_… SITE_URL=https://fablux.pages.dev
+```
 
-1. Choose a provider that supports NGN (e.g. Paystack/Flutterwave).
-2. Server-side only: a Supabase Edge Function creates the transaction and verifies the
-   webhook signature. The browser must never hold the secret key.
-3. Insert into `payment_transactions`; update `orders.payment_status` from the verified
-   webhook, not from the redirect.
-4. Add the provider origin to CSP `connect-src`/`frame-src`.
-5. Update this document, `21-legal.md`, and the refund policy.
-6. Re-assess PCI scope with the provider's hosted checkout (SAQ A typically).
+Add the webhook in Paystack → Settings → API Keys & Webhooks:
+`https://msisbmcowtggbvasubla.supabase.co/functions/v1/payments?action=webhook`.
+
+Then flip `PAYSTACK_ENABLED` to `true` in `js/api-client.js` (one line), bump the
+asset token and redeploy the site. Test with `sk_test_…` first (card
+4084 0840 8408 4081, CVV 408, PIN 0000, OTP 123456).
 
 ## 3. Google Translate
 
@@ -96,18 +112,34 @@ scope** today: no cardholder data environment exists.
 - Rollback via the deployments list.
 - No Functions/Workers are deployed.
 
-## 6. Email (outbox, not a sender)
+## 6. Email
 
-`queue_notification()` writes rows to `notifications` on order events. With
-`settings.email_enabled = 'false'` nothing is sent. The admin console says so.
+**Status:** no sender is connected. `notifications` is an outbox; nothing reads it
+automatically, and Supabase Auth still uses the built-in sender (low limits, often
+filtered as spam). Password-reset delivery is therefore unreliable until custom
+SMTP is configured.
 
-To connect a provider:
+### 6.1 Auth mail (password reset, sign-up) — dashboard only
 
-1. Create a Supabase Edge Function (or Cloudflare Worker) with the provider's API key.
-2. Select `notifications` where `status='pending'`, send, set `sent_at` / `status`.
-3. Add retry handling and increment `attempts`; store `error` on failure.
-4. Set `email_enabled = 'true'` only when delivery is verified.
-5. Also configure Supabase Auth SMTP so password-reset mail is reliable.
+1. Supabase → Authentication → SMTP Settings: host, port 465, username, password
+   (the provider API key), sender address on a domain you own.
+2. Publish SPF, DKIM and DMARC records for that domain; `pages.dev` cannot be a
+   sender.
+3. Authentication → URL Configuration: site URL `https://fablux.pages.dev` plus
+   `https://fablux.pages.dev/**` and `http://127.0.0.1:8086/**`.
+4. Brand the reset/confirm templates, send a real reset, check DKIM in the headers.
+
+### 6.2 Order mail (outbox)
+
+`queue_notification()` already writes a row per order event. To deliver them:
+
+1. Add a `send-notifications` Edge Function that selects `status='pending' AND
+   attempts < 5`, sends through the provider's HTTP API, then sets `sent_at` /
+   `status`; on failure increments `attempts` and stores `error`.
+2. Schedule it (Supabase cron or any 5-minute pinger).
+3. Set `settings.email_enabled='true'` only after one real delivery is confirmed.
+
+Not built yet: no provider chosen, no templates beyond the plain-text bodies.
 
 ## 7. Integration failure behaviour
 

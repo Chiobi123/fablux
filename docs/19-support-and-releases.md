@@ -63,6 +63,18 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-10-30
+
+- `feat(payments)`: Paystack settlement layer — `payments` Edge Function
+  (initialize / webhook / verify), `confirm_payment` and `expire_stale_payments`
+  SQL, kobo amount checks, replay protection. **Not deployed**: needs a Supabase
+  access token and `PAYSTACK_SECRET_KEY`.
+- `fix(checkout)`: `orders_payment_method_check` now allows only
+  `pay-on-delivery`, `bank-transfer` and `paystack`, so the dead "card (backend
+  required)" option can no longer create an unpayable order.
+- `fix(admin)`: manual payment confirmation is refused for gateway orders.
+- `docs`: payments, database, API, legal and deploy docs follow the new layer.
+
 ### 2026-10-29
 
 - `feat(site)`: 79-language switcher (native names), theme toggle, reading-progress
