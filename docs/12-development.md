@@ -131,6 +131,7 @@ Release steps: see `15-deployment.md` §5.
 | ADR-11 | Pay-on-delivery + bank transfer only | no PCI scope, no processor fees at launch | no instant card payment |
 | ADR-12 | Payments run in a Supabase Edge Function, not the browser | the Paystack secret key must stay server-side, and settlement must be idempotent | one more deploy target; Deno toolchain |
 | ADR-13 | No automated test framework | no build step or runner to maintain for a 28-page static site | manual regression checklist (see debt TD-06) |
+| ADR-14 | New account/admin UI uses local `--fx-*` tokens in `css/dashboard.css` instead of extending the global theme | the global `--white`/`--dark` pair flips meaning in light mode, so every new component had to be patched by hand and some were missed (white text on white cards) | two token sets to keep in sync, one extra stylesheet on two pages |
 
 ## 7. Dependency and licence inventory
 

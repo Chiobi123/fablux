@@ -63,9 +63,19 @@ The shop does not store card numbers and does not take card payments online.
 
 ## 6. Your account
 
+The account page is split into sections along the left (along the top on phones):
+
+| Section | What it does |
+|---|---|
+| Overview | four counters (orders, in progress, delivered, saved addresses) and your three latest orders |
+| Delivery addresses | your address book — add or remove the addresses checkout offers you |
+| Account settings | the name, email and phone on file, password change and email preferences |
+| Help & support | tracking, returns, FAQ and contact links |
+
+My orders, Wishlist and Track an order are links in the same menu.
+
 | Page | What it does |
 |---|---|
-| Account | profile summary, saved addresses, recent orders |
 | Orders | full history with status and totals |
 | Returns | request a return against a delivered order |
 | Wishlist | items you saved for later |

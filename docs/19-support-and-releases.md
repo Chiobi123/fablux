@@ -63,6 +63,27 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-10-30 (evening)
+
+- `fix(account)`: light mode made account links white on white cards until hover
+  (`#accountPage .pro-card-link` overrode the background but not the colour). The
+  account page no longer uses those classes.
+- `feat(account)`: account page rebuilt as a hub — profile card, section nav
+  (Overview, Delivery addresses, Account settings, Help & support) and a named
+  address book with add/remove. Overview shows four counters and the three latest
+  orders.
+- `feat(admin)`: new **Overview** tab — revenue, average order, payment and packing
+  queues, 14-day sales chart, orders by stage, recent orders, low stock.
+- `feat(ui)`: `css/dashboard.css` with local `--fx-*` tokens for both themes; new
+  components measure 6.9:1 contrast or better in light and dark (ADR-14).
+- `fix(lang)`: the switcher no longer waits 20 s. The widget preloads on menu
+  intent, a pick applies in place when ready, and otherwise reloads once after
+  2.5 s with the cookie already set. Pages opened in a saved language load the
+  widget immediately. Verified locally: pick → widget script present, select set to
+  the chosen code, no reload, no `aria-busy` left behind.
+- `docs`: 05 (components, language), 17 (account sections), 18 (admin overview),
+  12 (ADR-14), 19.
+
 ### 2026-10-30 (later)
 
 - `feat(auth)`: Google sign-in enabled on the Supabase project (provider on, client ID
@@ -128,6 +149,16 @@ Chronological, newest first. Conventional prefixes match the commit history.
 Earlier history: `git log --oneline`.
 
 ## 4. Release notes (user-facing)
+
+### Release 2026-10-30 — "Clear account, real dashboard"
+
+- Your account now has a proper menu: Overview, Delivery addresses, Account
+  settings and Help, with your address book in plain sight.
+- Text and buttons are readable in light mode again — no more white-on-white.
+- The admin console opens on a dashboard: sales trend, order pipeline, recent
+  orders and stock alerts.
+- Changing language no longer takes half a minute, and you never have to refresh
+  by hand.
 
 ### Release 2026-10-29 — "Language and comfort"
 

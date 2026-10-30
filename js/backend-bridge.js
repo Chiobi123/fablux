@@ -104,7 +104,132 @@ async function handleReset(event){
     setTimeout(()=>{location.href='login.html'},700);
   }catch(e){toast(e.message)}
 }
-async function renderAccount(){const box=document.getElementById('accountPage');if(!box)return;try{const d=await api.account();if(!d||!d.user){location.href='login.html?return='+encodeURIComponent(location.pathname+location.search);return}box.querySelector('[data-user-name]').textContent=d.user.name;box.querySelector('[data-user-email]').textContent=d.user.email;box.querySelector('[data-user-phone]').textContent=d.user.phone||'Not added';const role=(d.user.role||'customer');const welcome=box.querySelector('.section-title p');let badge=document.getElementById('roleBadge');if(!badge&&welcome){badge=document.createElement('span');badge.id='roleBadge';badge.className='account-role';welcome.appendChild(badge)}if(badge)badge.textContent=role==='admin'?'ADMINISTRATOR':'MEMBER';let adminCard=document.getElementById('adminShortcut');if(role==='admin'&&!adminCard){adminCard=document.createElement('article');adminCard.className='pro-card';adminCard.id='adminShortcut';adminCard.innerHTML='<div><h3>Admin Console</h3><p>Orders, payment confirmation, dispatch and store settings.</p><a class="pro-card-link" href="admin.html">Open Admin Console</a></div>';const grid=box.querySelector('.pro-card-grid');if(grid)grid.prepend(adminCard)}else if(role!=='admin'&&adminCard){adminCard.remove()}const logout=box.querySelector('[data-logout]');if(logout)logout.onclick=async()=>{await api.logout();location.href='login.html';};let section=document.getElementById('addressBook');if(!section){section=document.createElement('section');section.id='addressBook';section.style.marginTop='40px';box.appendChild(section)}section.innerHTML=`<div class="section-title"><span>DELIVERY</span><h3>Address Book</h3></div><form id="addressForm" class="pro-form"><label>Label<input name="label" required></label><label>Address<textarea name="address" rows="3" required></textarea></label><label>City<input name="city" required></label><label>State<input name="state" required></label><button class="btn">Save Address</button></form><div class="pro-card-grid" style="margin-top:20px">${d.addresses.map(a=>`<article class="pro-card"><div><strong>${esc(a.label)}</strong><p>${esc(a.address)}<br>${esc(a.city)}, ${esc(a.state)}</p><button type="button" data-delete-address="${esc(a.id)}">Remove</button></div></article>`).join('')}</div>`;section.querySelector('#addressForm').onsubmit=async e=>{e.preventDefault();try{await api.createAddress(Object.fromEntries(new FormData(e.target)));toast('✓ Address saved');renderAccount()}catch(err){toast(err.message)}};section.querySelectorAll('[data-delete-address]').forEach(b=>b.onclick=async()=>{try{await api.deleteAddress(b.dataset.deleteAddress);renderAccount()}catch(e){toast(e.message)}})}catch(e){if(e&&(e.network||/Network problem/i.test(String(e.message||'')))){toast(e.message||'Network problem — please try again.');return}location.href='login.html?return='+encodeURIComponent(location.pathname+location.search)}}
+async function renderAccount(){
+  const box=document.getElementById('accountPage');if(!box)return;
+  let acct;
+  try{ acct=await api.account(); }
+  catch(e){
+    if(e&&(e.network||/Network problem/i.test(String(e.message||'')))){toast(e.message||'Network problem — please try again.');return}
+    acct=null;
+  }
+  if(!acct||!acct.user){location.href='login.html?return='+encodeURIComponent(location.pathname+location.search);return}
+  box.setAttribute('aria-busy','false');
+
+  const user=acct.user, addresses=acct.addresses||[];
+  let orders=[];
+  try{ orders=((await api.orders())||{}).orders||[]; }catch(e){}
+
+  const set=function(sel,val){box.querySelectorAll(sel).forEach(function(n){n.textContent=val})};
+  set('[data-user-name]',user.name||'Customer');
+  set('[data-user-email]',user.email||'');
+  set('[data-user-phone]',user.phone||'No phone on file');
+  const initials=(user.name||user.email||'FX').trim().split(/\s+/).map(function(w){return w[0]}).join('').slice(0,2).toUpperCase();
+  set('[data-user-initials]',initials);
+  const since=user.created_at?new Date(user.created_at):null;
+  set('[data-user-since]',since?'Member since '+since.toLocaleDateString('en-NG',{month:'long',year:'numeric'}):'');
+
+  const role=(user.role||'customer');
+  const badge=box.querySelector('#roleBadge');
+  if(badge) badge.textContent=role==='admin'?'ADMINISTRATOR':'MEMBER';
+  const adminLink=box.querySelector('[data-admin-link]');
+  if(adminLink) adminLink.hidden=role!=='admin';
+
+  /* ---- overview ---- */
+  const isOpen=function(o){return o.status!=='delivered'&&o.status!=='cancelled'};
+  set('[data-kpi-orders]',String(orders.length));
+  set('[data-kpi-active]',String(orders.filter(isOpen).length));
+  set('[data-kpi-delivered]',String(orders.filter(function(o){return o.status==='delivered'}).length));
+  set('[data-kpi-addresses]',String(addresses.length));
+  const countOrders=box.querySelector('[data-count-orders]');
+  if(countOrders) countOrders.textContent=orders.length?String(orders.length):'';
+  const countAddr=box.querySelector('[data-count-addresses]');
+  if(countAddr) countAddr.textContent=addresses.length?String(addresses.length):'';
+
+  const STATE={delivered:['ok','Delivered'],cancelled:['bad','Cancelled'],pending_payment:['warn','Awaiting payment'],
+    payment_confirmed:['','Payment confirmed'],confirmed:['','Confirmed'],processing:['','Preparing'],
+    ready_for_dispatch:['','Ready for dispatch'],shipped:['','With courier']};
+  const pill=function(status){const m=STATE[status]||['',status];return '<span class="fx-pill"'+(m[0]?' data-state="'+m[0]+'"':'')+'>'+esc(m[1])+'</span>'};
+  const cash=function(n){return '₦'+Number(n||0).toLocaleString('en-NG')};
+
+  const recent=orders.slice(0,3);
+  const recentBox=box.querySelector('[data-recent-orders]');
+  if(recentBox){
+    recentBox.innerHTML=recent.length
+      ? '<div class="fx-list">'+recent.map(function(o){
+          return '<div class="fx-row"><div class="fx-row-main"><strong>'+esc(o.reference)+'</strong>'+
+            '<small>'+new Date(o.created_at).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+
+            ' · '+cash(o.total)+' · '+esc(o.payment_method==='bank-transfer'?'Bank transfer':o.payment_method==='paystack'?'Card (Paystack)':'Pay on delivery')+'</small></div>'+
+            pill(o.status)+
+            '<a class="fx-btn fx-btn-ghost fx-btn-sm" href="track.html?ref='+encodeURIComponent(o.reference)+'&token='+encodeURIComponent(o.tracking_token||'')+'">Track</a></div>';
+        }).join('')+'</div>'
+      : '<div class="fx-empty"><strong>No orders yet</strong><p>Your first order will appear here, with tracking.</p><a class="fx-btn fx-btn-sm" href="shop.html">Start shopping</a></div>';
+  }
+
+  /* ---- addresses ---- */
+  const listBox=box.querySelector('[data-address-list]');
+  if(listBox){
+    listBox.innerHTML=addresses.length
+      ? '<div class="fx-addr-grid">'+addresses.map(function(a){
+          return '<article class="fx-addr"><strong>'+esc(a.label||'Address')+'</strong><p>'+esc(a.address)+'<br>'+esc(a.city)+', '+esc(a.state)+'</p>'+
+            '<div class="fx-addr-actions"><button type="button" class="fx-btn fx-btn-danger fx-btn-sm" data-delete-address="'+esc(a.id)+'">Remove</button></div></article>';
+        }).join('')+'</div>'
+      : '<div class="fx-empty"><strong>No saved addresses</strong><p>Add one now and checkout fills itself in next time.</p><button type="button" class="fx-btn fx-btn-sm" data-add-address>Add your first address</button></div>';
+  }
+
+  const formWrap=box.querySelector('[data-address-form-wrap]');
+  const openForm=function(open){ if(formWrap) formWrap.hidden=!open; if(open&&formWrap) formWrap.scrollIntoView({behavior:'smooth',block:'nearest'}); };
+  box.querySelectorAll('[data-add-address]').forEach(function(b){b.onclick=function(){openForm(true); var i=formWrap&&formWrap.querySelector('[name=label]'); if(i)i.focus()}});
+  box.querySelectorAll('[data-cancel-address]').forEach(function(b){b.onclick=function(){openForm(false)}});
+
+  const form=box.querySelector('#addressForm');
+  if(form) form.onsubmit=async function(e){
+    e.preventDefault();
+    const btn=form.querySelector('[type=submit]');
+    if(btn){btn.disabled=true;btn.textContent='Saving…'}
+    try{
+      await api.createAddress({label:form.label.value.trim()||'Home',address:form.address.value.trim(),
+        city:form.city.value.trim(),state:form.state.value.trim(),phone:''});
+      toast('✓ Address saved');
+      showPanel('addresses');
+      renderAccount();
+    }catch(err){
+      toast(err.message||'Could not save the address');
+      if(btn){btn.disabled=false;btn.textContent='Save address'}
+    }
+  };
+
+  box.querySelectorAll('[data-delete-address]').forEach(function(b){
+    b.onclick=async function(){
+      try{ await api.deleteAddress(b.dataset.deleteAddress); toast('Address removed'); renderAccount(); }
+      catch(e){ toast(e.message||'Could not remove the address'); }
+    };
+  });
+
+  /* ---- settings ---- */
+  const del=box.querySelector('[data-delete-data]');
+  if(del) del.onclick=async function(){
+    if(!confirm('Delete your account and personal data? This cannot be undone.'))return;
+    try{ await api.deleteMyData(); await api.logout().catch(function(){}); toast('Your data has been deleted'); setTimeout(function(){location.href='index.html'},800); }
+    catch(e){ toast(e.message||'Could not delete the data'); }
+  };
+  const out=box.querySelector('[data-logout]');
+  if(out) out.onclick=async function(){ try{await api.logout()}catch(e){} location.href='login.html'; };
+
+  /* ---- panels ---- */
+  function showPanel(name){
+    if(!box.querySelector('#panel-'+name)) name='overview';
+    box.querySelectorAll('.fx-panel').forEach(function(p){p.hidden=p.id!=='panel-'+name});
+    box.querySelectorAll('.fx-nav [data-panel]').forEach(function(b){
+      if(b.dataset.panel===name) b.setAttribute('aria-current','true');
+      else b.removeAttribute('aria-current');
+    });
+    try{ history.replaceState(null,'','#'+name); }catch(e){}
+  }
+  box.querySelectorAll('.fx-nav [data-panel]').forEach(function(b){
+    b.onclick=function(){ showPanel(b.dataset.panel); };
+  });
+  showPanel((location.hash||'').replace('#','')||'overview');
+}
 const STATUS_LABEL={pending_payment:'Order received',payment_confirmed:'Payment confirmed',confirmed:'Order confirmed',processing:'Preparing parcel',ready_for_dispatch:'Ready for dispatch',shipped:'Collected by courier',delivered:'Delivered',cancelled:'Cancelled'};
 async function renderOrders(){const box=document.getElementById('ordersPage');if(!box)return;try{const d=await api.orders();box.innerHTML=d.orders.length?d.orders.map(o=>`<article class="pro-order"><div><strong>${esc(o.reference||o.id)}</strong><span>${new Date(o.created_at).toLocaleDateString('en-NG')}</span></div><p>${(o.items||[]).map(i=>`${esc(i.name)} × ${i.quantity}`).join(', ')}</p><div><strong>${money(o.total)}</strong><span class="status">${STATUS_LABEL[o.status]||o.status}</span></div><div class="pro-card-link" style="display:flex;gap:14px;flex-wrap:wrap"><a href="order-success.html?ref=${encodeURIComponent(o.reference||'')}&token=${encodeURIComponent(o.tracking_token||localStorage.getItem('fablux_last_order_token')||'')}">Order Details</a><a href="track.html?ref=${encodeURIComponent(o.reference||'')}&token=${encodeURIComponent(o.tracking_token||'')}">Track Order</a></div></article>`).join(''):'<div class="pro-empty"><h2>No orders yet</h2><a class="btn" href="shop.html">Start Shopping</a></div>'}catch(e){box.innerHTML='<div class="pro-empty"><h2>Your orders</h2><p>'+esc(e.message)+'</p><a class="btn" href="login.html?return=orders.html">Sign In</a> <a class="btn" href="shop.html">Continue as guest</a></div>'}}
 async function handleCheckout(event){const f=event.target;if(!f.closest('#checkoutPage'))return;event.preventDefault();event.stopImmediatePropagation();const cart=getCart();if(!cart.length){toast('Your cart is empty');return}try{const d=Object.fromEntries(new FormData(f));if(!window.FabluXAPI){throw new Error('Checkout is unavailable right now.')}const fp=JSON.stringify(cart.map(x=>[x.id,x.quantity]))+'|'+(d.payment||'');let key=sessionStorage.getItem('fablux_idem_fp')||'';let idem=sessionStorage.getItem('fablux_idem')||'';if(key!==fp||!idem){idem=(crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);sessionStorage.setItem('fablux_idem',idem);sessionStorage.setItem('fablux_idem_fp',fp);}const order=await api.createOrder({name:d.name,email:d.email,phone:d.phone,address:d.address,state:d.state,city:d.city,landmark:d.landmark||'',instructions:d.instructions||'',deliveryMethod:d.delivery||'standard',paymentMethod:d.payment||'pay-on-delivery',promoCode:checkoutPromo?checkoutPromo.code:null,idempotencyKey:idem,items:cart.map(x=>({productId:x.id,quantity:x.quantity}))});checkoutPromo=null;sessionStorage.removeItem('fablux_idem');sessionStorage.removeItem('fablux_idem_fp');localStorage.setItem('fablux_last_order_id_v1',order.order.id);localStorage.setItem('fablux_last_order_ref',order.order.reference);localStorage.setItem('fablux_last_order_token',order.order.tracking_token);if(d.payment==='paystack'){const p=await api.paystackInitialize(order.order.reference,order.order.tracking_token);location.href=p.authorization_url;return}location.href='order-success.html?ref='+encodeURIComponent(order.order.reference)+'&token='+encodeURIComponent(order.order.tracking_token)}catch(e){toast(e.message)}}

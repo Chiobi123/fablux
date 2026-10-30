@@ -25,7 +25,7 @@
   };
   var PAY_LABEL = { pending: 'Pending', successful: 'Successful', failed: 'Failed', refunded: 'Refunded' };
 
-  var state = { tab: 'orders', search: '', status: '', payment: '', order: null,
+  var state = { tab: 'overview', search: '', status: '', payment: '', order: null,
     productEdit: null, products: [], promoEdit: null, promos: [] };
 
   function esc(s) {
@@ -53,7 +53,7 @@
   }
 
   function tabsHtml() {
-    var tabs = [['orders', 'Orders'], ['products', 'Products'], ['returns', 'Returns'],
+    var tabs = [['overview', 'Overview'], ['orders', 'Orders'], ['products', 'Products'], ['returns', 'Returns'],
                 ['promos', 'Promo codes'], ['customers', 'Customers'],
                 ['settings', 'Store settings'], ['notifications', 'Notifications'], ['audit', 'Audit trail']];
     return '<div class="pro-admin-nav">' +
@@ -89,6 +89,96 @@
       stat('Orders this month', s.monthOrders || 0) +
       stat('Low stock', (s.lowStock || []).length) +
       '</div>' + lowStockHtml(s.lowStock) + tabsHtml();
+  }
+
+  /* Overview: trading trend, pipeline, recent orders, stock alerts. */
+  async function renderOverview(box, dash) {
+    var s = dash.stats || {};
+    var orders = [];
+    try { orders = (await window.FabluXAPI.adminOrders({})).orders || []; } catch (e) {}
+
+    var live = orders.filter(function (o) { return o.status !== 'cancelled'; });
+    var revenue = live.reduce(function (n, o) { return n + (Number(o.total) || 0); }, 0);
+    var aov = live.length ? revenue / live.length : 0;
+
+    /* last 14 days, oldest first */
+    var days = [], byDay = {};
+    for (var i = 13; i >= 0; i--) {
+      var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      byDay[k] = 0; days.push({ k: k, label: d.getDate() + '/' + (d.getMonth() + 1) });
+    }
+    live.forEach(function (o) {
+      var k = String(o.created_at || '').slice(0, 10);
+      if (k in byDay) byDay[k] += Number(o.total) || 0;
+    });
+    var peak = Math.max.apply(null, days.map(function (d) { return byDay[d.k]; })) || 1;
+    var chart = days.map(function (d) {
+      var v = byDay[d.k], h = Math.max(3, Math.round(v / peak * 100));
+      return '<div class="bar" data-empty="' + (v ? '0' : '1') + '" style="height:' + h + '%" title="' + d.label + ' — ' + money(v) + '"><span>' + (v ? Math.round(v / 1000) + 'k' : '') + '</span></div>';
+    }).join('');
+
+    /* pipeline */
+    var order2 = ['pending_payment', 'payment_confirmed', 'confirmed', 'processing', 'ready_for_dispatch', 'shipped', 'delivered'];
+    var counts = {};
+    orders.forEach(function (o) { counts[o.status] = (counts[o.status] || 0) + 1; });
+    var total = orders.length || 1;
+    var pipeline = order2.map(function (st) {
+      var n = counts[st] || 0;
+      return '<div class="fx-bar-row"><span>' + esc(STATUS_LABEL[st] || st) + '</span>' +
+        '<span class="track"><span class="fill" style="width:' + Math.round(n / total * 100) + '%"></span></span>' +
+        '<b>' + n + '</b></div>';
+    }).join('');
+
+    var recent = orders.slice(0, 6).map(function (o) {
+      return '<tr data-ref="' + esc(o.reference) + '">' +
+        '<td><strong>' + esc(o.reference) + '</strong></td>' +
+        '<td>' + esc(o.customer_name) + '</td>' +
+        '<td>' + money(o.total) + '</td>' +
+        '<td>' + esc(STATUS_LABEL[o.status] || o.status) + '</td>' +
+        '<td>' + when(o.created_at) + '</td></tr>';
+    }).join('');
+
+    var low = (s.lowStock || []).map(function (p) {
+      return '<div class="fx-row"><div class="fx-row-main"><strong>' + esc(p.name) + '</strong>' +
+        '<small>' + p.available + ' left in stock</small></div>' +
+        '<span class="fx-pill" data-state="' + (p.available === 0 ? 'bad' : 'warn') + '">' +
+        (p.available === 0 ? 'Out of stock' : 'Low') + '</span></div>';
+    }).join('');
+
+    box.innerHTML = headHtml(dash) +
+      '<div class="fx-dash">' +
+        '<div class="fx-kpis" style="margin-bottom:18px">' +
+          '<div class="fx-kpi"><span>Revenue (last 500 orders)</span><strong>' + money(revenue) + '</strong><small>Excludes cancelled</small></div>' +
+          '<div class="fx-kpi"><span>Average order</span><strong>' + money(Math.round(aov)) + '</strong><small>Per paid or payable order</small></div>' +
+          '<div class="fx-kpi"><span>Awaiting payment</span><strong>' + (counts.pending_payment || 0) + '</strong><small>Needs confirmation</small></div>' +
+          '<div class="fx-kpi"><span>Ready to ship</span><strong>' + ((counts.ready_for_dispatch || 0) + (counts.processing || 0)) + '</strong><small>In the packing queue</small></div>' +
+        '</div>' +
+        '<div class="fx-dash-grid wide">' +
+          '<section class="fx-card fx-pad">' +
+            '<div class="fx-dash-head" style="margin-bottom:10px"><div><p class="fx-eyebrow">Last 14 days</p><h3>Daily sales</h3></div></div>' +
+            '<div class="fx-chart">' + chart + '</div>' +
+            '<div class="fx-chart-axis"><span>' + days[0].label + '</span><span>' + days[days.length - 1].label + '</span></div>' +
+          '</section>' +
+          '<section class="fx-card fx-pad">' +
+            '<div class="fx-dash-head" style="margin-bottom:10px"><div><p class="fx-eyebrow">Pipeline</p><h3>Orders by stage</h3></div></div>' +
+            '<div class="fx-bars">' + pipeline + '</div>' +
+          '</section>' +
+        '</div>' +
+        '<div class="fx-dash-grid wide" style="margin-top:18px">' +
+          '<section class="fx-card fx-pad">' +
+            '<div class="fx-dash-head" style="margin-bottom:10px"><div><p class="fx-eyebrow">Activity</p><h3>Recent orders</h3></div>' +
+            '<button class="fx-btn fx-btn-ghost fx-btn-sm" type="button" data-tab="orders">All orders</button></div>' +
+            (recent ? '<div class="fx-scroll"><table class="fx-table"><thead><tr><th>Reference</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead><tbody>' + recent + '</tbody></table></div>'
+                    : '<div class="fx-empty"><strong>No orders yet</strong><p>Orders will appear here as soon as the store sells something.</p></div>') +
+          '</section>' +
+          '<section class="fx-card fx-pad">' +
+            '<div class="fx-dash-head" style="margin-bottom:10px"><div><p class="fx-eyebrow">Stock</p><h3>Needs restocking</h3></div>' +
+            '<button class="fx-btn fx-btn-ghost fx-btn-sm" type="button" data-tab="products">Manage</button></div>' +
+            (low ? '<div class="fx-list">' + low + '</div>' : '<div class="fx-empty"><strong>Stock is healthy</strong><p>No product is below five units.</p></div>') +
+          '</section>' +
+        '</div>' +
+      '</div>';
   }
 
   async function renderOrders(box, dash) {
@@ -576,6 +666,7 @@
   async function render(box, dash) {
     state.dash = dash;
     if (state.order) return openOrder(box, dash, state.order.reference);
+    if (state.tab === 'overview') return renderOverview(box, dash);
     if (state.tab === 'orders') return renderOrders(box, dash);
     if (state.tab === 'products') return renderProducts(box, dash);
     if (state.tab === 'returns') return renderReturns(box, dash);

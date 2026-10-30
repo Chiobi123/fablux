@@ -54,11 +54,14 @@
   }
   applyTheme(get(THEME_KEY) === 'light' ? 'light' : 'dark');
 
-  /* ---- language (Google website translator) ---- */
-  /* Switching happens inside the page: set the widget's hidden select and fire
-     a bubbling 'change'. Google swaps the text immediately, so there is no
-     reload, no "Translating…" screen and no flash of the previous language.
-     The googtrans cookie is still written so the next page opens translated. */
+  /* ---- language (Google website translator) ----
+     Three rules, in this order of preference:
+       1. If the widget is ready, switch in place (instant, no reload).
+       2. If it is not ready yet, wait at most 2.5 s, then reload — the cookie
+          is already written, so the reload lands translated.
+       3. On page load with a non-English choice, load the widget immediately
+          so the page translates itself. For English visitors the widget is
+          only fetched when the language menu is opened. */
   function googleCookie(code) {
     if (code === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
@@ -71,8 +74,9 @@
     return m ? decodeURIComponent(m[1]) : '';
   }
 
+  var translatorLoading = false;
   function loadTranslator() {
-    if (document.getElementById('gt-script')) return;
+    if (document.getElementById('gt-script') || translatorLoading) return;
     var host = document.getElementById('google_translate_element');
     if (!host) {
       host = document.createElement('div');
@@ -81,6 +85,7 @@
       host.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden';
       document.body.appendChild(host);
     }
+    translatorLoading = true;
     window.googleTranslateElementInit = function () {
       try {
         new window.google.translate.TranslateElement(
@@ -89,11 +94,12 @@
         );
       } catch (e) {}
     };
-    var s = document.createElement('script');
-    s.id = 'gt-script';
-    s.async = true;
-    s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    document.body.appendChild(s);
+    var el = document.createElement('script');
+    el.id = 'gt-script';
+    el.async = true;
+    el.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    el.onerror = function () { translatorLoading = false; };
+    document.body.appendChild(el);
   }
 
   /* The widget is ready once its language select is populated. */
@@ -102,46 +108,60 @@
     return c && c.options && c.options.length > 1 ? c : null;
   }
 
-  /* Re-create the widget if it loaded but never populated its select. */
-  function restartTranslator() {
-    var s = document.getElementById('gt-script');
-    if (s) s.parentNode.removeChild(s);
-    var host = document.getElementById('google_translate_element');
-    if (host) host.innerHTML = '';
-    loadTranslator();
-  }
-
-  var langRetried = false, langSeq = 0;
-  /* Only the newest pick may apply: a slower retry from an earlier choice is
-     dropped, so the page can never drift to a language that was not asked. */
-  function applyLang(code) {
+  var langSeq = 0;
+  /* Only the newest pick may apply: a slower pending switch is dropped, so the
+     page can never drift to a language that was not asked for. */
+  function applyLang(code, onDone) {
     var seq = ++langSeq;
-    (function tick(attempt) {
+    var target = code === 'en' ? '' : code;
+    var ticks = 0;
+    (function tick() {
       if (seq !== langSeq) return;
       var combo = translatorCombo();
-      if (!combo) {
-        if (attempt > 80) return;                     /* ~20s, give up quietly */
-        if (attempt === 40 && !langRetried) { langRetried = true; restartTranslator(); }
-        else loadTranslator();
-        setTimeout(function () { tick(attempt + 1); }, 250);
+      if (combo) {
+        if (combo.value !== target) {
+          combo.value = target;
+          combo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        if (onDone) onDone();
+        if (code === 'en') {
+          setTimeout(function () {
+            if (seq === langSeq && document.querySelector('font')) location.reload();
+          }, 900);
+        }
         return;
       }
-      var target = code === 'en' ? '' : code;
-      if (combo.value !== target) {
-        combo.value = target;
-        combo.dispatchEvent(new Event('change', { bubbles: true }));
+      if (++ticks > 10) {                 /* 2.5 s: stop guessing, reload */
+        if (onDone) onDone();
+        location.reload();
+        return;
       }
-      if (code === 'en') {
-        /* Restoring the original text is instant in the widget; if it did not
-           happen, a plain reload is guaranteed English (the cookie is cleared). */
-        setTimeout(function () {
-          if (seq === langSeq && document.querySelector('font')) location.reload();
-        }, 1200);
-      }
-    })(0);
+      loadTranslator();
+      setTimeout(tick, 250);
+    })();
   }
 
-  /* ---- build controls ---- */
+  /* Page-load path: set the combo once the widget is up, but never reload —
+     a reload here would loop. The cookie already asked Google to translate;
+     this covers the case where it did not act on the cookie. */
+  function syncLang(code) {
+    var target = code === 'en' ? '' : code;
+    var ticks = 0;
+    (function tick() {
+      var combo = translatorCombo();
+      if (combo) {
+        if (combo.value !== target) {
+          combo.value = target;
+          combo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        return;
+      }
+      if (++ticks > 40) return;           /* give up silently after ~10 s */
+      setTimeout(tick, 250);
+    })();
+  }
+
+/* ---- build controls ---- */
   function build() {
     var nav = document.querySelector('header nav') || document.querySelector('nav');
     if (!nav || nav.querySelector('.site-tools')) return;
@@ -183,6 +203,11 @@
     });
 
     var menu = wrap.querySelector('#langMenu');
+    /* Preload the widget when the visitor shows intent, so the first pick is
+       instant instead of waiting for a download. */
+    ['pointerenter', 'focusin', 'touchstart'].forEach(function (ev) {
+      menu.addEventListener(ev, function () { loadTranslator(); }, { passive: true });
+    });
     var panel = menu.querySelector('.lang-panel');
     var codeEl = menu.querySelector('.lang-code');
     var current = savedCode;
@@ -201,7 +226,9 @@
           else o.removeAttribute('aria-current');
         });
         googleCookie(code);
-        applyLang(code);
+        var summary = menu.querySelector('summary');
+        if (summary) summary.setAttribute('aria-busy', 'true');
+        applyLang(code, function () { if (summary) summary.removeAttribute('aria-busy'); });
       });
     });
     document.addEventListener('click', function (e) {
@@ -249,12 +276,13 @@
   function init() {
     build();
     var saved = get(LANG_KEY) || 'en';
-    root.lang = saved;
     if (saved !== 'en') {
-      /* The cookie lets the next page open already translated; applying the
-         widget now also covers a missing or stale cookie. */
+      /* Two independent triggers: the cookie (Google acts on load) and the
+         combo (set once the widget is ready). Whichever lands first wins, and
+         neither can reload the page. */
       googleCookie(saved);
-      applyLang(saved);
+      loadTranslator();
+      syncLang(saved);
     } else if (cookieLang()) {
       googleCookie('en');
     }

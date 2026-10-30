@@ -30,9 +30,20 @@ not configured, reset it from Supabase → Authentication → Users → *Reset p
 
 ## 2. Dashboard
 
-Shows counts and recent activity: orders by status, revenue totals, low stock,
-pending returns, unsent notifications. It is a read-only summary; actions live in the
-sections below.
+The admin console opens on **Overview**, a read-only summary:
+
+- counters for products, customers, orders, sales this month, orders this month and
+  low stock;
+- revenue across the loaded orders (cancelled excluded), average order value,
+  orders awaiting payment and orders in the packing queue;
+- a 14-day daily-sales bar chart (hover a bar for the amount);
+- orders by stage, the six most recent orders (click a row to open it) and a
+  low-stock list.
+
+The other tabs (Orders, Products, Returns, Promo codes, Customers, Store settings,
+Notifications, Audit trail) work as before; actions live there, not here.
+Figures are computed in the browser from the newest 500 orders, so they are a
+working view rather than an accounting report.
 
 ## 3. Orders
 

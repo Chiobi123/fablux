@@ -142,11 +142,16 @@ header height variable prevents overlap when the nav wraps.
    account, admin, 404 — load with no console errors.
 4. One product add → checkout → order → admin visibility.
 5. Theme toggle on home and shop.
-6. Language switch to one non-English language and back to English.
-7. Resize to 360 px: no overlap, tools reachable, Google button visible on login.
-8. Direct REST call to `orders` with the anon key returns no rows.
-9. Admin RPC with a customer JWT returns `admin only`.
-10. Confirm the asset `?v=` token changed if any CSS/JS changed.
+6. Language switch to one non-English language and back to English. Time it:
+   the switch must not reload, and a cold switch must resolve within ~3 s.
+7. Account hub: each nav section opens, the address book adds and removes an
+   address, and no text or button is white-on-white in light mode.
+8. Admin Overview tab renders counters, the 14-day chart, recent orders and low
+   stock; every tab still loads.
+9. Resize to 360 px: no overlap, tools reachable, Google button visible on login.
+10. Direct REST call to `orders` with the anon key returns no rows.
+11. Admin RPC with a customer JWT returns `admin only`.
+12. Confirm the asset `?v=` token changed if any CSS/JS changed.
 
 ## 9. Gaps and planned tooling
 

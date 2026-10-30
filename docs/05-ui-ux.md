@@ -89,6 +89,32 @@ Type scale (desktop → mobile):
   the next page opens in the same language. Choosing English clears the cookie and
   restores the original text; if the widget does not restore it, the page reloads
   once (English is then guaranteed).
+- The widget script is preloaded when the visitor hovers, focuses or opens the
+  language menu, so the first switch no longer waits for a download. A pick that
+  arrives before the widget is ready waits at most 2.5 s, then reloads once — the
+  cookie is already written, so the reload lands translated. The old 20 s polling
+  loop (10 s wait + widget restart + 10 s wait) is gone.
+- Pages opened with a saved non-English language load the widget immediately and
+  set the select on arrival, so a returning visitor is not left in English.
+
+### Account hub and admin console (added 2026-10-30)
+
+- `account.html` is a two-column hub: a profile card with avatar initials, name,
+  email, phone, member-since and role badge, then a section nav (Overview, Delivery
+  addresses, Account settings, Help & support, plus Wishlist, Track an order and
+  Admin console for administrators).
+- Overview shows four counters (orders, in progress, delivered, saved addresses)
+  and the three most recent orders with status pills and a tracking link.
+- **Delivery addresses** is its own section — address cards plus an "Add address"
+  form — so it is named in the nav instead of buried under the profile cards.
+- `admin.html` opens on **Overview**: revenue, average order, awaiting payment,
+  ready-to-ship, a 14-day daily-sales bar chart, orders by stage, the six most
+  recent orders and low-stock alerts. The existing tabs follow unchanged.
+- Both pages load `css/dashboard.css`, which defines local `--fx-*` tokens for both
+  themes instead of relying on the global `--white`/`--dark` pair (that pair flips
+  meaning in light mode and is the reason cards previously went white-on-white).
+- Measured contrast on the new components: 6.9:1 or better in both themes for
+  labels, values, table headers, pills and buttons.
 
 ---
 
