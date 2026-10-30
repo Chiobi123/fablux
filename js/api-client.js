@@ -362,7 +362,8 @@
         }
         return {ok:true};
       }catch(e){
-        return {ok:false,message:'Could not reach the sign-in service'};
+        /* Fail open: a blocked probe must never stop a working sign-in. */
+        return {ok:true};
       }
     },
     async publicSettings(){

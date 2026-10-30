@@ -63,6 +63,16 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-10-30 (later)
+
+- `feat(auth)`: Google sign-in enabled on the Supabase project (provider on, client ID
+  and secret stored in Supabase, redirect allow-list extended with the local preview
+  origin). Verified: `/authorize?provider=google` now returns a 302 with
+  `redirect_uri=https://msisbmcowtggbvasubla.supabase.co/auth/v1/callback`.
+- `fix(auth)`: the availability probe fails open, so a blocked probe can no longer
+  stop a working sign-in.
+- `docs`: 09-auth §6 rewritten from blocked to enabled; 13 adds T-27.
+
 ### 2026-10-30
 
 - `feat(payments)`: Paystack settlement layer — `payments` Edge Function

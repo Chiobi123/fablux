@@ -15,7 +15,7 @@
 | Google Fonts | typography | browser → Google | none | live |
 | Font Awesome (cdnjs) | icons | browser → cdnjs | none | live |
 | Cloudflare Pages | hosting + headers | — | account | live |
-| Google OAuth | social sign-in | browser → Google → Supabase | client id/secret in Supabase | **disabled** |
+| Google OAuth | social sign-in | browser → Google → Supabase | client id/secret in Supabase | **live** (verified 2026-10-30) |
 | Email provider | order alerts / resets | none | — | **not connected** |
 | Payment processor | card payments | none | — | **not used** |
 
@@ -149,7 +149,7 @@ Not built yet: no provider chosen, no templates beyond the plain-text bodies.
 | Google Translate | English only after 10 s + notice | switch to English |
 | Google Fonts | system font fallback | none needed |
 | Font Awesome | icons missing | none needed |
-| Google OAuth | button explains; email sign-in works | — |
+| Google OAuth | button explains; email sign-in works | probe fails open: a dead probe still sends the visitor to Google |
 | Email | resets and alerts not delivered | admin resets via Supabase dashboard |
 
 ## 8. Third-party data sharing summary

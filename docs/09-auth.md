@@ -70,59 +70,53 @@ new SQL deployment.
 
 ## 6. Google sign-in
 
-### 6.1 Current state — not working, and why
-
-Verified 2026-10-29 against the live project:
+### 6.1 Current state — enabled (verified 2026-10-30)
 
 ```
+GET /auth/v1/settings            -> "google": true
 GET /auth/v1/authorize?provider=google&redirect_to=https://fablux.pages.dev/account.html
-→ 400 {"code":400,"error_code":"validation_failed",
-       "msg":"Unsupported provider: provider is not enabled"}
+                                 -> 302 to accounts.google.com
+   client_id     = 120742639187-…apps.googleusercontent.com
+   redirect_uri  = https://msisbmcowtggbvasubla.supabase.co/auth/v1/callback
 ```
 
-The frontend is complete; Supabase has no Google client configured. This cannot be
-fixed from the repository — it needs the project owner's Google Cloud account and
-Supabase dashboard.
+Flow: button → Supabase `/authorize` → Google consent → Supabase
+`/auth/v1/callback` → `<site>/account.html#access_token=…` (implicit). The hash is
+captured by `captureHashToken()` in `js/api-client.js`, which stores the session and
+strips the fragment, so the token never sits in a page the user can copy by accident.
 
-The button no longer navigates into that JSON error: `FabluXAPI.googleAvailable()`
-probes the endpoint and the UI shows *"Google sign-in is not enabled yet. Please sign
-in with your email instead."*
+### 6.2 Configuration in force
 
-### 6.2 Steps to enable (owner, ~10 minutes)
+| Setting | Value |
+|---|---|
+| Provider | Google, enabled |
+| Client ID | `120742639187-phgtac0det9oqr5feqd0bmn5qp23513t.apps.googleusercontent.com` |
+| Client secret | stored in Supabase only — never in the repo, never in the build |
+| Google authorised redirect URI | `https://msisbmcowtggbvasubla.supabase.co/auth/v1/callback` |
+| Site URL | `https://fablux.pages.dev` |
+| Redirect allow-list | `https://fablux.pages.dev/*`, `https://fablux.pages.dev/**`, `https://fablux.igbanichiobiebere.workers.dev/*`, `http://127.0.0.1:8086/*` |
 
-1. **Google Cloud Console** → *APIs & Services* → *OAuth consent screen*:
-   - User type: External; publishing status may stay "Testing" for a private shop.
-   - App name: `FabluX.U.Design`; support email; developer contact.
-   - Scopes: `userinfo.email`, `userinfo.profile` (no sensitive scopes).
-2. *Credentials* → *Create credentials* → *OAuth client ID* → **Web application**.
-3. Authorised JavaScript origins:
-   - `https://fablux.pages.dev`
-   - `http://127.0.0.1:8086` (local preview — optional)
-4. Authorised redirect URI (this is Supabase, not the site):
-   - `https://msisbmcowtggbvasubla.supabase.co/auth/v1/callback`
-5. Copy the **Client ID** and **Client secret**.
-6. **Supabase dashboard** → *Authentication* → *Providers* → *Google*:
-   - Enable, paste Client ID + secret, save.
-7. *Authentication* → *URL Configuration*:
-   - Site URL: `https://fablux.pages.dev`
-   - Additional redirect URLs: `https://fablux.pages.dev/account.html`,
-     `https://fablux.pages.dev/reset-password.html`,
-     `https://fablux.pages.dev/login.html`
-8. Re-test: `/login.html` → *Continue with Google* → Google consent → returns to
-   `account.html` signed in.
+### 6.3 Changing it later
 
-### 6.3 Flow used by the code
+Only a project owner can: Supabase dashboard → *Authentication* → *Sign In /
+Providers* → *Google*, or the Management API:
 
-Implicit flow: `/authorize` redirects back with `#access_token=…`, captured by
-`captureHashToken()` and stored like a password sign-in. If the project's Auth flow
-is later switched to PKCE, the raw `/authorize` call cannot exchange the code (no
-code verifier), so keep **implicit** for this client, or move the button to
-`supabase-js` with `signInWithOAuth`.
+```
+PATCH https://api.supabase.com/v1/projects/msisbmcowtggbvasubla/config/auth
+Authorization: Bearer <personal access token>
+{ "external_google_enabled": true,
+  "external_google_client_id": "…apps.googleusercontent.com",
+  "external_google_secret": "GOCSPX-…" }
+```
 
-### 6.4 Failure surfacing
+The `service_role` key cannot read or write this configuration.
 
-`reportOAuthError()` in `backend-bridge.js` reads `?error=` / `#error=` on landing
-and shows the description (e.g. `redirect_uri_mismatch`) instead of failing silently.
+### 6.4 Failure behaviour
+
+`FabluXAPI.googleAvailable()` probes `/auth/v1/authorize` once per click. A 400 with
+"Unsupported provider" shows *"Google sign-in is not enabled yet…"* instead of a raw
+JSON page. Any transport or CORS failure **fails open** — the visitor is sent to
+Google anyway, because a broken probe must never block a working sign-in.
 
 ## 7. Account deletion
 

@@ -41,7 +41,7 @@ what remains unverified. It is honest about the gap rather than implying coverag
 | T-16 | Theme toggle persists and both themes are readable | Pass |
 | T-17 | Language menu translates the page (Igbo, French verified) | Pass, with the caveat in §3 |
 | T-18 | Language switch is in place: no reload and no English flash | Pass (FR, then DE, same document); English restored via the one-reload fallback |
-| T-19 | Google button explains the disabled provider instead of navigating | Pass |
+| T-19 | Google button reaches accounts.google.com with the Supabase callback and the right `redirect_to` | Pass (2026-10-30, live project) |
 | T-20 | Reading-progress ring tracks scroll and returns to top | Pass |
 | T-21 | Header never covers page content at 360–1440 px | Pass |
 | T-22 | Light-mode hero photo remains visible | Pass |
@@ -49,6 +49,7 @@ what remains unverified. It is honest about the gap rather than implying coverag
 | T-24 | `confirm_payment` settles once, replays return `already:true`, one event written | Pass (SQL test, rolled back) |
 | T-25 | Checkout rejects an unknown `payment_method` | Pass (constraint applied) |
 | T-26 | Paystack redirect + webhook + callback | Not run (function not deployed; needs keys) |
+| T-27 | Google consent returns a session and lands on account.html | Not run (needs a Google account) |
 | T-24 | Mobile Google button is visible on auth pages | Pass |
 
 ## 3. Known test caveats
