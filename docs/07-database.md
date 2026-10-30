@@ -2,6 +2,7 @@
 
 **Status:** current · last reviewed 2026-10-29
 Source of truth: `setup-supabase.sql`, `setup-fulfilment.sql`, `setup-rls.sql`,
+`setup-admin-emails.sql` (admin allow-list, auth-user sync, email lock),
 `setup-security-hardening.sql`, `setup-promo-codes.sql`,
 `setup-product-details.sql`, `setup-product-images.sql`,
 `setup-admin-bootstrap.sql`.
@@ -100,7 +101,13 @@ RLS is enabled on every public table. Policies are in `setup-rls.sql` and
 | `rate_limit_hits` | INSERT via SECURITY DEFINER helper only | ALL |
 | `contacts`, `newsletter_subscribers` | INSERT via RPC only | SELECT (admin) |
 
-Admin determination: `public.is_admin()` reads `public.users.role` for `auth.uid()`.
+Admin determination: `public.is_admin()` requires `public.users.role = 'admin'`, an
+email in `allowed_admin_email()`, **and** that email matching `auth.jwt()->>'email'`.
+`trg_sync_auth_user` on `auth.users` creates the matching `public.users` row for
+every sign-up (including OAuth); `trg_0_lock_user_email` keeps the row's email equal
+to the Auth-owned address. See `setup-admin-emails.sql`.
+
+Original note: `public.is_admin()` reads `public.users.role` for `auth.uid()`.
 The role is assigned only by `apply_admin_role` (trigger on `users` insert/update),
 which compares `email` to `allowed_admin_email()`:
 
@@ -120,6 +127,8 @@ There is no migration framework. The SQL files are applied **in this order** wit
 1. `setup-supabase.sql` — core tables
 2. `setup-rls.sql` — RLS policies
 3. `setup-fulfilment.sql` — order lifecycle, outbox, audit, rate limits, RPCs
+   - `setup-admin-emails.sql` — administrator allow-list, `auth.users` sync trigger,
+     email lock (apply after fulfilment; it replaces `is_admin()`)
 4. `setup-security-hardening.sql` — hardening, delete-my-data, tightening
 5. `setup-promo-codes.sql` — promotions
 6. `setup-product-details.sql` — description/material/features

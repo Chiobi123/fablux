@@ -50,7 +50,10 @@ Type scale (desktop → mobile):
   that variable so nothing is ever hidden under the header when nav links wrap.
   Below 1200 px the nav wraps onto a second row; the header grows; the CSS var
   follows (via `site-tools.js` `syncHeader()`).
-- **Hero:** full-bleed image slider with a gradient `.overlay`. The section starts
+- **Hero:** one full-bleed photograph (`images/hero1.jpg`) with a gradient `.overlay`.
+  The two-slide auto-rotating carousel was removed on 2026-10-30: it was hard-coded
+  (no admin control), repeated the same artwork every five seconds and did not
+  justify its weight. The section starts
   below the fixed header (`margin-top: var(--header-h)`), so the top of the
   photograph — the model's face — is never hidden behind the bar.
   - Dark: `rgba(5,5,5,.72 → .35 → .85)`.

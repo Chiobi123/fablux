@@ -56,17 +56,30 @@ Configuration. For production that is `https://fablux.pages.dev/reset-password.h
 
 **The database decides.** UI hiding is cosmetic.
 
-- `public.is_admin()` — `exists(select 1 from users where id = auth.uid() and role='admin')`.
+- `public.is_admin()` — true only when **all three** hold: `public.users.role = 'admin'`,
+  the row's email is in `allowed_admin_email()`, and that email equals the address in
+  the verified JWT (`auth.jwt()->>'email'`). Comparing against the token is what stops
+  a customer editing their own profile email into an admin address.
 - `public.assert_admin()` — raises `admin only` if the above is false; every admin
   RPC calls it first.
 - RLS policies use `auth.uid()` for ownership and `is_admin()` for administrative
   access (`07-database.md` §3).
-- The role cannot be self-assigned: the trigger overwrites `role` from the email
-  allow-list, and `users_update` does not let a customer change their own role.
+- The role cannot be self-assigned: `apply_admin_role` overwrites `role` from the
+  allow-list, and `lock_user_email` keeps `public.users.email` equal to the address
+  Supabase Auth owns, so the allow-list cannot be spoofed from the client.
 
-Admin emails are hard-coded in `allowed_admin_email()`:
-`ujunwaivbani@gmail.com`, `igbanichiobievere@gmail.com`. Adding an admin requires a
-new SQL deployment.
+Approved administrators are hard-coded in `allowed_admin_email()`
+(`setup-admin-emails.sql`): `fabluxdesigns@gmail.com`, `ujuigbani@gmail.com`,
+`igbanichiobiebere@gmail.com`. Changing the list is one SQL deployment.
+
+### 5.1 Profile rows are provisioned by the database
+
+`public.users` is no longer created by the client. A trigger on `auth.users`
+(`trg_sync_auth_user`) inserts the matching `public.users` row on every sign-up —
+email/password **and** Google OAuth — with the role derived from the allow-list.
+Before this, an OAuth sign-in produced an auth account with no profile row, so
+`is_admin()` returned false and the owner was treated as a customer. The client
+also repairs a missing row in `sessionUser()` as a fallback.
 
 ## 6. Google sign-in
 

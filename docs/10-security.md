@@ -52,6 +52,17 @@ compromise of Supabase or Cloudflare themselves.
 
 ## 3. Implemented controls
 
+### 3.0 Privilege escalation — closed 2026-10-30
+
+`users_update` lets a signed-in person edit their own `public.users` row. Because
+`is_admin()` used to trust `public.users.email`, a customer could PATCH their email
+to an allow-listed address and be treated as an administrator. Fixed by:
+
+- `is_admin()` now also requires `lower(users.email) = lower(auth.jwt()->>'email')`;
+  the token is not writable from the browser.
+- `lock_user_email` (BEFORE UPDATE) reverts any email that is not the address in
+  `auth.users` for that id. Verified live: the PATCH left the row unchanged.
+
 ### 3.1 Transport and headers (`_headers`)
 
 ```

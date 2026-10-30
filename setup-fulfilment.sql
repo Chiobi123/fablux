@@ -137,13 +137,16 @@ ON CONFLICT (key) DO NOTHING;
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.allowed_admin_email(p_email text) RETURNS boolean
 LANGUAGE sql IMMUTABLE AS
-$$ SELECT lower(coalesce(p_email,'')) IN ('ujunwaigbani@gmail.com','igbanichiobiebere@gmail.com') $$;
+$$ SELECT lower(coalesce(p_email,'')) IN ('fabluxdesigns@gmail.com','ujuigbani@gmail.com','igbanichiobiebere@gmail.com') $$;
 
 CREATE OR REPLACE FUNCTION public.is_admin() RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
-$$ SELECT EXISTS (
-     SELECT 1 FROM public.users
-      WHERE id = auth.uid()::text AND role = 'admin' AND allowed_admin_email(email)) $$;
+$ SELECT EXISTS (
+     SELECT 1 FROM public.users u
+      WHERE u.id = auth.uid()::text
+        AND u.role = 'admin'
+        AND public.allowed_admin_email(u.email)
+        AND lower(u.email) = lower(coalesce(auth.jwt()->>'email',''))) $;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.assert_admin() RETURNS void
@@ -332,10 +335,10 @@ BEGIN
   VALUES (v_order_id, 'order_received', 'Order received', 'system'),
          (v_order_id, 'payment_pending', 'Awaiting payment confirmation', 'system');
 
-  PERFORM public.queue_notification(v_order_id, 'admin_new_order', 'ujunwaigbani@gmail.com',
+  PERFORM public.queue_notification(v_order_id, 'admin_new_order', 'fabluxdesigns@gmail.com',
     'New FabluX order ' || v_ref,
     public.admin_alert_body(v_ref, v_total, 'pending', 'pending_payment'));
-  PERFORM public.queue_notification(v_order_id, 'admin_new_order', 'igbanichiobiebere@gmail.com',
+  PERFORM public.queue_notification(v_order_id, 'admin_new_order', 'ujuigbani@gmail.com',
     'New FabluX order ' || v_ref,
     public.admin_alert_body(v_ref, v_total, 'pending', 'pending_payment'));
   PERFORM public.queue_notification(v_order_id, 'order_received', v_email,
@@ -448,10 +451,10 @@ BEGIN
              v_order.reference, v_label, v_order.reference, v_order.tracking_token));
   END IF;
   IF p_new_status IN ('confirmed','cancelled') THEN
-    PERFORM public.queue_notification(v_order.id, 'admin_' || p_new_status, 'ujunwaigbani@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_' || p_new_status, 'fabluxdesigns@gmail.com',
       'FabluX order ' || v_order.reference || ' — ' || v_label,
       format('Order %s is now %s.', v_order.reference, p_new_status));
-    PERFORM public.queue_notification(v_order.id, 'admin_' || p_new_status, 'igbanichiobiebere@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_' || p_new_status, 'ujuigbani@gmail.com',
       'FabluX order ' || v_order.reference || ' — ' || v_label,
       format('Order %s is now %s.', v_order.reference, p_new_status));
   END IF;
@@ -494,10 +497,10 @@ BEGIN
       'Payment confirmed for FabluX order ' || v_order.reference,
       format('We confirmed your payment for order %s. Track it: https://fablux.pages.dev/track.html?ref=%s&token=%s',
              v_order.reference, v_order.reference, v_order.tracking_token));
-    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'ujunwaigbani@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'fabluxdesigns@gmail.com',
       'Payment confirmed — ' || v_order.reference,
       format('Payment confirmed for order %s (NGN %s).', v_order.reference, v_order.total));
-    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'igbanichiobiebere@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'ujuigbani@gmail.com',
       'Payment confirmed — ' || v_order.reference,
       format('Payment confirmed for order %s (NGN %s).', v_order.reference, v_order.total));
   END IF;

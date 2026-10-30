@@ -89,7 +89,9 @@ html[data-theme="light"] .fx-tokens{
 .fx-nav-sep{height:1px;background:var(--fx-line);margin:8px 6px}
 
 .fx-panel{display:grid;gap:18px}
-.fx-panel[hidden]{display:none}
+/* .fx-nav a/button carry display:flex, which out-specifies the browser's
+   [hidden] rule. Without this the admin link showed for every customer. */
+.fx-panel[hidden],#accountPage [hidden],#adminPage [hidden]{display:none!important}
 
 /* ---------- stat tiles ---------- */
 .fx-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}

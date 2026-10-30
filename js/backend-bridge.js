@@ -61,7 +61,26 @@ const toast=m=>window.FabluXStore?.toast(m);
 const getCart=()=>window.FabluXStore?.getCart?.()||[];
 /* Signed-in people go to the right place: an approved administrator lands on
    the admin console, everyone else on their own account page. */
-async function redirectAfterLogin(){if(typeof window.redirectAfterLogin==='function'){window.redirectAfterLogin();return}const ret=new URLSearchParams(location.search).get('return');if(ret){location.href=ret;return}let role='customer';try{const d=await api.me();if(d&&d.user)role=d.user.role||'customer'}catch(e){}location.href=(role==='admin')?'admin.html':'account.html';}
+/* Only a relative page in this folder may be used as a return target. */
+function safeReturn(v){if(!v)return '';try{const u=new URL(v,location.href);if(u.origin!==location.origin)return '';const p=(u.pathname.split('/').pop()||'');if(!/^[a-z0-9-]+\.html$/i.test(p))return '';if(p==='login.html'||p==='register.html')return '';return p+u.search+u.hash}catch(e){return ''}}
+async function redirectAfterLogin(){
+  if(typeof window.redirectAfterLogin==='function'){window.redirectAfterLogin();return}
+  let role='customer'; try{const d=await api.me();if(d&&d.user)role=d.user.role||'customer'}catch(e){}
+  const home=role==='admin'?'admin.html':'account.html';
+  const ret=safeReturn(new URLSearchParams(location.search).get('return'));
+  location.href=(!ret||(ret.indexOf('admin.html')===0&&role!=='admin'))?home:ret;
+}
+/* Someone who already holds a session should not be left staring at the
+   sign-in form, which is what an OAuth redirect back to login.html did. */
+async function redirectIfSignedIn(){
+  const page=(location.pathname.split('/').pop()||'').toLowerCase();
+  if(page!=='login.html'&&page!=='register.html')return;
+  let u=null; try{ u=(await api.me()).user }catch(e){}
+  if(!u)return;
+  const home=u.role==='admin'?'admin.html':'account.html';
+  const ret=safeReturn(new URLSearchParams(location.search).get('return'));
+  location.replace((!ret||(ret.indexOf('admin.html')===0&&u.role!=='admin'))?home:ret);
+}
 async function handleAuth(event){const f=event.target;if(f.id!=='loginForm'&&f.id!=='registerForm'&&f.id!=='forgotForm')return;event.preventDefault();event.stopImmediatePropagation();try{if(f.id==='loginForm'){await api.login({email:f.email.value,password:f.password.value});toast('✓ Welcome back');await redirectAfterLogin();}else if(f.id==='registerForm'){await api.register({name:f.name.value, email:f.email.value, phone:f.phone.value, password:f.password.value});toast('✓ Account created');await redirectAfterLogin();}else{await api.forgotPassword(f.email.value.trim());toast('If the email exists, a reset link has been sent. Check your inbox.');}}catch(e){toast(e.message)}finally{if(window.FabluXSyncAccount)window.FabluXSyncAccount();}}
 
 /* Returns page: the request is written to the Supabase returns table
@@ -239,13 +258,13 @@ async function handleNewsletter(event){const f=event.target;if(!f.classList.cont
 async function handleUnsubscribe(event){const f=event.target;if(f.id!=='unsubscribeForm')return;event.preventDefault();event.stopImmediatePropagation();try{const em=f.querySelector('input[type=email]')?.value;await api.unsubscribe(em);f.reset();toast('✓ You have been unsubscribed')}catch(e){toast(e.message)}}
 async function renderAdmin(){
   const box=document.getElementById('adminPage'); if(!box) return;
-  /* The console never hands a stranger a sign-in section: a signed-out
-     visitor is quietly taken to the normal sign-in page, and a signed-in
-     customer is simply told that this area is not theirs. */
+  /* Nothing about the console is shown to anyone who is not an administrator:
+     a signed-out visitor goes to the normal sign-in page, a signed-in
+     customer goes straight back to their account page. */
   const deny=async()=>{
     let u=null; try{ u=(await api.me()).user }catch(e){}
     if(!u){ location.replace('login.html?return=admin.html'); return; }
-    box.innerHTML='<div class="pro-empty"><h2>Administrators only</h2><p>This area is reserved for the FabluX store administrators.</p><a class="btn" href="index.html">Back to the store</a></div>';
+    location.replace('account.html');
   };
   if(window.FabluXAdmin&&window.FabluXAdmin.render){
     try{ await window.FabluXAdmin.render(box); }catch(e){ await deny(); }
@@ -640,7 +659,7 @@ async function hydrateStoreDetails(){
   }catch(e){}
 }
 
-document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();initFormsConsent();hydrateStoreDetails();syncCatalog();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();});
+document.addEventListener('DOMContentLoaded',()=>{initSiteChrome();initFormsConsent();hydrateStoreDetails();syncCatalog();renderAccount();renderOrders();renderAdmin();renderCheckout();renderInvoice();renderOrderSuccess();renderTrack();handleReturnForm();redirectIfSignedIn();});
 /* Never show a stale identity: re-render the account page whenever the tab
    becomes visible again (e.g. after signing in somewhere else). */
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;if(document.getElementById('accountPage'))renderAccount();});

@@ -146,12 +146,19 @@ header height variable prevents overlap when the nav wraps.
    the switch must not reload, and a cold switch must resolve within ~3 s.
 7. Account hub: each nav section opens, the address book adds and removes an
    address, and no text or button is white-on-white in light mode.
-8. Admin Overview tab renders counters, the 14-day chart, recent orders and low
-   stock; every tab still loads.
-9. Resize to 360 px: no overlap, tools reachable, Google button visible on login.
-10. Direct REST call to `orders` with the anon key returns no rows.
-11. Admin RPC with a customer JWT returns `admin only`.
-12. Confirm the asset `?v=` token changed if any CSS/JS changed.
+8. Access control: a customer account shows no **Admin console** link, and opening
+   `admin.html` while signed in as that customer returns to `account.html`.
+9. Sign in with Google on a fresh address, then confirm a `public.users` row exists
+   (`select id,email,role from public.users`). An allow-listed address must read
+   `admin`.
+10. Try `PATCH /rest/v1/users?id=eq.<own id>` with `{"email":"fabluxdesigns@gmail.com"}`
+    while signed in as a customer: the row must not change.
+11. Admin Overview tab renders counters, the 14-day chart, recent orders and low
+    stock; every tab still loads.
+12. Resize to 360 px: no overlap, tools reachable, Google button visible on login.
+13. Direct REST call to `orders` with the anon key returns no rows.
+14. Admin RPC with a customer JWT returns `admin only`.
+15. Confirm the asset `?v=` token changed if any CSS/JS changed.
 
 ## 9. Gaps and planned tooling
 

@@ -59,10 +59,10 @@ BEGIN
       'Payment confirmed for FabluX order ' || v_order.reference,
       format('We confirmed your payment for order %s. Track it: https://fablux.pages.dev/track.html?ref=%s&token=%s',
              v_order.reference, v_order.reference, v_order.tracking_token));
-    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'ujunwaigbani@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'fabluxdesigns@gmail.com',
       'Payment confirmed — ' || v_order.reference,
       format('Payment confirmed for order %s (NGN %s).', v_order.reference, v_order.total));
-    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'igbanichiobiebere@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'ujuigbani@gmail.com',
       'Payment confirmed — ' || v_order.reference,
       format('Payment confirmed for order %s (NGN %s).', v_order.reference, v_order.total));
   END IF;
@@ -127,10 +127,10 @@ BEGIN
       'Payment confirmed for FabluX order ' || v_order.reference,
       format('We confirmed your payment for order %s. Track it: https://fablux.pages.dev/track.html?ref=%s&token=%s',
              v_order.reference, v_order.reference, v_order.tracking_token));
-    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'ujunwaigbani@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'fabluxdesigns@gmail.com',
       'Payment confirmed — ' || v_order.reference,
       format('Payment confirmed for order %s (NGN %s).', v_order.reference, v_order.total));
-    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'igbanichiobiebere@gmail.com',
+    PERFORM public.queue_notification(v_order.id, 'admin_payment', 'ujuigbani@gmail.com',
       'Payment confirmed — ' || v_order.reference,
       format('Payment confirmed for order %s (NGN %s).', v_order.reference, v_order.total));
   END IF;

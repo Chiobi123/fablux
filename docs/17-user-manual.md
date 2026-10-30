@@ -72,7 +72,9 @@ The account page is split into sections along the left (along the top on phones)
 | Account settings | the name, email and phone on file, password change and email preferences |
 | Help & support | tracking, returns, FAQ and contact links |
 
-My orders, Wishlist and Track an order are links in the same menu.
+My orders, Wishlist and Track an order are links in the same menu. **Admin console**
+appears there only for the store's administrator accounts; it is not shown to
+customers at all.
 
 | Page | What it does |
 |---|---|

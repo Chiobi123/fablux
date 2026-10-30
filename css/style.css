@@ -167,6 +167,8 @@ nav{
 
     position:relative;
 
+    background:url("../images/hero1.jpg") center/cover no-repeat;
+
     height:100vh;
 
     display:flex;
@@ -289,34 +291,6 @@ nav{
 .btn-outline{
     border:2px solid #7B2CBF;
     color:white;
-}
-
-.slider{
-    position:absolute;
-    inset:0;
-    z-index:0;
-}
-
-.slide{
-    position:absolute;
-    inset:0;
-    opacity:0;
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-    transition:opacity .8s ease;
-}
-
-.slide.active{
-    opacity:1;
-}
-
-.slide:nth-child(1){
-    background-image:url("../images/hero1.jpg");
-}
-
-.slide:nth-child(2){
-    background-image:url("../images/hero2.jpg");
 }
 
 .overlay{

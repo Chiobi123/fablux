@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const slides = document.querySelectorAll(".slide");
     const header = document.querySelector("header");
     const topBtn = document.getElementById("topBtn");
     const menuBtn = document.querySelector(".menu-toggle");
@@ -10,23 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const filterBtns = document.querySelectorAll(".filter-btn");
     const productCards = document.querySelectorAll(".product-card");
 
-    let currentSlide = 0;
 
-    // Slider rotation
-    function showNextSlide() {
-        if (!slides.length) return;
-        slides[currentSlide].classList.remove("active");
-        currentSlide = (currentSlide + 1) % slides.length;
-        slides[currentSlide].classList.add("active");
-    }
-
-    if (slides.length) {
-        slides[currentSlide].classList.add("active");
-        setInterval(showNextSlide, 5000);
-        slides.forEach(slide => {
-            slide.style.animation = "heroZoom 10s ease-in-out infinite alternate";
-        });
-    }
 
     // Header scroll effect
     function updateHeader() {

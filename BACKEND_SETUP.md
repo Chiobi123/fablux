@@ -23,6 +23,8 @@ Open **SQL Editor** in Supabase and run each file:
 4. `setup-promo-codes.sql` — promo validation and discount rules.
 5. `setup-product-images.sql` — storage bucket and admin-only upload policies.
 6. `setup-admin-bootstrap.sql` — create/promote the first admin.
+6b. `setup-admin-emails.sql` — approved admin addresses, auth-user profile sync,
+    email lock (replaces `is_admin()`, so run it last).
 7. `setup-security-hardening.sql` — RLS on every table, rate limits, consent,
    data deletion, indexes, public-settings whitelist.
 8. `setup-product-details.sql` — product description/material/features columns,

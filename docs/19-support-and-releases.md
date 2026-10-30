@@ -63,6 +63,37 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-10-30 (night)
+
+- `fix(auth)`: an administrator signing in was treated as a customer. Google/OAuth
+  created the auth account but never the `public.users` row that `is_admin()` reads.
+  A trigger on `auth.users` now provisions the row for every sign-up (OAuth and
+  password), and the client repairs a missing row as a fallback.
+- `fix(security)`: closed a privilege escalation. `is_admin()` trusted
+  `public.users.email`, which a signed-in customer can edit; pointing that email at
+  an allow-listed address granted admin. The check now also compares against
+  `auth.jwt()->>'email'`, and `lock_user_email` reverts any email that is not the
+  Auth-owned address. Verified live: the PATCH left the row unchanged.
+- `feat(admin-emails)`: allow-list is now `fabluxdesigns@gmail.com`,
+  `ujuigbani@gmail.com`, `igbanichiobiebere@gmail.com`; `ujunwaigbani@gmail.com` was
+  demoted to customer. Applied with `setup-admin-emails.sql`.
+- `fix(account)`: `.fx-nav a` sets `display:flex`, which beat the `[hidden]` rule, so
+  every customer saw the **Admin console** link. Hidden is now `display:none` and
+  verified: customers get no link, admins do.
+- `fix(admin)`: a signed-in customer opening `admin.html` is returned to their
+  account page instead of being shown an "administrators only" panel. Waybill no
+  longer links back to the console.
+- `fix(auth)`: after Google sign-in the visitor stayed on the login page. Signed-in
+  visitors on `login.html`/`register.html` are now sent to the account or admin page;
+  the `return` parameter only accepts same-folder `.html` pages.
+- `feat(admin)`: Overview carries an "Adding products" card with a **Go to Products**
+  button; the product form states the picture rules (square 1:1, JPG/PNG/WebP,
+  800×800 px+, plain background).
+- `refactor(hero)`: removed the hard-coded two-slide carousel; the hero uses one
+  static photograph (ADR-15).
+- `chore(security)`: stray signup `chiobiebereigbani@gmail.com` deleted and all
+  sessions/refresh tokens revoked, so every account signs in again with the new roles.
+
 ### 2026-10-30 (evening)
 
 - `fix(account)`: light mode made account links white on white cards until hover
@@ -149,6 +180,14 @@ Chronological, newest first. Conventional prefixes match the commit history.
 Earlier history: `git log --oneline`.
 
 ## 4. Release notes (user-facing)
+
+### Release 2026-10-30b — "Admin access fixed"
+
+- Administrators now sign in and land in the console — Google sign-in included.
+- The **Admin console** link is gone for customers; they only ever see their own
+  account.
+- Adding a product now explains what picture to upload (square, 800×800 px or more).
+- The homepage opens on one clean photograph instead of a rotating pair.
 
 ### Release 2026-10-30 — "Clear account, real dashboard"
 

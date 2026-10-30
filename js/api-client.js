@@ -130,6 +130,13 @@
     try{
       const rows=await rest('/users?select=role&id=eq.'+encodeURIComponent(u.id));
       if(rows&&rows[0])role=rows[0].role;
+      else{
+        // OAuth sign-in used to land here with no profile row at all, which
+        // made every administrator look like a customer.
+        await ensureUserRow(u);
+        const again=await rest('/users?select=role&id=eq.'+encodeURIComponent(u.id));
+        if(again&&again[0])role=again[0].role;
+      }
     }catch(e){ role=(c&&c.role)||'customer'; }
     const mapped=mapUser(u,role);
     cacheUser(mapped);

@@ -8,22 +8,26 @@ link; you reach it by URL.
 
 ## 1. Getting access
 
-1. Register at `register.html` with one of the approved addresses:
-   - `ujunwaivbani@gmail.com`
-   - `igbanichiobievere@gmail.com`
-2. The database trigger grants `role = 'admin'` on sign-up. There is no invitation
+1. Sign in at `login.html` (password or Google) with one of the approved addresses:
+   - `fabluxdesigns@gmail.com`
+   - `ujuigbani@gmail.com`
+   - `igbanichiobiebere@gmail.com`
+2. A database trigger creates the profile row and gives the account the admin role
+   on first sign-in — email/password and Google both work. There is no invitation
    screen and no shared password.
-3. Sign in and open `/admin.html`.
+3. The account menu now shows **Admin console**. Customers never see that link, and
+   opening `/admin.html` while signed in as a customer simply returns to the
+   account page (no "administrators only" screen, no hint that the console exists).
 
-If admin screens say "You do not have access", the account's `public.users.role` is
-not `admin`. Check in the Supabase SQL editor:
+To check a role in the Supabase SQL editor:
 
 ```sql
 select id, email, role from public.users order by created_at desc;
 ```
 
-Only the two addresses above can be granted the role; changing the list requires
-editing `allowed_admin_email()` (`setup-fulfilment.sql`) and redeploying SQL.
+Changing the list requires editing `allowed_admin_email()` in
+`setup-admin-emails.sql` and running it. Existing rows are re-derived by the same
+script; a removed address falls back to customer immediately.
 
 **Forgotten password:** use `forgot-password.html` with the same email. If email is
 not configured, reset it from Supabase → Authentication → Users → *Reset password*.
@@ -114,9 +118,15 @@ deactivate it instead — order history must remain readable.
 
 ### 4.4 Images
 
-- Square or 3:4, under 5 MB, JPG/PNG/WebP.
-- Upload replaces nothing automatically; delete the old file if unused.
+The form states the rules inline next to the file picker:
+
+- Square (1:1), JPG / PNG / WebP, at least 800×800 px, under 5 MB.
+- Plain background, no text or watermarks — the shop crops the image to a square.
+- Upload a file or paste a public URL. Uploading a replacement deletes the old file.
 - A missing image falls back to a neutral placeholder; it does not break the page.
+
+The Overview tab carries the same reminder next to a **Go to Products** button, so
+"where do I add a product?" is answered on the first screen after sign-in.
 
 ## 5. Promo codes
 

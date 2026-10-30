@@ -63,7 +63,8 @@ Get-Item "backup-*.dump" | Select-Object Name,Length
 3. Re-run the schema/security scripts in order:
    `setup-supabase.sql` → `setup-rls.sql` → `setup-fulfilment.sql` →
    `setup-promo-codes.sql` → `setup-product-images.sql` →
-   `setup-admin-bootstrap.sql` → `setup-security-hardening.sql`
+   `setup-admin-bootstrap.sql` → `setup-security-hardening.sql` →
+   `setup-admin-emails.sql`
    (only if the dump did not already contain them).
 4. Smoke checks:
    - `GET /rest/v1/products?select=id&limit=1` returns rows.

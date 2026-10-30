@@ -154,6 +154,12 @@
           '<div class="fx-kpi"><span>Awaiting payment</span><strong>' + (counts.pending_payment || 0) + '</strong><small>Needs confirmation</small></div>' +
           '<div class="fx-kpi"><span>Ready to ship</span><strong>' + ((counts.ready_for_dispatch || 0) + (counts.processing || 0)) + '</strong><small>In the packing queue</small></div>' +
         '</div>' +
+        '<div class="fx-card fx-pad" style="margin-bottom:18px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">' +
+          '<div style="flex:1 1 300px"><p class="fx-eyebrow" style="margin:0 0 4px">Adding products</p>' +
+          '<strong>Products → Add product</strong>' +
+          '<small style="display:block;color:var(--fx-muted);margin-top:4px">Name, price, stock and one square photo. Picture: JPG, PNG or WebP, 800×800 px or larger, plain background.</small></div>' +
+          '<button class="fx-btn" type="button" data-tab="products">Go to Products</button>' +
+        '</div>' +
         '<div class="fx-dash-grid wide">' +
           '<section class="fx-card fx-pad">' +
             '<div class="fx-dash-head" style="margin-bottom:10px"><div><p class="fx-eyebrow">Last 14 days</p><h3>Daily sales</h3></div></div>' +
@@ -421,6 +427,7 @@
       '<div style="display:grid;gap:8px;flex:1 1 260px">' +
       '<input type="file" name="picture" accept="image/*">' +
       '<input name="image" value="' + esc(p.image || '') + '" placeholder="…or paste an image link">' +
+      '<small style="opacity:.7">One square photo (1:1), JPG / PNG / WebP, at least 800×800 px, plain background, no text on the image.</small>' +
       '</div></div></label>' +
       '<div class="pro-prod-actions">' +
       '<button class="btn" type="submit">' + (isNew ? 'Add product' : 'Save changes') + '</button>' +
@@ -496,7 +503,7 @@
 
     box.innerHTML = headHtml(dash) +
       '<div class="pro-admin-section"><h3>Product manager</h3>' +
-      '<p style="opacity:.8">Add products, upload their pictures, set the price and choose how many are available. Changes show in the shop straight away.</p>' +
+      '<p style="opacity:.8">A product added here appears in Shop, in search and in the bag straight away. Use one square photo per product — JPG, PNG or WebP, 800×800 px or larger, plain background, no text on the image. The file is uploaded when you save the form.</p>' +
       (form || '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px">' +
         '<button class="btn" type="button" data-prod-new>Add product</button>' +
         '<span style="opacity:.7">' + rows.length + ' product(s) in the catalogue</span></div>') +
