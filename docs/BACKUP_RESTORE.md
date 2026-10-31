@@ -64,8 +64,10 @@ Get-Item "backup-*.dump" | Select-Object Name,Length
    `setup-supabase.sql` → `setup-rls.sql` → `setup-fulfilment.sql` →
    `setup-promo-codes.sql` → `setup-product-images.sql` →
    `setup-admin-bootstrap.sql` → `setup-security-hardening.sql` →
-   `setup-admin-emails.sql`
+   `setup-admin-emails.sql` → `setup-email-dispatch.sql`
    (only if the dump did not already contain them).
+   `setup-email-dispatch.sql` needs `pg_net` + `pg_cron` and the Vault secret
+   `brevo_api_key`; without the secret it is a no-op, not an error.
 4. Smoke checks:
    - `GET /rest/v1/products?select=id&limit=1` returns rows.
    - Sign in with a test customer; open My Orders; confirm only that customer's orders.

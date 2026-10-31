@@ -158,7 +158,11 @@ header height variable prevents overlap when the nav wraps.
 12. Resize to 360 px: no overlap, tools reachable, Google button visible on login.
 13. Direct REST call to `orders` with the anon key returns no rows.
 14. Admin RPC with a customer JWT returns `admin only`.
-15. Confirm the asset `?v=` token changed if any CSS/JS changed.
+15. Email: request a password reset and confirm arrival; sign up a fresh address and
+    confirm the welcome mail plus a `sent` row in `notifications`
+    (`select event,status,attempts from public.notifications order by id desc limit 5`).
+    Anon reads of `email_settings` must return `[]`.
+16. Confirm the asset `?v=` token changed if any CSS/JS changed.
 
 ## 9. Gaps and planned tooling
 

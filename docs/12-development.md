@@ -133,6 +133,7 @@ Release steps: see `15-deployment.md` §5.
 | ADR-13 | No automated test framework | no build step or runner to maintain for a 28-page static site | manual regression checklist (see debt TD-06) |
 | ADR-14 | New account/admin UI uses local `--fx-*` tokens in `css/dashboard.css` instead of extending the global theme | the global `--white`/`--dark` pair flips meaning in light mode, so every new component had to be patched by hand and some were missed (white text on white cards) | two token sets to keep in sync, one extra stylesheet on two pages |
 | ADR-15 | One static hero photograph instead of the two-slide carousel | the slides were hard-coded, not editable in the admin, and repeated the same artwork every 5 s; two full-screen images doubled the hero payload for no content | losing the cross-fade; restoring a carousel needs an admin-managed image list, not a hard-coded one |
+| ADR-16 | Auth mail over Brevo SMTP (port 465); app mail over Brevo's HTTP API from `pg_cron` | no server or Edge Function to deploy, and the key stays in Vault instead of an SMTP password in two places; port 587/STARTTLS did not deliver | delivery is fire-and-forget — a row is `sent` on request, not on Brevo's reply; switching providers means editing one function and one Vault secret |
 
 ## 7. Dependency and licence inventory
 

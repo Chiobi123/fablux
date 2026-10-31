@@ -88,9 +88,12 @@ cart (localStorage, ids+qty only)
                 ├─ insert orders + order_items
                 ├─ reserve stock
                 ├─ insert order_events('created')
-                ├─ queue_notification(...)
+                ├─ queue_notification(...)     → notifications row
                 └─ audit(...)
    ← { id, reference, tracking_token }
+
+pg_cron (every minute) → dispatch_emails() → Brevo HTTP API → notifications.sent
+                        ↑ reads the API key from Supabase Vault
    → order-success.html?ref=…&token=…
 ```
 

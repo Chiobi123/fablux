@@ -63,6 +63,24 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-10-31
+
+- `feat(email)`: transactional mail is live through Brevo. Supabase auth mail uses
+  the Brevo SMTP relay on port **465** (`smtp-relay.brevo.com`, sender
+  `igbanichiobiebere@gmail.com`); port 587 did not deliver. `rate_limit_email_sent`
+  is 100/hour and password resets were confirmed arriving.
+- `feat(email-outbox)`: added `setup-email-dispatch.sql`. `dispatch_emails()` posts
+  `notifications` rows with `status='queued'` to `https://api.brevo.com/v3/smtp/email`
+  via `pg_net`; `pg_cron` runs it every minute as `fx-email-dispatch`.
+  `trg_welcome_email` queues a welcome mail for every new `public.users` row.
+  `settings.email_enabled` is now `'true'`.
+- `feat(email-security)`: the Brevo API key is stored in Supabase Vault as
+  `brevo_api_key`. Sender identity is in `public.email_settings` with RLS and no
+  policy; the anon key reads `[]`, and both `dispatch_emails` and `notifications`
+  return 401 for anon.
+- `ops(email)`: Brevo SMTP IP blocking was deactivated — it was enabled with zero
+  authorised IPs, which would reject every Supabase send.
+
 ### 2026-10-30 (night)
 
 - `fix(auth)`: an administrator signing in was treated as a customer. Google/OAuth
@@ -180,6 +198,14 @@ Chronological, newest first. Conventional prefixes match the commit history.
 Earlier history: `git log --oneline`.
 
 ## 4. Release notes (user-facing)
+
+### Release 2026-10-31 — "Email works"
+
+- Password-reset and account mail now arrive through Brevo instead of the throttled
+  default sender.
+- New customers get a welcome email automatically.
+- Order updates (confirmed, packed, delivered) are emailed from the same outbox, so
+  nothing sits waiting for someone to press send.
 
 ### Release 2026-10-30b — "Admin access fixed"
 

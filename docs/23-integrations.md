@@ -114,32 +114,38 @@ asset token and redeploy the site. Test with `sk_test_…` first (card
 
 ## 6. Email
 
-**Status:** no sender is connected. `notifications` is an outbox; nothing reads it
-automatically, and Supabase Auth still uses the built-in sender (low limits, often
-filtered as spam). Password-reset delivery is therefore unreliable until custom
-SMTP is configured.
+**Status:** live (2026-10-31). Brevo relay; sender `FabluX.U.Design
+<igbanichiobiebere@gmail.com>` (verified). Auth mail goes through Supabase's SMTP
+client on port **465**; app mail goes through Brevo's HTTP API from Postgres.
 
-### 6.1 Auth mail (password reset, sign-up) — dashboard only
+### 6.1 Auth mail (password reset) — live
 
-1. Supabase → Authentication → SMTP Settings: host, port 465, username, password
-   (the provider API key), sender address on a domain you own.
-2. Publish SPF, DKIM and DMARC records for that domain; `pages.dev` cannot be a
-   sender.
-3. Authentication → URL Configuration: site URL `https://fablux.pages.dev` plus
-   `https://fablux.pages.dev/**` and `http://127.0.0.1:8086/**`.
-4. Brand the reset/confirm templates, send a real reset, check DKIM in the headers.
+- Supabase → Authentication → Emails → SMTP: `smtp-relay.brevo.com`, port **465**,
+  user `c0cb48001@smtp-brevo.com`, password = the Brevo SMTP key.
+- The From address must be a **verified** Brevo sender or every send is rejected.
+- Port 587/STARTTLS did not deliver; 465/SMTPS is the working setting.
+- `rate_limit_email_sent` is 100/hour.
 
-### 6.2 Order mail (outbox)
+### 6.2 Order and welcome mail — `setup-email-dispatch.sql`
 
-`queue_notification()` already writes a row per order event. To deliver them:
+`queue_notification()` writes rows into `public.notifications`. The sender added on
+2026-10-31 delivers them with no server:
 
-1. Add a `send-notifications` Edge Function that selects `status='pending' AND
-   attempts < 5`, sends through the provider's HTTP API, then sets `sent_at` /
-   `status`; on failure increments `attempts` and stores `error`.
-2. Schedule it (Supabase cron or any 5-minute pinger).
-3. Set `settings.email_enabled='true'` only after one real delivery is confirmed.
+1. `public.dispatch_emails(20)` takes `status='queued'` rows, posts them to
+   `https://api.brevo.com/v3/smtp/email`, then marks them `sent`.
+2. `pg_cron` job `fx-email-dispatch` runs it every minute.
+3. `trg_welcome_email` on `public.users` queues a welcome message for each new
+   customer (OAuth included, because `trg_sync_auth_user` creates the row).
+4. Sender identity lives in `public.email_settings` (RLS on, no policy).
+5. The Brevo **API key** lives in Supabase Vault as `brevo_api_key` — not in git, and
+   unreadable with the anon key (verified: `[]`).
 
-Not built yet: no provider chosen, no templates beyond the plain-text bodies.
+`settings.email_enabled='true'` is set, so new order events queue immediately.
+
+**Ceiling:** a row is marked `sent` when Brevo accepts the request, not when the mail
+lands. `net._http_response` holds the real status for 6 hours; add a verification
+pass if bounce handling is ever needed. Senders are free-provider addresses, so some
+spam placement is expected until a domain is authenticated.
 
 ## 7. Integration failure behaviour
 
@@ -150,7 +156,7 @@ Not built yet: no provider chosen, no templates beyond the plain-text bodies.
 | Google Fonts | system font fallback | none needed |
 | Font Awesome | icons missing | none needed |
 | Google OAuth | button explains; email sign-in works | probe fails open: a dead probe still sends the visitor to Google |
-| Email | resets and alerts not delivered | admin resets via Supabase dashboard |
+| Email | resets and alerts not delivered | auth sends through Brevo port 465; outbox retries via `dispatch_emails()` |
 
 ## 8. Third-party data sharing summary
 

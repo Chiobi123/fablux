@@ -29,6 +29,9 @@ Open **SQL Editor** in Supabase and run each file:
    data deletion, indexes, public-settings whitelist.
 8. `setup-product-details.sql` — product description/material/features columns,
    price/stock constraints, and a hard block on anonymous product writes.
+8b. `setup-email-dispatch.sql` — Brevo outbox sender, `pg_cron` job, welcome email.
+    Needs `pg_net` + `pg_cron` and `vault.create_secret('<key>','brevo_api_key')`;
+    without the secret it queues nothing but does not error.
 
 All scripts are idempotent.
 

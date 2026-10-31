@@ -72,6 +72,7 @@ newsletter_subscribers  — standalone
 | `rate_limit_hits` | `id`, `bucket`, `subject`, `created_at` |
 | `contacts` | `id`, `name`, `email`, `subject`, `message`, `created_at` |
 | `newsletter_subscribers` | `id`, `email` UNIQUE, `created_at` |
+| `email_settings` | `id` (always 1), `from_email`, `from_name`, `updated_at`. RLS on, **no policy** — only `dispatch_emails()` and service_role read it. |
 
 ### 2.5 Settings keys in use
 
@@ -134,6 +135,8 @@ There is no migration framework. The SQL files are applied **in this order** wit
 6. `setup-product-details.sql` — description/material/features
 7. `setup-product-images.sql` — storage bucket + policies
 8. `setup-admin-bootstrap.sql` — admin role trigger
+9. `setup-email-dispatch.sql` — Brevo sender identity, `dispatch_emails()`,
+   `pg_cron` job `fx-email-dispatch`, welcome-email trigger, `email_enabled='true'`
 
 All files are written to be re-runnable (`IF NOT EXISTS`, `CREATE OR REPLACE`,
 idempotent policy drops). Re-applying them to a populated database is the supported

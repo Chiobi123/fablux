@@ -52,6 +52,12 @@ Requires the redirect URL to be allow-listed in Supabase → Authentication → 
 Configuration. For production that is `https://fablux.pages.dev/reset-password.html`
 (plus the site URL). Without it, the email link falls back to the Site URL.
 
+Delivery goes through Brevo: `smtp-relay.brevo.com` port **465**, sender
+`igbanichiobiebere@gmail.com` (must be a verified Brevo sender), limit 100/hour. Port
+587 was tried first and did not deliver. Sign-up confirmation mail stays off
+(`mailer_autoconfirm: true`); new customers get the welcome mail from
+`setup-email-dispatch.sql` instead — see `23-integrations.md` §6.
+
 ## 5. Authorization
 
 **The database decides.** UI hiding is cosmetic.

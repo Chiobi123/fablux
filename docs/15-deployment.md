@@ -61,7 +61,7 @@ API; update `api-client.js`, bump the asset token, redeploy.
 |---|---|
 | Site URL | `https://fablux.pages.dev` |
 | Additional redirect URLs | `/account.html`, `/login.html`, `/reset-password.html`, `/forgot-password.html` |
-| Email provider | Supabase default (rate-limited); configure SMTP for production volume |
+| Email provider | Brevo SMTP, `smtp-relay.brevo.com:465`, 100 sends/hour (`23-integrations.md` §6) |
 | Auth flow | implicit (the client uses raw `/authorize`) |
 | Google provider | **disabled** — steps in `09-auth.md` §6 |
 | Storage bucket | `product-images`, public read, admin write |

@@ -139,6 +139,8 @@ These are tracked in `19-support-and-releases.md` §2. The short version:
   `images/` folder only contains `hero1.jpg`, `hero2.jpg` and an empty `logo.jpg`.
 - Store contact details (`store_contact`, `store_email`, `store_address`) are empty
   in `settings` until the owner fills them in the admin console.
-- Email sending: no provider is connected. Order alerts are written to the
-  `notifications` table (`email_enabled = false`).
+- Email sending: live through Brevo (SMTP on port 465 for auth mail, HTTP API from
+  `dispatch_emails()` for the outbox). `email_enabled = true`. Senders are verified
+  freemail addresses, so a domain with DKIM/DMARC remains the durable fix
+  (`23-integrations.md` §6).
 - No automated test suite; verification is manual (see `13-testing-qa.md`).
