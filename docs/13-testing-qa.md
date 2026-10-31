@@ -161,7 +161,8 @@ header height variable prevents overlap when the nav wraps.
 15. Email: request a password reset and confirm arrival; sign up a fresh address and
     confirm the welcome mail plus a `sent` row in `notifications`
     (`select event,status,attempts from public.notifications order by id desc limit 5`).
-    Anon reads of `email_settings` must return `[]`.
+    Submit the contact form and confirm the alert carries the customer's address as
+    reply-to. Anon reads of `email_settings` must return `[]`.
 16. Confirm the asset `?v=` token changed if any CSS/JS changed.
 
 ## 9. Gaps and planned tooling

@@ -25,10 +25,16 @@ CREATE TABLE IF NOT EXISTS public.email_settings (
   id        int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   from_email text NOT NULL,
   from_name  text NOT NULL DEFAULT 'FabluX.U.Design',
+  reply_to   text,                     -- where customer replies land; defaults to from_email
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+-- Already-created installs:
+ALTER TABLE public.email_settings ADD COLUMN IF NOT EXISTS reply_to text;
 ALTER TABLE public.email_settings ENABLE ROW LEVEL SECURITY;
 -- Deliberately no policy: only SECURITY DEFINER code and service_role read it.
+
+-- Per-message reply address (a contact alert points replies at the customer).
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS reply_to text;
 
 INSERT INTO public.email_settings (id, from_email, from_name)
 VALUES (1, 'igbanichiobiebere@gmail.com', 'FabluX.U.Design')
@@ -47,6 +53,7 @@ DECLARE
   v_key  text;
   v_from text;
   v_name text;
+  v_reply text;
   r      record;
   n      int := 0;
 BEGIN
@@ -55,13 +62,15 @@ BEGIN
   END IF;
 
   SELECT decrypted_secret INTO v_key FROM vault.decrypted_secrets WHERE name = 'brevo_api_key' LIMIT 1;
-  SELECT from_email, from_name INTO v_from, v_name FROM public.email_settings WHERE id = 1;
+  SELECT from_email, from_name, coalesce(nullif(reply_to, ''), from_email)
+    INTO v_from, v_name, v_reply
+    FROM public.email_settings WHERE id = 1;
   IF v_key IS NULL OR v_from IS NULL THEN
     RETURN 0;
   END IF;
 
   FOR r IN
-    SELECT id, recipient, subject, body
+    SELECT id, recipient, subject, body, reply_to
       FROM public.notifications
      WHERE channel = 'email'
        AND status = 'queued'
@@ -78,6 +87,7 @@ BEGIN
         body    := jsonb_build_object(
           'sender',  jsonb_build_object('name', v_name, 'email', v_from),
           'to',      jsonb_build_array(jsonb_build_object('email', r.recipient)),
+          'replyTo', jsonb_build_object('email', coalesce(nullif(r.reply_to, ''), v_reply), 'name', v_name),
           'subject', coalesce(nullif(r.subject, ''), 'FabluX.U.Design'),
           'textContent', coalesce(r.body, '')
         )
@@ -139,3 +149,50 @@ CREATE TRIGGER trg_welcome_email
 INSERT INTO public.settings (key, value, updated_at)
 VALUES ('email_enabled', 'true', now())
 ON CONFLICT (key) DO UPDATE SET value = 'true', updated_at = now();
+
+-- ---------------------------------------------------------------------------
+-- 6. Contact-page enquiries reach the admins by email
+--
+-- submit_contact() only wrote a row into public.contacts, and nothing read that
+-- table, so an enquiry could sit unseen forever. The trigger below queues one
+-- mail per administrator; its replyTo is the customer, so Replying in Gmail
+-- answers them directly instead of landing back in our own inbox.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.queue_contact_alert() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $fn$
+DECLARE
+  v_to text;
+BEGIN
+  FOREACH v_to IN ARRAY ARRAY['fabluxdesigns@gmail.com', 'ujuigbani@gmail.com', 'igbanichiobiebere@gmail.com']
+  LOOP
+    PERFORM public.queue_notification(
+      NEW.id,
+      'contact_message',
+      v_to,
+      format('Store enquiry: %s', left(coalesce(nullif(NEW.subject, ''), 'Enquiry'), 120)),
+      format(
+        E'New message from the contact page.\n\nFrom: %s <%s>\nSubject: %s\n\n%s\n\nReply to this email to answer the customer directly.',
+        coalesce(nullif(NEW.name, ''), 'Guest'),
+        NEW.email,
+        coalesce(nullif(NEW.subject, ''), 'Enquiry'),
+        left(NEW.message, 1500)
+      )
+    );
+    UPDATE public.notifications
+       SET reply_to = NEW.email
+     WHERE order_id = NEW.id AND event = 'contact_message' AND recipient = lower(v_to);
+  END LOOP;
+  RETURN NEW;
+END $fn$;
+
+DROP TRIGGER IF EXISTS trg_contact_alert ON public.contacts;
+CREATE TRIGGER trg_contact_alert
+  AFTER INSERT ON public.contacts
+  FOR EACH ROW EXECUTE FUNCTION public.queue_contact_alert();
+
+-- Where replies to customer mail land. Left equal to the sender until a real
+-- support mailbox exists; change with:
+--   update public.email_settings set reply_to = '<inbox>' where id = 1;
+UPDATE public.email_settings
+   SET reply_to = coalesce(reply_to, from_email)
+ WHERE id = 1;

@@ -147,6 +147,35 @@ lands. `net._http_response` holds the real status for 6 hours; add a verificatio
 pass if bounce handling is ever needed. Senders are free-provider addresses, so some
 spam placement is expected until a domain is authenticated.
 
+### 6.3 Where replies go
+
+Every send carries an explicit `replyTo`, so the destination is never a guess:
+
+| Mail | Reply lands at |
+|---|---|
+| Welcome, order received, status updates, payment | `email_settings.reply_to`, falling back to `from_email` — today `igbanichiobiebere@gmail.com` |
+| Contact-page enquiry alert (to the three admins) | the **customer's own address** (`notifications.reply_to`), so Replying answers them |
+| Password reset | `igbanichiobiebere@gmail.com` (Supabase SMTP sender; there is no template reply-to) |
+
+Change the customer-facing reply address with:
+
+```sql
+update public.email_settings set reply_to = 'support@yourdomain.com' where id = 1;
+```
+
+`from_email` can stay on a verified sender while `reply_to` moves to a real support
+mailbox — that is the point of the split. Set `reply_to` **before** switching
+`from_email` to a no-reply address, or customer replies will vanish.
+
+Contact enquiries: `submit_contact()` only inserted into `public.contacts`, which
+nothing read, so an enquiry could sit unseen. `trg_contact_alert` (same file) now
+queues one mail per administrator with the customer's address as reply-to. The row
+is still stored, so nothing is lost if mail fails.
+
+**Open issue:** `settings.store_email` is `info@fabluxudesign.com`, and the contact
+page links to it, but that domain and mailbox are not verified or confirmed live.
+Until they are, it is a dead address on a customer-facing page.
+
 ## 7. Integration failure behaviour
 
 | Integration down | Effect | Mitigation |

@@ -74,6 +74,11 @@ Chronological, newest first. Conventional prefixes match the commit history.
   via `pg_net`; `pg_cron` runs it every minute as `fx-email-dispatch`.
   `trg_welcome_email` queues a welcome mail for every new `public.users` row.
   `settings.email_enabled` is now `'true'`.
+- `feat(email-replies)`: every send now carries an explicit `replyTo`.
+  `email_settings.reply_to` (default: the sender) receives customer replies;
+  `trg_contact_alert` on `public.contacts` mails each enquiry to the three admins with
+  the **customer's** address as reply-to, so Replying answers them. Previously
+  `submit_contact()` wrote into `contacts` and nothing read it.
 - `feat(email-security)`: the Brevo API key is stored in Supabase Vault as
   `brevo_api_key`. Sender identity is in `public.email_settings` with RLS and no
   policy; the anon key reads `[]`, and both `dispatch_emails` and `notifications`
@@ -206,6 +211,9 @@ Earlier history: `git log --oneline`.
 - New customers get a welcome email automatically.
 - Order updates (confirmed, packed, delivered) are emailed from the same outbox, so
   nothing sits waiting for someone to press send.
+- Reply to any of those messages and it reaches our support inbox; messages from the
+  contact page reach the team by email, and replying to one answers the customer
+  straight away.
 
 ### Release 2026-10-30b — "Admin access fixed"
 

@@ -67,12 +67,12 @@ newsletter_subscribers  — standalone
 |---|---|
 | `settings` | `key` PK, `value` (text), `updated_at` |
 | `promo_codes` | `code` PK, `kind` (`percent`\|`amount`), `value` (>0), `min_subtotal`, `max_uses` (0 = unlimited), `used_count`, `active`, `created_at` |
-| `notifications` | `id`, `order_id`, `event`, `channel`, `recipient`, `subject`, `body`, `status` (`pending`\|`sent`\|`failed`), `error`, `attempts`, `created_at`, `sent_at` |
+| `notifications` | `id`, `order_id`, `event`, `channel`, `recipient`, `subject`, `body`, `status` (`pending`\|`sent`\|`failed`), `error`, `attempts`, `created_at`, `sent_at`, `reply_to` (overrides the default reply address for that message) |
 | `audit_log` | `id`, `actor_id`, `actor_email`, `action`, `entity`, `entity_id`, `detail` jsonb, `created_at` |
 | `rate_limit_hits` | `id`, `bucket`, `subject`, `created_at` |
 | `contacts` | `id`, `name`, `email`, `subject`, `message`, `created_at` |
 | `newsletter_subscribers` | `id`, `email` UNIQUE, `created_at` |
-| `email_settings` | `id` (always 1), `from_email`, `from_name`, `updated_at`. RLS on, **no policy** — only `dispatch_emails()` and service_role read it. |
+| `email_settings` | `id` (always 1), `from_email`, `from_name`, `reply_to`, `updated_at`. RLS on, **no policy** — only `dispatch_emails()` and service_role read it. |
 
 ### 2.5 Settings keys in use
 
