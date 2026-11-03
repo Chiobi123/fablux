@@ -211,6 +211,36 @@ nav{
 
 }
 
+/* The brand is the hero. Everything else is a footnote to it. */
+.hero .hero-brand{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:clamp(52px,8.5vw,104px);
+    line-height:.95;
+    letter-spacing:-.02em;
+    margin:0 0 24px;
+    color:#fff;
+    text-shadow:0 24px 60px rgba(0,0,0,.6);
+}
+
+.hero .hero-brand-suffix{
+    display:block;
+    margin-top:14px;
+    font-family:Inter,system-ui,sans-serif;
+    font-size:clamp(11px,1.2vw,14px);
+    font-weight:600;
+    letter-spacing:.44em;
+    text-transform:uppercase;
+    color:#cbb6f5;
+}
+
+.hero .hero-lead{
+    width:min(560px,100%);
+    color:#ece7f6;
+    font-size:clamp(16px,1.5vw,19px);
+    line-height:1.7;
+    margin-bottom:34px;
+}
+
 .hero p{
 
     width:550px;
@@ -296,7 +326,11 @@ nav{
 .overlay{
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.75));
+    /* Darker on the left where the wordmark sits, lighter on the right so the
+       photograph still reads. Keeps the name as the first thing the eye hits. */
+    background:
+        linear-gradient(90deg, rgba(10,5,18,.92) 0%, rgba(10,5,18,.74) 36%, rgba(10,5,18,.24) 72%, rgba(10,5,18,.42) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.58));
     z-index:1;
 }
 

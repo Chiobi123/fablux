@@ -26,7 +26,7 @@
   var PAY_LABEL = { pending: 'Pending', successful: 'Successful', failed: 'Failed', refunded: 'Refunded' };
 
   var state = { tab: 'overview', search: '', status: '', payment: '', order: null,
-    productEdit: null, products: [], promoEdit: null, promos: [] };
+    productEdit: null, products: [], promoEdit: null, promos: [], me: null };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -52,21 +52,75 @@
     return d.orders || [];
   }
 
-  function tabsHtml() {
-    var tabs = [['overview', 'Overview'], ['orders', 'Orders'], ['products', 'Products'], ['returns', 'Returns'],
-                ['promos', 'Promo codes'], ['customers', 'Customers'],
-                ['settings', 'Store settings'], ['notifications', 'Notifications'], ['audit', 'Audit trail']];
-    return '<div class="pro-admin-nav">' +
-      tabs.map(function (t) {
-        var on = state.tab === t[0];
-        return '<button type="button" class="pro-tab' + (on ? ' is-active' : '') + '"' +
-          (on ? ' aria-current="page"' : '') + ' data-tab="' + t[0] + '">' + t[1] + '</button>';
+  /* Sidebar structure: grouped, the way a shop back office is read.
+     Every entry is an existing tab — nothing new is invented here. */
+  var NAV = [
+    ['Main', [['overview', 'Dashboard', 'fa-table-columns'],
+              ['orders', 'Orders', 'fa-bag-shopping'],
+              ['products', 'Products', 'fa-shirt'],
+              ['customers', 'Customers', 'fa-users']]],
+    ['Sales', [['returns', 'Returns', 'fa-rotate-left'],
+               ['promos', 'Promo codes', 'fa-tag']]],
+    ['Store', [['settings', 'Store settings', 'fa-sliders'],
+               ['notifications', 'Notifications', 'fa-envelope']]],
+    ['System', [['audit', 'Audit trail', 'fa-clipboard-list']]]
+  ];
+
+  var PAGE_META = {
+    overview: ['Dashboard', 'What is happening in the store today.'],
+    orders: ['Orders', 'Every order, payment state and dispatch step.'],
+    products: ['Products', 'Catalogue, price and stock.'],
+    customers: ['Customers', 'Registered shoppers and how much they order.'],
+    returns: ['Returns', 'Requests to send an item back.'],
+    promos: ['Promo codes', 'Discounts customers can apply at checkout.'],
+    settings: ['Store settings', 'Contact details and the email switch.'],
+    notifications: ['Notifications', 'The email outbox and its delivery status.'],
+    audit: ['Audit trail', 'Who changed what, and when.']
+  };
+
+  function sideHtml(dash) {
+    var s = dash.stats || {};
+    var badge = { notifications: s.pendingAlerts || 0 };
+    return '<aside class="fx-side">' +
+      '<div class="fx-side-brand"><span class="fx-side-mark">FX</span><strong>FabluX</strong></div>' +
+      NAV.map(function (group) {
+        return '<p class="fx-side-group">' + group[0] + '</p><nav class="fx-nav">' +
+          group[1].map(function (t) {
+            var on = state.tab === t[0];
+            return '<button type="button" data-tab="' + t[0] + '"' +
+              (on ? ' aria-current="page"' : '') + '>' +
+              '<i class="fa-solid ' + t[2] + '" aria-hidden="true"></i><span>' + t[1] + '</span>' +
+              (badge[t[0]] ? '<span class="fx-count">' + badge[t[0]] + '</span>' : '') +
+              '</button>';
+          }).join('') + '</nav>';
       }).join('') +
-      '<a class="pro-tab" href="waybill.html">Print waybill</a></div>';
+      '<div class="fx-side-foot">' +
+        '<a href="index.html"><i class="fa-solid fa-store" aria-hidden="true"></i> View storefront</a>' +
+        '<a href="waybill.html"><i class="fa-solid fa-print" aria-hidden="true"></i> Print waybill</a>' +
+      '</div>' +
+      '</aside>';
   }
 
-  function stat(label, value) {
-    return '<div class="fablux-admin-stat">' + label + '<strong>' + value + '</strong></div>';
+  /* Tabs now live in the sidebar; kept as a no-op so older call sites stay valid. */
+  function tabsHtml() { return ''; }
+
+  function statCard(icon, label, value, delta, note) {
+    return '<article class="fx-stat">' +
+      '<div class="fx-stat-top"><span class="fx-stat-icon"><i class="fa-solid ' + icon + '" aria-hidden="true"></i></span>' +
+      '<span>' + esc(label) + '</span></div>' +
+      '<strong>' + value + '</strong>' +
+      (delta
+        ? '<p class="fx-delta" data-dir="' + delta.dir + '"><i class="fa-solid ' +
+          (delta.dir === 'up' ? 'fa-arrow-trend-up' : delta.dir === 'down' ? 'fa-arrow-trend-down' : 'fa-minus') +
+          '" aria-hidden="true"></i> ' + esc(delta.text) + ' <span>' + esc(note) + '</span></p>'
+        : '<p class="fx-delta" data-dir="flat"><span>' + esc(note) + '</span></p>') +
+      '</article>';
+  }
+
+  function deltaOf(current, previous) {
+    if (!previous) return { dir: 'flat', text: 'New' };
+    var pct = Math.round(((current - previous) / previous) * 100);
+    return { dir: pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat', text: (pct > 0 ? '+' : '') + pct + '%' };
   }
 
   function lowStockHtml(list) {
@@ -76,19 +130,23 @@
       '</div>';
   }
 
-  /* Console header: title + live numbers, shown on every tab. */
+  /* Page header. The dashboard greets the signed-in administrator by name;
+     other tabs say where you are. */
   function headHtml(dash) {
-    var s = dash.stats || {};
-    return '<div class="section-title"><span>FABLUX ADMIN</span><h2>Store Control Center</h2>' +
-      '<p>Catalogue, orders, payment confirmation, dispatch and delivery.</p></div>' +
-      '<div class="fablux-admin-grid">' +
-      stat('Products', s.products || 0) +
-      stat('Customers', s.customers || 0) +
-      stat('Orders', s.orders || 0) +
-      stat('Sales this month', money(s.monthRevenue || 0)) +
-      stat('Orders this month', s.monthOrders || 0) +
-      stat('Low stock', (s.lowStock || []).length) +
-      '</div>' + lowStockHtml(s.lowStock) + tabsHtml();
+    var meta = PAGE_META[state.tab] || ['Console', ''];
+    var name = state.me && state.me.name ? String(state.me.name).split(' ')[0] : 'there';
+    var today = new Date().toLocaleDateString('en-NG',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return '<header class="fx-pagehead">' +
+      '<div><p class="fx-eyebrow">FABLUX ADMIN</p>' +
+      '<h1>' + esc(state.tab === 'overview' ? 'Welcome back, ' + name : meta[0]) + '</h1>' +
+      '<p>' + esc(meta[1]) + '</p></div>' +
+      '<div class="fx-pagehead-actions">' +
+        '<span class="fx-chip"><i class="fa-regular fa-calendar" aria-hidden="true"></i> ' + esc(today) + '</span>' +
+        (state.tab === 'overview'
+          ? '<button class="fx-btn" type="button" data-tab="products"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add product</button>'
+          : '') +
+      '</div></header>';
   }
 
   /* Overview: trading trend, pipeline, recent orders, stock alerts. */
@@ -98,8 +156,6 @@
     try { orders = (await window.FabluXAPI.adminOrders({})).orders || []; } catch (e) {}
 
     var live = orders.filter(function (o) { return o.status !== 'cancelled'; });
-    var revenue = live.reduce(function (n, o) { return n + (Number(o.total) || 0); }, 0);
-    var aov = live.length ? revenue / live.length : 0;
 
     /* last 14 days, oldest first */
     var days = [], byDay = {};
@@ -146,14 +202,27 @@
         (p.available === 0 ? 'Out of stock' : 'Low') + '</span></div>';
     }).join('');
 
+    /* this month vs last month, from the same order list */
+    var now = new Date();
+    var startThis = new Date(now.getFullYear(), now.getMonth(), 1);
+    var startPrev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    var thisRev = 0, prevRev = 0, thisOrd = 0, prevOrd = 0;
+    live.forEach(function (o) {
+      var t = new Date(o.created_at);
+      if (t >= startThis) { thisRev += Number(o.total) || 0; thisOrd++; }
+      else if (t >= startPrev) { prevRev += Number(o.total) || 0; prevOrd++; }
+    });
+
+    var kpis = '<div class="fx-stats" style="margin-bottom:18px">' +
+      statCard('fa-sack-dollar', 'Revenue this month', money(s.monthRevenue || thisRev), deltaOf(thisRev, prevRev), 'vs last month') +
+      statCard('fa-bag-shopping', 'Orders this month', (s.monthOrders || thisOrd), deltaOf(thisOrd, prevOrd), 'vs last month') +
+      statCard('fa-clock', 'Awaiting payment', (counts.pending_payment || 0), null, 'Needs confirming') +
+      statCard('fa-users', 'Customers', (s.customers || 0), null, 'Registered shoppers') +
+      '</div>';
+
     box.innerHTML = headHtml(dash) +
       '<div class="fx-dash">' +
-        '<div class="fx-kpis" style="margin-bottom:18px">' +
-          '<div class="fx-kpi"><span>Revenue (last 500 orders)</span><strong>' + money(revenue) + '</strong><small>Excludes cancelled</small></div>' +
-          '<div class="fx-kpi"><span>Average order</span><strong>' + money(Math.round(aov)) + '</strong><small>Per paid or payable order</small></div>' +
-          '<div class="fx-kpi"><span>Awaiting payment</span><strong>' + (counts.pending_payment || 0) + '</strong><small>Needs confirmation</small></div>' +
-          '<div class="fx-kpi"><span>Ready to ship</span><strong>' + ((counts.ready_for_dispatch || 0) + (counts.processing || 0)) + '</strong><small>In the packing queue</small></div>' +
-        '</div>' +
+        kpis + lowStockHtml(s.lowStock) +
         '<div class="fx-card fx-pad" style="margin-bottom:18px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">' +
           '<div style="flex:1 1 300px"><p class="fx-eyebrow" style="margin:0 0 4px">Adding products</p>' +
           '<strong>Products → Add product</strong>' +
@@ -671,22 +740,32 @@
   }
 
   async function render(box, dash) {
+    /* Callers inside a tab pass .fx-main; always re-render the whole shell. */
+    var host = (box.closest && box.closest('#adminPage')) || box;
     state.dash = dash;
-    if (state.order) return openOrder(box, dash, state.order.reference);
-    if (state.tab === 'overview') return renderOverview(box, dash);
-    if (state.tab === 'orders') return renderOrders(box, dash);
-    if (state.tab === 'products') return renderProducts(box, dash);
-    if (state.tab === 'returns') return renderReturns(box, dash);
-    if (state.tab === 'promos') return renderPromos(box, dash);
-    if (state.tab === 'customers') return renderCustomers(box, dash);
-    if (state.tab === 'settings') return renderSettings(box, dash);
-    if (state.tab === 'notifications') return renderNotifications(box, dash);
-    if (state.tab === 'audit') return renderAudit(box, dash);
+    if (!host.querySelector('.fx-admin-shell')) {
+      host.innerHTML = '<div class="fx-admin-shell">' + sideHtml(dash) + '<div class="fx-main"></div></div>';
+    } else {
+      var oldSide = host.querySelector('.fx-side');
+      if (oldSide) oldSide.outerHTML = sideHtml(dash);
+    }
+    var main = host.querySelector('.fx-main');
+    if (state.order) return openOrder(main, dash, state.order.reference);
+    if (state.tab === 'overview') return renderOverview(main, dash);
+    if (state.tab === 'orders') return renderOrders(main, dash);
+    if (state.tab === 'products') return renderProducts(main, dash);
+    if (state.tab === 'returns') return renderReturns(main, dash);
+    if (state.tab === 'promos') return renderPromos(main, dash);
+    if (state.tab === 'customers') return renderCustomers(main, dash);
+    if (state.tab === 'settings') return renderSettings(main, dash);
+    if (state.tab === 'notifications') return renderNotifications(main, dash);
+    if (state.tab === 'audit') return renderAudit(main, dash);
   }
 
   window.FabluXAdmin = {
     render: async function (box) {
       var dash = await window.FabluXAPI.adminDashboard();
+      try { state.me = (await window.FabluXAPI.me()).user; } catch (e) { state.me = null; }
       box.addEventListener('click', function (ev) {
         var b = ev.target.closest && ev.target.closest('[data-tab]');
         if (!b) return;

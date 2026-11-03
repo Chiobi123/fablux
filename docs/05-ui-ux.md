@@ -56,10 +56,20 @@ Type scale (desktop → mobile):
   justify its weight. The section starts
   below the fixed header (`margin-top: var(--header-h)`), so the top of the
   photograph — the model's face — is never hidden behind the bar.
-  - Dark: `rgba(5,5,5,.72 → .35 → .85)`.
-  - Light: a soft lilac wash that is strong on the copy side and almost clear over
-    the photograph (`rgba(247,243,255,.95)` left → `rgba(240,232,252,.05)` right on
-    desktop; a vertical 0.92 → 0.58 gradient under 768 px).
+  - **The wordmark is the hero.** Since 2026-11-03 the `h1` is the shop name
+    itself (`FabluX`, with `.U.Design` set small and letter-spaced beneath it),
+    at `clamp(52px, 8.5vw, 104px)` in `Playfair Display`. The previous headline
+    ("Wear Luxury. Live Confidence.") and the `PREMIUM FASHION STORE` eyebrow
+    competed with the name and were removed; one short lead line remains.
+  - Overlay, dark: a horizontal wash that is nearly opaque on the copy side and
+    clear over the photograph (`rgba(10,5,18,.92)` left → `.24` at 72 % →
+    `.42` right) layered over a vertical `rgba(0,0,0,.22 → .58)`. The left-heavy
+    start is what keeps the wordmark well above the AA contrast threshold without
+    flattening the image.
+  - Overlay, light: a soft lilac wash that is strong on the copy side and almost
+    clear over the photograph (`rgba(247,243,255,.95)` left →
+    `rgba(240,232,252,.05)` right on desktop; a vertical 0.92 → 0.58 gradient
+    under 768 px).
 - **Product grid:** auto-fill, min 260 px, gap 24 px; 1 column under 520 px.
 - **Shop hero:** shorter band, `padding-top: calc(var(--header-h) + 28px)`.
 

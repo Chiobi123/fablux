@@ -63,6 +63,25 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-11-03
+
+- `feat(admin-ui)`: the console is now a sidebar workspace instead of a 700 px
+  card with a horizontal tab strip. Navigation is grouped (Main / Sales / Store /
+  System), the sidebar shows the queued-mail count on Notifications, and every
+  page opens with its own title, a one-line description and a date chip. The
+  dashboard greets the signed-in administrator, shows four KPI cards (revenue and
+  orders this month with the previous month's change, awaiting payment,
+  customers) and keeps the 14-day chart, pipeline, recent orders and low stock.
+  `#adminPage.pro-admin-card` is neutralised in `dashboard.css`, so the console
+  uses the full content width. No new database call: the month-over-month deltas
+  are computed from the orders already loaded.
+- `feat(brand-hero)`: the home hero leads with the shop name. "Wear Luxury. Live
+  Confidence." and the `PREMIUM FASHION STORE` eyebrow were removed because they
+  pulled attention away from the wordmark; `FabluX` is set at up to 104 px in
+  Playfair Display with `.U.Design` letter-spaced beneath it, and the overlay is
+  a left-heavy wash so the name reads clearly while the photograph stays visible.
+- `chore(assets)`: `?v=20261103a` on every HTML file after the CSS/JS change.
+
 ### 2026-10-31
 
 - `feat(email)`: transactional mail is live through Brevo. Supabase auth mail uses
@@ -203,6 +222,14 @@ Chronological, newest first. Conventional prefixes match the commit history.
 Earlier history: `git log --oneline`.
 
 ## 4. Release notes (user-facing)
+
+### Release 2026-11-03 — "FabluX, front and centre"
+
+- The home page now opens with the FabluX name in large type over the hero
+  photograph. The old slogan is gone, so the brand is the first thing you read.
+- The admin console has a proper sidebar and a dashboard with the numbers that
+  matter today: this month's revenue and orders (compared with last month),
+  orders waiting for payment, and how many customers are registered.
 
 ### Release 2026-10-31 — "Email works"
 

@@ -34,18 +34,34 @@ not configured, reset it from Supabase → Authentication → Users → *Reset p
 
 ## 2. Dashboard
 
-The admin console opens on **Overview**, a read-only summary:
+The console is a two-column workspace: a **sidebar** for navigation and a wide
+content area. The sidebar is grouped the way the shop is actually run:
 
-- counters for products, customers, orders, sales this month, orders this month and
-  low stock;
-- revenue across the loaded orders (cancelled excluded), average order value,
-  orders awaiting payment and orders in the packing queue;
+| Group | Entries |
+|---|---|
+| Main | Dashboard, Orders, Products, Customers |
+| Sales | Returns, Promo codes |
+| Store | Store settings, Notifications |
+| System | Audit trail |
+
+Notifications carries a badge with the number of queued mails. The bottom of the
+sidebar links to the storefront and the printable waybill. On screens under
+980 px the sidebar collapses to a horizontal strip above the content.
+
+**Dashboard** is the opening page, a read-only summary:
+
+- a greeting with the signed-in administrator's first name and today's date;
+- four cards — revenue this month, orders this month, orders awaiting payment,
+  registered customers. The first two are compared with the previous calendar
+  month; when that month had no orders the card shows "New" instead of a
+  percentage;
 - a 14-day daily-sales bar chart (hover a bar for the amount);
 - orders by stage, the six most recent orders (click a row to open it) and a
   low-stock list.
 
-The other tabs (Orders, Products, Returns, Promo codes, Customers, Store settings,
-Notifications, Audit trail) work as before; actions live there, not here.
+The other entries (Orders, Products, Returns, Promo codes, Customers, Store
+settings, Notifications, Audit trail) work as before; actions live there, not
+here. Each page shows its own title and a one-line description at the top.
 Figures are computed in the browser from the newest 500 orders, so they are a
 working view rather than an accounting report.
 

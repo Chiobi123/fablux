@@ -154,12 +154,74 @@ html[data-theme="light"] .fx-tokens{
 .fx-bar-row b{font-variant-numeric:tabular-nums;color:var(--fx-text)}
 
 /* ---------- admin shell ---------- */
-.fx-dash-head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
-.fx-dash-head h1{font-size:1.6rem}
+.fx-dash-head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}.fx-dash-head h1{font-size:1.6rem}
 .fx-dash-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 .fx-dash-grid.wide{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
 
+/* ---------- admin shell: sidebar + workspace ---------- */
+/* The console used to live inside .pro-admin-card (max-width:700px), which made
+   a dashboard look like a form. Neutralise it here rather than editing admin.html. */
+#adminPage.pro-admin-card{max-width:none;margin:0;padding:0;border:0;border-radius:0;background:transparent}
+
+.fx-admin-shell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+.fx-side{position:sticky;top:16px;display:grid;gap:2px;padding:16px 14px;border-radius:20px;
+  background:var(--fx-surface);border:1px solid var(--fx-line);box-shadow:var(--fx-shadow)}
+.fx-side-brand{display:flex;align-items:center;gap:10px;padding:2px 6px 14px}
+.fx-side-mark{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#6d28d9,#9D4EDD);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.04em}
+.fx-side-brand strong{font-family:'Playfair Display',Georgia,serif;font-size:1.15rem;letter-spacing:.01em}
+.fx-side-group{margin:14px 0 6px;padding:0 10px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--fx-muted);font-weight:700}
+.fx-side .fx-nav{gap:2px;padding:0}
+.fx-side .fx-nav button{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border:0;
+  border-radius:10px;background:transparent;color:var(--fx-text);font:inherit;font-size:.88rem;font-weight:600;
+  text-align:left;cursor:pointer;transition:background .15s ease,color .15s ease}
+.fx-side .fx-nav button:hover{background:var(--fx-accent-soft)}
+.fx-side .fx-nav button[aria-current="page"]{background:var(--fx-accent-soft);color:var(--fx-accent);
+  box-shadow:inset 3px 0 0 var(--fx-accent)}
+.fx-side .fx-nav i{width:16px;text-align:center;font-size:.86em;opacity:.9}
+.fx-side .fx-count{margin-left:auto;min-width:22px;padding:1px 6px;border-radius:999px;text-align:center;
+  font-size:.7rem;font-weight:700;background:var(--fx-accent);color:var(--fx-accent-ink)}
+.fx-side-foot{display:grid;gap:2px;margin-top:14px;padding-top:12px;border-top:1px solid var(--fx-line)}
+.fx-side-foot a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;
+  font-size:.86rem;font-weight:600;text-decoration:none;color:var(--fx-muted)!important}
+.fx-side-foot a:hover{background:var(--fx-accent-soft);color:var(--fx-text)!important}
+
+.fx-main{min-width:0;display:grid;gap:18px}
+.fx-pagehead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.fx-pagehead h1{font-size:1.7rem;line-height:1.2;letter-spacing:-.01em}
+.fx-pagehead p{margin-top:6px;font-size:.9rem}
+.fx-pagehead-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fx-chip{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border-radius:10px;
+  border:1px solid var(--fx-line);background:var(--fx-surface);color:var(--fx-muted);
+  font-size:.82rem;font-weight:600;white-space:nowrap}
+
+/* KPI cards with trend */
+.fx-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.fx-stat{display:grid;gap:10px;padding:18px 20px;border-radius:18px;background:var(--fx-surface);
+  border:1px solid var(--fx-line);box-shadow:var(--fx-shadow)}
+.fx-stat-top{display:flex;align-items:center;gap:10px}
+.fx-stat-icon{width:36px;height:36px;flex:0 0 36px;border-radius:11px;display:grid;place-items:center;
+  background:var(--fx-accent-soft);color:var(--fx-accent);font-size:.9rem}
+.fx-stat-top span:last-child{font-size:.78rem;font-weight:700;color:var(--fx-muted)}
+.fx-stat strong{font-size:1.85rem;line-height:1.1;letter-spacing:-.01em}
+.fx-delta{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700}
+.fx-delta[data-dir="up"]{color:var(--fx-ok)}
+.fx-delta[data-dir="down"]{color:var(--fx-bad)}
+.fx-delta[data-dir="flat"]{color:var(--fx-muted)}
+.fx-delta span{font-weight:600;color:var(--fx-muted)}
+
+/* tab contents keep their own markup; only the divider colour is retuned */
+#adminPage .pro-admin-section{border-top:1px solid var(--fx-line)}
+
 /* ---------- responsive ---------- */
+@media (max-width:980px){
+  .fx-admin-shell{grid-template-columns:minmax(0,1fr)}
+  .fx-side{position:static}
+  .fx-side .fx-nav{flex-direction:row;flex-wrap:wrap}
+  .fx-side .fx-nav button{width:auto;flex:0 0 auto}
+  .fx-side-foot{grid-template-columns:1fr 1fr}
+}
 @media (max-width:900px){
   .fx-acc-body{grid-template-columns:1fr}
   .fx-nav{flex-direction:row;flex-wrap:wrap;overflow-x:auto}
