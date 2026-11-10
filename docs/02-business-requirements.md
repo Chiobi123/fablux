@@ -2,7 +2,7 @@
 
 **Business:** FabluX.U.Design — premium clothing, shoes and accessories
 **Market:** Nigeria (NGN pricing, Nigerian states, pay-on-delivery and bank transfer)
-**Status:** living · last reviewed 2026-10-29
+**Status:** living · last reviewed 2026-11-10
 
 ---
 
@@ -50,12 +50,14 @@ Costs are driven by the owner's actual plans; the code does not assume paid tier
 
 ## 5. Business rules (enforced in the database)
 
-1. A product cannot be sold below zero stock. `create_order` reserves stock and
-   releases it only on cancellation, never on failure.
+1. A product cannot be sold below zero stock. `create_order` decrements `stock` in the
+   same transaction that writes the order; nothing increments it again, so a
+   cancellation must be corrected by hand (a known gap, `01` §14 item 4).
 2. A price shown at checkout is the price stored in `products` at the moment of
    order creation; the client cannot send its own price.
-3. Only the two approved addresses may hold the `admin` role:
-   `ujunwaivbani@gmail.com`, `igbanichiobievere@gmail.com` (`allowed_admin_email()`).
+3. Only the three approved addresses may hold the `admin` role:
+   `fabluxdesigns@gmail.com`, `ujuigbani@gmail.com`, `igbanichiobiebere@gmail.com`
+   (`allowed_admin_email()`). The list lives in the database, not in the page.
 4. Orders may be cancelled before dispatch; refunds are recorded in
    `payment_transactions` when a processor is added.
 5. A return request is accepted only against the customer's own order
@@ -90,7 +92,7 @@ launch.
 | Risk | Mitigation |
 |---|---|
 | Chargebacks / fake orders with pay-on-delivery | phone confirmation before dispatch (manual) |
-| Stock oversell | reservation inside `create_order` |
+| Stock oversell | row lock + stock check inside `create_order` |
 | Owner unavailable | admin console is role-based; a second approved email exists |
 | Platform dependency (Supabase) | logical backups (`BACKUP_RESTORE.md`) |
 | Translation misstates policy terms | English text is authoritative; policies are linked in the footer of every page |

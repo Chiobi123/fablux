@@ -1,6 +1,6 @@
 # 22 — Project Plan, Timeline and Change Requests
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 
 ---
 
@@ -14,7 +14,7 @@
 | 3 — Accounts | sign-up/in, addresses, history, returns, reviews, wishlist | customer self-service | done |
 | 4 — Admin | orders, stock, products, promos, outbox, audit | owner runs the shop from a browser | done |
 | 5 — Hardening | RLS, rate limits, XSS escaping, consent, legal pages, CSP | security baseline | done |
-| 6 — Comfort | theme toggle, 80-language switcher, reading progress | accessibility/UX pass | done |
+| 6 — Comfort | theme toggle, 79-language switcher, reading progress | accessibility/UX pass | done |
 | 7 — Auth repair | Google OAuth, profile provisioning, admin escalation closed, email lock | accounts mirror Auth | done |
 | 8 — Payments | Paystack Edge Function + `confirm_payment` | code written | **not deployed** |
 | 9 — Email | Brevo SMTP for auth mail, outbox + cron, reply routing, contact alerts | mail works end to end | done 2026-10-31 |

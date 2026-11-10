@@ -109,7 +109,7 @@ If analytics are added: choose a privacy-respecting tool, add its origin to CSP
 | Auth | Supabase GoTrue | plan-based MAU | upgrade plan |
 | Storage | Supabase Storage | plan quota | move images to a CDN/bucket |
 | Admin console | loads all orders into the browser | thousands of orders | server-side pagination (currently client-side) |
-| Notifications | outbox rows | no sender | add a worker/cron with an email provider |
+| Notifications | outbox rows, drained by `pg_cron` every minute (20 per pass) | Brevo's 100/hour send cap | lower `p_limit` or raise the Brevo plan; rows wait, checkout does not |
 | Translation | client-side Google | rate limits / outages | fallback to English (implemented) |
 
 The system is designed for a single-operator boutique, not for flash sales. The first
@@ -119,5 +119,5 @@ acceptable, because it is used by one person.
 ## 8. Cost at scale (qualitative)
 
 Free tiers cover a boutique's traffic. The first paid step is Supabase (database size
-or MAU), not hosting. Adding an email provider is the second. Card processing would
+or MAU), not hosting. Email volume on Brevo is the second. Card processing would
 introduce per-transaction fees and PCI obligations (`23-integrations.md`).

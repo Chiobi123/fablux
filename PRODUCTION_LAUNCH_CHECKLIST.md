@@ -1,31 +1,26 @@
-# FabluX.U.Design — Production Launch Checklist
+# FabluX.U.Design — launch gates
 
-## Completed in this build
-- Server-side order totals (client cannot choose its own discount amount).
-- Paystack backend initialization and server-side verification path.
-- Paystack webhook signature verification.
-- Payment transaction records and idempotent paid-order finalization.
-- Temporary stock reservations for card payments; expired reservations are released automatically.
-- Password reset token expiry/single-use flow.
-- Admin role enforcement on admin APIs.
-- Request IDs and centralized error responses.
+**Last updated:** 2026-11-10. This file replaces an earlier checklist that listed
+features this repository does not have (a Node service, SQLite, Resend, automatic
+stock reservations, webhook signature verification). Nothing below is claimed
+unless it is true in the code.
 
-## Still requires your external accounts/configuration
-1. Create a Paystack business/test account and obtain the secret key. Keep it server-side only.
-2. Create a Resend account, verify your sending domain, and obtain an API key.
-3. Register a production domain and enable HTTPS.
-4. Deploy the Node service to a production host.
-5. Use PostgreSQL (or another managed production database) for multi-instance/high-growth deployment rather than local SQLite.
-6. Set production environment variables in the host's secret manager/environment settings.
-7. Configure Paystack callback URL and webhook URL to the deployed HTTPS domain.
-8. Run test payments in Paystack test mode, then switch to live keys only after end-to-end verification.
-9. Configure automated database backups and test a restore.
-10. Perform a final mobile/desktop/browser checkout test and verify order, payment, email and admin flows.
+A gate is green only when someone has done it and can point at the evidence.
 
-## Security rules
-- Never put PAYSTACK_SECRET_KEY or RESEND_API_KEY in frontend JavaScript.
-- Never commit `.env`.
-- Use a unique strong ADMIN_PASSWORD in production.
-- Set NODE_ENV=production and APP_BASE_URL to the HTTPS domain.
-- Restrict ALLOWED_ORIGINS to the production origin.
-- Use a managed PostgreSQL database and its connection pooling for multiple app instances.
+| # | Gate | Why | Where |
+|---|---|---|---|
+| 1 | Real business details in `settings`: phone, address, and an email someone reads | the contact and policy pages publish them | admin → Settings |
+| 2 | Verify the two Brevo senders (`fabluxdesigns@`, `ujuigbani@`) | order mail currently leaves from one address only | Brevo → Senders |
+| 3 | Rotate the Brevo SMTP and API keys (both were displayed on screen) | secret hygiene | Brevo + Supabase Vault |
+| 4 | One real order end to end: placed → paid → confirmed → shipped → delivered, with mail landing in a real inbox | proves the whole chain, not each screen | `docs/13-testing-qa.md` §5 |
+| 5 | Backup taken **and** restored once into a staging project; time recorded | an untested backup is a guess | `docs/BACKUP_RESTORE.md` |
+| 6 | `node build.js` → 68 files, `dist/` free of `.sql`/`.md`/`.env` | the build is the deploy boundary | `docs/15-deployment.md` §2 |
+| 7 | Headers live: CSP, HSTS, nosniff, frame-options on the deployed origin | security baseline | `docs/15-deployment.md` §4.1 |
+| 8 | Smoke test after deploy: home, shop, login, theme, language, admin redirect, `health.json` | catches a broken build in minutes | `docs/15-deployment.md` §4.1 |
+| 9 | Light-mode and dark-mode contrast checked on the live pages | AA is a standing requirement | `docs/05-ui-ux.md` §7 |
+| 10 | Payments decision recorded: ship Paystack or stay pay-on-delivery for launch | hiding the option is a choice, not a plan | `docs/23-integrations.md` §2 |
+| 11 | Custom domain + Search Console, if launching on a real domain | avoids `*.pages.dev` in customer mail | `docs/20-seo.md` |
+
+**Not a gate, but known debt before volume arrives:** stock is not restored on
+cancel, `reserved_stock` is unused, and there is no review moderation or contact
+inbox (`docs/01-product-requirements.md` §14).

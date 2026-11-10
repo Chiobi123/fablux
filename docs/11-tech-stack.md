@@ -1,6 +1,6 @@
 # 11 — Technology Stack
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 
 ---
 
@@ -15,6 +15,10 @@
 | API | Supabase PostgREST + Postgres functions | `/rest/v1`, `/rest/v1/rpc` |
 | Auth | Supabase GoTrue | `/auth/v1`, JWT |
 | Storage | Supabase Storage | bucket `product-images` |
+| Email | Brevo | SMTP relay `smtp-relay.brevo.com:465` for auth mail; HTTP API for the outbox |
+| Scheduling | `pg_cron` job `fx-email-dispatch` + `pg_net` | every minute, inside Postgres |
+| Secrets | Supabase Vault | `brevo_api_key`; never in the repo |
+| Payments | Paystack via Supabase Edge Function (`supabase/functions/payments`) | **written, not deployed**; card option hidden |
 | Translation | Google Website Translator | loaded only when language ≠ EN |
 | Icons | Font Awesome 6 (cdnjs) | CSS + webfonts |
 | Fonts | Google Fonts (Playfair Display, Inter) | `fonts.googleapis.com` |
@@ -32,7 +36,8 @@
 | jQuery | not needed since IE support was dropped |
 | Express/Node server | removed: it duplicated Supabase and added an attack surface |
 | ORM | the schema is SQL-first; RPCs are reviewed directly |
-| Stripe/Paystack | no card payments configured (see `23-integrations.md`) |
+| Stripe | not used — Paystack is the Nigerian processor |
+| Paystack | written (`supabase/functions/payments` + `setup-payments.sql`) but **not deployed**, so the card option is hidden at checkout |
 | Analytics SDK | consent-gated; no vendor selected yet |
 
 ## 3. Browser targets
@@ -50,6 +55,8 @@ Uses `:focus-visible`, `clamp()`, CSS custom properties, `details/summary`,
 | Google Translate | translate.google.com | language switching | English + notice |
 
 All three are in the CSP allow-list. None is required for core shopping.
+Brevo, Supabase and Cloudflare are server-side and never called from the browser
+directly — mail leaves from Postgres, not from the page.
 
 ## 5. Development dependencies
 
@@ -61,8 +68,9 @@ in the deployed site requires `node_modules`.
 
 - Node: `node -v` (built and verified on v24).
 - Site asset version: the `?v=` token in every HTML `<link>`/`<script>` tag,
-  currently `20261029l`. Bump it on every asset change (`15-deployment.md` §2).
+  currently `20261110a`. Bump it on every asset change (`15-deployment.md` §2).
 - Postgres/Supabase: platform-managed. RPC signatures are the contract.
+- Supabase Edge Functions runtime: Deno, only used by `payments` (undeployed).
 
 ## 7. Why the stack fits
 

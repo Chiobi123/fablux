@@ -1,6 +1,6 @@
 # 08 — API Specification and Reference
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 All calls originate in `js/api-client.js`. There is no server of our own; the "API"
 is the Supabase project.
 
@@ -45,22 +45,31 @@ set `search_path` and re-check the caller.
   "p_state": "Lagos",
   "p_delivery_method": "standard",
   "p_payment_method": "pay-on-delivery",
-  "p_email": "ada@example.com",
+  "p_guest_email": "ada@example.com",
   "p_landmark": "…",
   "p_instructions": "…",
-  "p_promo_code": "WELCOME10",
+  "p_promo": "WELCOME10",
   "p_idempotency_key": "uuid"
 }
 ```
 
-Returns `{ id, reference, tracking_token, total, … }`.
+`p_guest_email` is used only when nobody is signed in; `p_promo` is the raw code, not
+a price. Everything else in the body that looks like money or identity is ignored —
+the function reads the customer from `auth.uid()`.
+
+Returns
+`{ order_id, reference, tracking_token, status, payment_status, subtotal, delivery_fee, discount, promo_code, total, currency, created_at, duplicate }`.
 
 Guarantees: re-prices from `products`, rejects insufficient stock, ignores any
-client-supplied price, is idempotent on `p_idempotency_key`, reserves stock, writes
-`order_events`, queues a notification, writes `audit_log`.
+client-supplied price, is idempotent on `p_idempotency_key` (returns the first order
+with `duplicate: true`), **decrements `products.stock`** inside the same transaction,
+writes `order_events`, queues the notification rows, writes `audit_log`.
 
-Errors: `not authenticated`, `out of stock`, `invalid promo code`,
-`product not found`.
+Stock is not returned if the order is later cancelled — `reserved_stock` exists but
+nothing writes it (`01` §14).
+
+Errors: `not authenticated` (signed-in path only), `Not enough stock for "…"`,
+`That promo code is not valid.`, `Order not found.`
 
 ### 2.2 `track_order`
 
@@ -70,7 +79,10 @@ A wrong token returns no row. No authentication required.
 ### 2.3 `validate_promo`
 
 `{ "p_code": "WELCOME10", "p_subtotal": 45000 }` →
-`{ code, kind, value, discount, min_subtotal }` or an error.
+`{ valid: true, code, kind, value, discount, message }`, or
+`{ valid: false, message }` with a readable reason. It never raises; the caller
+decides. `create_order` calls it again with its own subtotal, so a tampered client
+cannot invent a discount.
 
 ### 2.4 Public forms
 
@@ -95,14 +107,24 @@ A wrong token returns no row. No authentication required.
 
 Neither is executable by `anon` or `authenticated`; only `service_role`.
 
+The browser never calls them. `verifyPaystack(reference)` and
+`paystackInitialize(reference, token)` go to the Edge Function instead:
+`POST {BASE}/functions/v1/payments?action=verify|initialize`. The function is
+written but **not deployed**, so `paystackEnabled()` is false and the card option
+is not rendered (`23-integrations.md` §2).
+
 ### 2.7 Admin (all call `assert_admin()`)
 
 | RPC | Body |
 |---|---|
-| `admin_set_order_status` | `{p_ref, p_new_status}` |
+| `admin_set_order_status` | `{p_ref, p_new_status}` — refuses a transition outside the table in `24-workflows.md` §5 |
 | `admin_set_payment_status` | `{p_ref, p_new_status}` — refuses to mark a `paystack` order paid; only the gateway may |
 | `admin_set_courier` | `{p_ref, p_courier, p_tracking, p_dispatched_at, p_notes}` |
-| `admin_update_setting` | `{p_key, p_value}` |
+| `admin_update_setting` | `{p_key, p_value}` — key must be one of `delivery_fee_default`, `delivery_fee_express_surcharge`, `store_name`, `store_contact`, `store_email`, `store_address`, `email_enabled`; delivery values must be 1–7 digits |
+
+Return status is **not** an RPC: `adminReturnStatus(id, status)` validates the value
+against `requested | approved | rejected | received | refunded` in JS and then
+`PATCH /returns?id=eq.<id>`, which RLS allows for admins only.
 
 ## 3. REST resources used
 
@@ -159,12 +181,13 @@ old signature until the deployed client is replaced.
 
 | Bucket | Subject | Limit |
 |---|---|---|
-| `contact` | email | 3 per hour |
+| `contact` | email | 5 per hour |
 | `newsletter` | email | 3 per hour |
-| `review` | user id | 5 per hour |
-| `return` | user id | 5 per hour |
+| `unsubscribe` | email | 5 per hour |
 
-Exact numbers live in `setup-security-hardening.sql`; change them there, not in JS.
+Only these three buckets exist in `setup-security-hardening.sql`. Reviews and return
+requests are **not** rate-limited; they are gated by sign-in and row ownership
+instead. Change numbers in SQL, not in JS.
 
 ## 8. Example: catalogue read
 

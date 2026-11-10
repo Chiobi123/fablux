@@ -1,6 +1,6 @@
 # 04 — User Stories and Use Cases
 
-**Status:** living · last reviewed 2026-10-29
+**Status:** living · last reviewed 2026-11-10
 Stories are written against the shipped behaviour. Each has acceptance criteria that
 can be checked in a browser without reading the code.
 
@@ -107,7 +107,8 @@ Acceptance:
 
 Acceptance:
 - Editing stock in the admin console changes what the shop shows.
-- An order reserves stock; cancelling returns it.
+- An order decrements stock at creation; cancelling does **not** return it yet, so
+  stock is corrected by hand after a cancellation.
 - Stock cannot go negative.
 
 ### US-11 Read the outbox (owner)
@@ -154,8 +155,8 @@ Acceptance:
 3. She opens `checkout.html`; because checkout needs a user, she signs in or registers.
 4. She fills delivery details and picks "Pay on delivery".
 5. The client calls `create_order` with items, address, delivery and an idempotency key.
-6. `create_order` re-prices, checks stock, writes `orders` + `order_items`,
-   reserves stock, queues a notification, writes an audit row.
+6. `create_order` re-prices, checks stock, writes `orders` + `order_items` and
+   decrements `products.stock`, queues the notification rows, writes an audit row.
 7. She lands on `order-success.html?ref=…&token=…` and can bookmark it.
 8. The owner sees the order in `/admin.html` and marks it "processing".
 

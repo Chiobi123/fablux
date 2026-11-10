@@ -84,7 +84,7 @@ in the database, not in the UI — hiding a button is not a control.
 
 ### 5.1 In scope and live
 
-- 33 public pages: home, shop, product, about, contact, FAQ, track, account,
+- 28 public pages: home, shop, product, about, contact, FAQ, track, account,
   orders, checkout, confirmation, invoice, returns, wishlist, recently viewed,
   sign-in/up/reset, unsubscribe, four legal pages, 404, admin, waybill.
 - Catalogue with price, image, stock, category, material, features, active flag.
@@ -98,7 +98,7 @@ in the database, not in the UI — hiding a button is not a control.
   customers, notification outbox, audit log, store settings.
 - Transactional email through Brevo (auth mail by SMTP, app mail by API + cron).
 - Contact enquiries and newsletter sign-ups, both rate-limited and consent-gated.
-- 80 language options (English + 79 Google Translate targets), light/dark theme,
+- 79 language options (English + 78 Google Translate targets), light/dark theme,
   WCAG 2.2 AA contrast, keyboard and screen-reader basics.
 - Row Level Security on every table that holds customer or business data.
 
@@ -221,7 +221,7 @@ listed in §14) · **Not built**.
 | # | Requirement | Status |
 |---|---|---|
 | F50 | Light and dark themes, preference persisted, no flash on load | Live |
-| F51 | 80 language options; the choice persists and the page reloads translated, with a fallback notice if Google is unreachable | Live |
+| F51 | 79 language options (English + 78 Google Translate targets); the choice persists and the page reloads translated, with a fallback notice if Google is unreachable | Live |
 | F52 | Contrast ≥ WCAG AA in both themes, visible focus rings, labels on every field, skip link | Live, manual checks only |
 | F53 | Home hero leads with the FabluX wordmark, not a slogan | Live (2026-11-03) |
 
@@ -394,4 +394,4 @@ Ordered by what blocks trading.
 | Date | Change |
 |---|---|
 | 2026-10-29 | First version (pre-email, pre-OAuth, six languages claimed) |
-| 2026-11-10 | Rewritten against the shipped system: real status per capability, 80 languages, guest checkout, email outbox, three admins, Paystack written-but-not-deployed, open-items register, workflows split into `24-workflows.md` |
+| 2026-11-10 | Rewritten against the shipped system: real status per capability, 79 languages, guest checkout, email outbox, three admins, Paystack written-but-not-deployed, open-items register, workflows split into `24-workflows.md` |

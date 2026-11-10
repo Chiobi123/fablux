@@ -1,6 +1,6 @@
 # 23 — Integrations and Payment Verification
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 
 ---
 

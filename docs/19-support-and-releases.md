@@ -1,6 +1,6 @@
 # 19 — Support, Known Issues, Changelog and Release Notes
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 
 ---
 
@@ -67,7 +67,7 @@ Chronological, newest first. Conventional prefixes match the commit history.
 
 - `docs(prd)`: `01-product-requirements.md` rewritten against the shipped system.
   The 2026-10-29 draft described a product that no longer exists — two admins
-  instead of three, six languages instead of 80, no mail provider, no guest
+  instead of three, six languages instead of 79, no mail provider, no guest
   checkout. Every capability now carries a status (live / built-not-active /
   partial / not built), the invariants that must not regress are listed in one
   place, and §14 is an ordered open-items register.
@@ -82,6 +82,23 @@ Chronological, newest first. Conventional prefixes match the commit history.
 - `docs(index)`: `README.md` map updated, stale "Google sign-in not enabled" and
   "email not connected" statements removed, `23-integrations.md` email row marked
   live.
+- `docs(handover)`: `PROJECT_COMPLETION_SUMMARY.md` rewritten as the start-here
+  page (it described a 5-page static mock, Poppins and fake testimonials, and
+  called that production ready). `PRODUCTION_LAUNCH_CHECKLIST.md` rewritten as 11
+  real gates; the old list claimed a Node service, SQLite, Resend, automatic stock
+  reservations and webhook signature verification, none of which exist here.
+- `docs(api)`: `08-api.md` corrected against `js/api-client.js` — `create_order`
+  takes `p_guest_email`/`p_promo` (not `p_email`/`p_promo_code`), returns
+  `order_id` + `reference` + `duplicate`, decrements `products.stock` rather than
+  reserving it; `validate_promo` never raises; rate limits are 5/h contact, 3/h
+  newsletter, 5/h unsubscribe, with no review or return bucket.
+- `docs(stack,arch)`: `11-tech-stack.md` gains Brevo, `pg_cron`/`pg_net`, Vault and
+  the undeployed Paystack function, and its stale `20261029l` token is corrected;
+  `06-architecture.md` no longer says email waits for an external cron.
+- `docs(admin)`: `18-admin-manual.md` §7 now explains `queued`/`sent`/`pending`
+  correctly (it claimed no provider was connected), and §10 documents the real
+  settings keys, their seeded placeholder values, and that `store_email` is not
+  the mail reply-to.
 
 ### 2026-11-03
 

@@ -1,8 +1,8 @@
 # 03 — Software Requirements Specification (SRS)
 
 **System:** FabluX.U.Design storefront
-**Version:** matches repository state at asset token `20261029l`
-**Status:** living · last reviewed 2026-10-29
+**Version:** matches repository state at asset token `20261110a`
+**Status:** living · last reviewed 2026-11-10
 
 Requirement IDs are stable; use them in commit messages and test notes
 (e.g. `FR-4.2`). Each requirement is verifiable by hand in a browser or with SQL.

@@ -120,11 +120,12 @@ outstanding (see the note) · **N/A** = does not apply to this business model.
 | `23-integrations.md` | engineers | Supabase, payments, Google, Cloudflare |
 | `24-workflows.md` | owner, engineers, agents | every end-to-end process: checkout, order lifecycle, payment, email dispatch, release, incident |
 
-Existing root-level documents are still current and are referenced rather than
-duplicated: `../ARCHITECTURE.md` (short version of `06`), `../SECURITY.md`
-(owner-facing security steps), `../BACKEND_SETUP.md` (Supabase setup),
-`../PRODUCTION_LAUNCH_CHECKLIST.md`, `../FRONTEND_TEST_REPORT.md`,
-`BACKUP_RESTORE.md`, `LOAD_TEST.md`, `MONITORING.md`.
+Root-level documents, each now pointing at the files above rather than repeating
+them: `../PROJECT_COMPLETION_SUMMARY.md` (**start here** — status and handover),
+`../PRODUCTION_LAUNCH_CHECKLIST.md` (11 launch gates), `../ARCHITECTURE.md` (short
+version of `06`), `../SECURITY.md` (owner-facing security steps),
+`../BACKEND_SETUP.md` (Supabase setup), `../FRONTEND_TEST_REPORT.md` (a dated test
+report — historical), `BACKUP_RESTORE.md`, `LOAD_TEST.md`, `MONITORING.md`.
 
 ---
 

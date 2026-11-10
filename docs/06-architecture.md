@@ -1,6 +1,6 @@
 # 06 — System Architecture
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 Short companion: `../ARCHITECTURE.md`.
 
 ---
@@ -141,7 +141,8 @@ the database is the enforcement point.
   only at the HTTP layer (no server cache).
 - Order creation is a short transaction with row locks on the ordered products;
   contention is limited to the same SKUs.
-- No background worker: notifications are rows in an outbox, drained later by an
-  admin or an external cron when email is configured.
+- No background worker process: notifications are rows in an outbox table, drained
+  every minute by the `pg_cron` job `fx-email-dispatch` → `dispatch_emails()`, which
+  posts to the Brevo HTTP API through `pg_net`. Nothing is sent by the browser.
 
 Details and numbers in `14-performance.md` §7.

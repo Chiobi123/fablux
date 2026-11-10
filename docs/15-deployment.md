@@ -29,7 +29,7 @@ node build.js
 - Verifies nothing else; it is a copy with a block list.
 
 **Asset versioning:** change every `?v=…` token in HTML when a CSS/JS file changes.
-Current token: `20261029l`. A stale token is the most common "my fix isn't live" cause.
+Current token: `20261110a`. A stale token is the most common "my fix isn't live" cause.
 
 ## 3. Environment variables and configuration
 

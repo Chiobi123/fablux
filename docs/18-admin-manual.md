@@ -1,6 +1,6 @@
 # 18 — Administrator Manual
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 Applies to `admin.html` and the Supabase dashboard. The admin console has no public
 link; you reach it by URL.
 
@@ -168,13 +168,19 @@ manual until a payment processor is connected.
 
 ## 7. Notifications (outbox)
 
-Every order event queues a row: recipient, subject, body, status.
+Every order event queues a row: recipient, subject, body, status, error.
 
-- `pending` — written but not sent (no email provider is connected).
-- `sent` / `failed` — set by a future sender.
+- `queued` — waiting for the next dispatch pass (runs every minute). This is the
+  normal state for a few seconds.
+- `sent` — Brevo **accepted** the request. It does not prove the inbox received it.
+- `pending` — email is switched off (`settings.email_enabled ≠ 'true'`), so nothing
+  was attempted. The row carries an explanatory error.
+- `failed` — kept for history; a row stops retrying after 4 attempts, with the
+  provider's reason in `error`.
 
-The page states plainly when email is not configured. Until then, watch the outbox
-daily so you know what customers *should* have been told, and contact them manually.
+If rows pile up in `queued`, the cron job or the Brevo key is the problem
+(`24-workflows.md` §11.4). A rejected recipient stays `queued` with the reason in
+`error` — fix the address, then reset `attempts` and `status` by SQL.
 
 ## 8. Customers
 
@@ -193,14 +199,17 @@ change.
 |---|---|
 | `store_name` | used in titles and emails |
 | `store_contact` | phone shown on contact/policy pages |
-| `store_email` | reply-to address |
+| `store_email` | public contact address on the site — **not** the mail reply-to; that is `email_settings.reply_to` (`23-integrations.md` §6.3) |
 | `store_address` | physical/business address |
-| `delivery_fee_default` | standard delivery fee in naira |
-| `delivery_fee_express_surcharge` | extra for express |
-| `email_enabled` | declares whether outbound email is live |
+| `delivery_fee_default` | standard delivery fee in naira (seeded 2500) |
+| `delivery_fee_express_surcharge` | extra for express (seeded 1500) |
+| `email_enabled` | `'true'` queues outbox mail; anything else stores rows as `pending` |
 
-**These are currently empty** for contact/address. Fill them before launch — policy
-pages and the contact page read them.
+Only these keys are accepted by `admin_update_setting`; delivery values must be
+digits. As of 2026-11-10 the seeded contact values are still placeholders —
+`+234 XXX XXX XXXX`, `Nigeria`, and `info@fabluxudesign.com`, a mailbox nobody has
+confirmed exists. Fix them before launch; policy pages and the contact page read
+them.
 
 ## 11. Daily routine
 
@@ -216,8 +225,10 @@ pages and the contact page read them.
 ## 12. What the admin console cannot do
 
 - Delete a customer's auth account (use Supabase → Authentication).
-- Send email (no provider).
-- Take card payments.
+- Write an email body or resend one from the console — it shows the outbox; the send
+  is done by cron.
+- Moderate or delete a review, or read the contact-form inbox (both are SQL today).
+- Take card payments (Paystack is written but not deployed).
 - Change the admin email allow-list (SQL deploy).
 - Undo an order status change automatically (change it back manually; the audit log
   keeps both entries).

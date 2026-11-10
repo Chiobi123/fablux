@@ -1,6 +1,6 @@
 # 07 — Database Design, Schema and Migrations
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 Source of truth: `setup-supabase.sql`, `setup-fulfilment.sql`, `setup-rls.sql`,
 `setup-admin-emails.sql` (admin allow-list, auth-user sync, email lock),
 `setup-security-hardening.sql`, `setup-promo-codes.sql`,
@@ -113,8 +113,9 @@ The role is assigned only by `apply_admin_role` (trigger on `users` insert/updat
 which compares `email` to `allowed_admin_email()`:
 
 ```
-ujunwaivbani@gmail.com
-igbanichiobievere@gmail.com
+fabluxdesigns@gmail.com
+ujuigbani@gmail.com
+igbanichiobiebere@gmail.com
 ```
 
 Changing that list requires editing the SQL function — it is not a UI setting.
