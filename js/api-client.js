@@ -405,12 +405,12 @@
     async adminDashboard(){
       await api.requireAdmin();
       const count=async(path)=>{try{const rows=await rest(path);return (rows||[]).length;}catch(e){return 0;}};
-      const [products,customers,orders,reviews,pendingAlerts]=await Promise.all([
+      const [products,customers,orders,reviews,queuedEmails]=await Promise.all([
         count('/products?select=id&active=eq.1&limit=5000'),
         count('/users?select=id&role=eq.customer&limit=5000'),
         count('/orders?select=id&limit=5000'),
         count('/reviews?select=id&limit=5000'),
-        count('/notifications?select=id&status=eq.pending&limit=5000')
+        count('/notifications?select=id&status=eq.queued&limit=5000')
       ]);
       /* this month's trading + anything running low, straight from the tables */
       let monthOrders=0,monthRevenue=0,lowStock=[];
@@ -427,7 +427,7 @@
           .filter(p=>p.available<=5).slice(0,8);
       }catch(e){}
       const s=await api.publicSettings();
-      return {stats:{products,customers,orders,reviews,pendingAlerts,monthOrders,monthRevenue,lowStock},
+      return {stats:{products,customers,orders,reviews,queuedEmails,monthOrders,monthRevenue,lowStock},
         settings:s,emailConfigured:s.emailConfigured};
     },
     async adminUpdateSetting(key,value){

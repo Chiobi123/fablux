@@ -80,7 +80,7 @@
 
   function sideHtml(dash) {
     var s = dash.stats || {};
-    var badge = { notifications: s.pendingAlerts || 0 };
+    var badge = { notifications: s.queuedEmails || 0 };
     return '<aside class="fx-side">' +
       '<div class="fx-side-brand"><span class="fx-side-mark">FX</span><strong>FabluX</strong></div>' +
       NAV.map(function (group) {
