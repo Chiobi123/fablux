@@ -16,7 +16,7 @@
 | Font Awesome (cdnjs) | icons | browser → cdnjs | none | live |
 | Cloudflare Pages | hosting + headers | — | account | live |
 | Google OAuth | social sign-in | browser → Google → Supabase | client id/secret in Supabase | **live** (verified 2026-10-30) |
-| Email provider | order alerts / resets | none | — | **not connected** |
+| Email provider (Brevo) | order alerts, welcome mail, contact enquiries, password resets | site/DB → Brevo API; Supabase Auth → Brevo SMTP | API key in Supabase Vault; SMTP key in Supabase auth config | **live** (2026-10-31) |
 | Payment processor | card payments | none | — | **not used** |
 
 ## 2. Payments

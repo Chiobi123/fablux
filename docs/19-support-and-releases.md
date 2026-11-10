@@ -63,6 +63,26 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-11-10
+
+- `docs(prd)`: `01-product-requirements.md` rewritten against the shipped system.
+  The 2026-10-29 draft described a product that no longer exists — two admins
+  instead of three, six languages instead of 80, no mail provider, no guest
+  checkout. Every capability now carries a status (live / built-not-active /
+  partial / not built), the invariants that must not regress are listed in one
+  place, and §14 is an ordered open-items register.
+- `docs(workflows)`: added `24-workflows.md`. Fourteen processes are specified
+  end to end — browse, checkout, order lifecycle, the four payment paths, courier
+  and waybill, returns, reviews, contact/newsletter, the email outbox loop,
+  auth and roles, the admin daily routine, build and release, backup, incident
+  response — each with the database function that owns the decision and what
+  happens when the step fails.
+- `docs(plan)`: `22-project-plan.md` phases and timeline refreshed to 2026-11-10;
+  remaining work now matches the PRD's open-items register.
+- `docs(index)`: `README.md` map updated, stale "Google sign-in not enabled" and
+  "email not connected" statements removed, `23-integrations.md` email row marked
+  live.
+
 ### 2026-11-03
 
 - `feat(admin-ui)`: the console is now a sidebar workspace instead of a 700 px

@@ -6,23 +6,34 @@
 
 ## 1. Phases delivered
 
-| Phase | Scope | Outcome |
-|---|---|---|
-| 0 — Skeleton | HTML pages, design system, navigation, responsive layout | static brand site |
-| 1 — Commerce | catalogue, cart, checkout, orders, tracking | orders recorded in Postgres |
-| 2 — Accounts | sign-up/in, addresses, history, returns, reviews, wishlist | customer self-service |
-| 3 — Admin | orders, stock, products, promos, outbox, audit | owner runs the shop from a browser |
-| 4 — Hardening | RLS, rate limits, XSS escaping, consent, legal pages, CSP | security baseline |
-| 5 — Comfort | theme toggle, 79-language switcher, reading progress, header height fix | accessibility/UX pass |
-| 6 — Documentation | this 62-item documentation set | handover-quality record |
+| Phase | Scope | Outcome | State |
+|---|---|---|---|
+| 0 — Skeleton | HTML pages, design system, navigation, responsive layout | static brand site | done |
+| 1 — Backend | Supabase schema, API client, RLS | DB-authoritative data | done |
+| 2 — Commerce | catalogue, cart, checkout, orders, tracking | orders recorded in Postgres | done |
+| 3 — Accounts | sign-up/in, addresses, history, returns, reviews, wishlist | customer self-service | done |
+| 4 — Admin | orders, stock, products, promos, outbox, audit | owner runs the shop from a browser | done |
+| 5 — Hardening | RLS, rate limits, XSS escaping, consent, legal pages, CSP | security baseline | done |
+| 6 — Comfort | theme toggle, 80-language switcher, reading progress | accessibility/UX pass | done |
+| 7 — Auth repair | Google OAuth, profile provisioning, admin escalation closed, email lock | accounts mirror Auth | done |
+| 8 — Payments | Paystack Edge Function + `confirm_payment` | code written | **not deployed** |
+| 9 — Email | Brevo SMTP for auth mail, outbox + cron, reply routing, contact alerts | mail works end to end | done 2026-10-31 |
+| 10 — Dashboard | brand-first hero, sidebar console with KPI cards | owner-facing polish | done 2026-11-03 |
+| 11 — Documentation | 62-item set, PRD rewritten, workflows document | handover-quality record | done 2026-11-10 |
 
 ## 2. Timeline (actual, from git history)
 
 | Date | Milestone |
 |---|---|
-| 2026-10-27 | storefront structure, mobile grid, admin dock |
-| 2026-10-28 | search/sort fix, RLS + rate limits + consent + legal, DB-authoritative details, XSS fix |
-| 2026-10-29 | language switcher, light hero, auth UX fixes, data wipe, documentation |
+| 2026-10-25 | initial storefront, Supabase schema, API client, RLS |
+| 2026-10-26 | checkout, orders, tracking, admin console, waybill, returns |
+| 2026-10-27 | product manager, promos, customers, sales stats, mobile grid |
+| 2026-10-28 | RLS lockdown, rate limits, consent, legal pages, XSS escaping, safe build |
+| 2026-10-29 | language switcher rewrite, light hero, honest Google sign-in, documentation set |
+| 2026-10-30 | Google OAuth enabled, admin escalation closed, account hub, admin overview, Paystack code |
+| 2026-10-31 | Brevo SMTP live on 465, outbox + cron, welcome mail, reply routing, contact alerts |
+| 2026-11-03 | brand-first hero, sidebar admin dashboard with KPI cards |
+| 2026-11-10 | PRD rewritten against the shipped system, `24-workflows.md` added |
 
 No fixed launch date is recorded. Launch is gated by
 `15-deployment.md` §6.3.
@@ -31,16 +42,17 @@ No fixed launch date is recorded. Launch is gated by
 
 | # | Task | Owner | Blocked by |
 |---|---|---|---|
-| 1 | Upload product photography | owner | photo shoot |
-| 2 | Fill store contact/address settings | owner | business details |
-| 3 | Re-create the admin account after the wipe | owner | — |
-| 4 | Run UAT script (`13-testing-qa.md` §5) | owner | 1–3 |
-| 5 | Enable Google OAuth (`09-auth.md` §6) | owner | Google Cloud + Supabase |
-| 6 | Choose and connect an email provider | owner | provider decision |
-| 7 | Take a backup and rehearse a restore | maintainer | — |
-| 8 | Run Lighthouse + axe, record results | maintainer | deployed build |
-| 9 | Redeploy with the new CSP and assets | maintainer | — |
-| 10 | Custom domain + Search Console verification | owner | domain |
+| 1 | Click the two Brevo sender confirmations (`fabluxdesigns@`, `ujuigbani@`) | owner | two emails in those inboxes |
+| 2 | Decide whether `fabluxudesign.com` exists; fix `settings.store_email` | owner | domain ownership |
+| 3 | Deploy the `payments` Edge Function and set Paystack keys | owner | Supabase access token + secret key |
+| 4 | Return stock when an order is cancelled | maintainer | — |
+| 5 | Decide `reserved_stock`: implement reservation or drop it from the dashboard sum | maintainer | — |
+| 6 | Align admin alert recipients with the three-address allow-list | maintainer | — |
+| 7 | Rotate the Brevo SMTP and API keys (both were shown on screen) | owner | — |
+| 8 | Take a backup and rehearse a restore into staging | maintainer | — |
+| 9 | Run one real order end to end and record it in `19` §5 | owner | 1–3 |
+| 10 | Run Lighthouse + axe, record results | maintainer | deployed build |
+| 11 | Custom domain + Search Console verification | owner | domain |
 
 ## 4. Change request process
 

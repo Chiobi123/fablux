@@ -4,7 +4,7 @@ Every document below describes the site **as it exists in this repository**, not
 aspiration. Where something is not built, not measured, or waiting on a third-party
 account, the document says so in a **Status** line instead of guessing.
 
-Last reviewed: 2026-10-29 · Asset version token in HTML: `?v=20261029l`
+Last reviewed: 2026-11-10 · Asset version token in HTML: `?v=20261110a`
 
 ---
 
@@ -118,6 +118,7 @@ outstanding (see the note) · **N/A** = does not apply to this business model.
 | `21-legal.md` | owner, legal | policy pages and what they claim |
 | `22-project-plan.md` | owner | phases, timeline, change requests |
 | `23-integrations.md` | engineers | Supabase, payments, Google, Cloudflare |
+| `24-workflows.md` | owner, engineers, agents | every end-to-end process: checkout, order lifecycle, payment, email dispatch, release, incident |
 
 Existing root-level documents are still current and are referenced rather than
 duplicated: `../ARCHITECTURE.md` (short version of `06`), `../SECURITY.md`
@@ -129,16 +130,19 @@ duplicated: `../ARCHITECTURE.md` (short version of `06`), `../SECURITY.md`
 
 ## Unfinished work at the time of writing
 
-These are tracked in `19-support-and-releases.md` §2. The short version:
+These are tracked in `19-support-and-releases.md` §2 and, in product terms, in
+`01-product-requirements.md` §14. The short version:
 
-- Google sign-in: provider is **not enabled** in Supabase (verified against
-  `/auth/v1/authorize` → 400 "provider is not enabled"). The button now explains
-  this instead of showing a raw JSON error. Needs the owner's Google Cloud client
-  ID/secret — see `09-auth.md` §6.
-- Product photography: the catalogue's `image` field is populated, but the local
-  `images/` folder only contains `hero1.jpg`, `hero2.jpg` and an empty `logo.jpg`.
-- Store contact details (`store_contact`, `store_email`, `store_address`) are empty
-  in `settings` until the owner fills them in the admin console.
+- Payments: the Paystack Edge Function and `confirm_payment` are written but **not
+  deployed**, so the card option is hidden at checkout (verified against
+  `paystackEnabled()`).
+- Brevo senders `fabluxdesigns@gmail.com` and `ujuigbani@gmail.com` were
+  re-created on 2026-10-31 and are still awaiting the confirmation clicks
+  (`active: false` in `/v3/senders`); order mail therefore leaves from
+  `igbanichiobiebere@gmail.com`.
+- Store contact details (`store_contact`, `store_email`, `store_address`):
+  `settings.store_email` currently reads `info@fabluxudesign.com`, a domain whose
+  mailbox is unconfirmed — see `01` §14 item 2.
 - Email sending: live through Brevo (SMTP on port 465 for auth mail, HTTP API from
   `dispatch_emails()` for the outbox). `email_enabled = true`. Senders are verified
   freemail addresses, so a domain with DKIM/DMARC remains the durable fix
