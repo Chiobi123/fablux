@@ -6,7 +6,7 @@
    ============================================================ */
 (function(){
 'use strict';
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function wrap(text,per,max){
   const words=String(text||'FABLU X').split(/\s+/).filter(Boolean); let lines=[], cur='';
   for(const w of words){

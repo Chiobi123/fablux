@@ -65,6 +65,24 @@ Chronological, newest first. Conventional prefixes match the commit history.
 
 ### 2026-11-10
 
+- `fix(ui)`: light-mode hero and shop banner no longer wash the photograph. The
+  lilac horizontal scrim (`.95` → `.05` of `#F7F3FF`) was replaced by a neutral
+  white scrim that sits only where the copy sits, plus a short fade into
+  `#f4f2f7` at the bottom — which also removes the dark band the dark-mode
+  overlay left under the picture in light mode. On ≤768px the scrim is uniform
+  (`.74`) instead of the old `0.92 → 0.58` vertical wash. Dark mode is unchanged.
+- `fix(xss)`: `js/pro.js` review rendering interpolated `r.text` and `r.name`
+  into `innerHTML` unescaped; both now go through `esc()`. `js/backend-bridge.js`
+  `esc()` now also escapes `'` and treats `null` as empty, so it can be used on
+  attribute values as well as text.
+- `chore(security)`: `build.js` no longer carries a hard-coded credential in its
+  secret-marker list; the dead `readEnvPassword()` reader (it pointed at a
+  `server/.env` that does not exist) was deleted and the markers are now generic
+  prefixes (`SUPABASE_SERVICE_ROLE_KEY`, `sb_secret`, `service_role`,
+  `PAYSTACK_SECRET_KEY`, `RESEND_API_KEY`, `xkeysib-`, `sk_live_`). `.gitignore`
+  now blocks `.env.*`, `server/.env`, `supabase/.env`, `_private-tools/`,
+  `*.pem`, `*.key` and `*.p12`.
+- `chore(assets)`: `?v=20261110b` on all 28 pages.
 - `docs(prd)`: `01-product-requirements.md` rewritten against the shipped system.
   The 2026-10-29 draft described a product that no longer exists — two admins
   instead of three, six languages instead of 79, no mail provider, no guest

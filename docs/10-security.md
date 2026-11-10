@@ -1,6 +1,6 @@
 # 10 — Security Requirements, Controls and Audit
 
-**Status:** current · last reviewed 2026-10-29
+**Status:** current · last reviewed 2026-11-10
 Companion: `../SECURITY.md` (owner-facing), `07-database.md` (RLS), `09-auth.md`.
 
 ---
@@ -123,15 +123,32 @@ Python preview server.
 | Supabase URL + publishable key | `js/api-client.js` | yes, by design |
 | Supabase service-role key | `_private-tools/.env` | never |
 | DB password / host | `_private-tools/.env` | never |
+| Brevo SMTP + API keys | Supabase Vault (`brevo_api_key`), Brevo dashboard | never |
+| Paystack secret key | Supabase Edge Function secret (function not deployed) | never |
 | Google OAuth client secret | Supabase dashboard | never (not in repo) |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `_private-tools/.env`, empty | never, unused |
 
-`.gitignore` excludes `.env`, `_private-tools/`, `dist/`, `node_modules/`.
-`build.js` additionally refuses to copy `.sql`, `.env`, docs, `_private-tools`,
-`loadtest`.
+`.gitignore` excludes `.env`, `.env.*` (keeping `.env.example`), `server/.env`,
+`supabase/.env`, `_private-tools/`, `*.pem`, `*.key`, `*.p12`, `dist/`,
+`node_modules/`. `build.js` additionally refuses to copy `.sql`, `.env`, docs,
+`_private-tools`, `loadtest`, and scans every published text file for known
+secret markers before writing `dist/`.
 
 Rotating the publishable key requires editing `js/api-client.js`, bumping the asset
 version, and redeploying. Rotating the DB password affects only `_private-tools`.
+
+### 4.1 Known exposure — action required by the owner
+
+A credential string (`q7DtgatAqgyaOyqf`, most likely the Supabase database
+password) was hard-coded in `build.js`'s secret-marker list from commit `cc25ccb`
+until 2026-11-10. It is gone from the file now, but the commit is public on
+GitHub, so removing it does not unpublish it. **Rotate it** (Supabase →
+Settings → Database → reset password) and update `_private-tools/.env`. Treat the
+Brevo SMTP and API keys the same way: both have been displayed on screen, so
+rotate them in Brevo and paste the new values into Supabase Vault and the auth
+SMTP settings. No `.env`, `.pem`, `.key` or service-role key has ever been
+tracked by git (checked with `git ls-files` and `git log --all -S`); the only
+secret material the repository ever held is the string above.
 
 ## 5. Audit results (2026-10-29)
 

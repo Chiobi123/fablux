@@ -22,7 +22,7 @@ orders, roles and email queues. There is no application server to deploy or patc
 | Supabase project | `msisbmcowtggbvasubla` |
 | Hosting | Cloudflare Pages, build `node build.js`, output `dist/` |
 | Mail | Brevo — SMTP relay on 465 for auth mail, HTTP API from `pg_cron` for app mail |
-| Site asset token | `?v=20261110a` (bump on every CSS/JS change) |
+| Site asset token | `?v=20261110b` (bump on every CSS/JS change) |
 | Pages | 28 |
 | Languages | 79 options (English + 78 Google Translate targets) |
 

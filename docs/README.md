@@ -4,7 +4,7 @@ Every document below describes the site **as it exists in this repository**, not
 aspiration. Where something is not built, not measured, or waiting on a third-party
 account, the document says so in a **Status** line instead of guessing.
 
-Last reviewed: 2026-11-10 · Asset version token in HTML: `?v=20261110a`
+Last reviewed: 2026-11-10 · Asset version token in HTML: `?v=20261110b`
 
 ---
 

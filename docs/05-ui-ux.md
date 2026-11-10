@@ -66,10 +66,13 @@ Type scale (desktop → mobile):
     `.42` right) layered over a vertical `rgba(0,0,0,.22 → .58)`. The left-heavy
     start is what keeps the wordmark well above the AA contrast threshold without
     flattening the image.
-  - Overlay, light: a soft lilac wash that is strong on the copy side and almost
-    clear over the photograph (`rgba(247,243,255,.95)` left →
-    `rgba(240,232,252,.05)` right on desktop; a vertical 0.92 → 0.58 gradient
-    under 768 px).
+  - Overlay, light: a neutral white scrim, no colour cast. Desktop is a
+    horizontal white gradient that is `.92` on the copy side and fades to `0`
+    by 74 %, layered with a short bottom fade into the page colour
+    (`#f4f2f7`, `0 → 24 %`). The lilac tint it replaced read as a colour cast
+    over half the frame, and the dark-mode wash it inherited left a dark band
+    under the picture. Under 768 px the scrim is uniform `rgba(255,255,255,.74)`
+    plus the same bottom fade, because the copy spans the full width.
 - **Product grid:** auto-fill, min 260 px, gap 24 px; 1 column under 520 px.
 - **Shop hero:** shorter band, `padding-top: calc(var(--header-h) + 28px)`.
 

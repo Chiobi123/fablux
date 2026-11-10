@@ -140,7 +140,7 @@ function enhanceProductReviews(){
  section.innerHTML='<span>CUSTOMER FEEDBACK</span><h3>Reviews &amp; Ratings</h3><form class="pro-form" id="reviewForm"><label>Rating<select name="rating" required><option value="5">★★★★★ 5</option><option value="4">★★★★ 4</option><option value="3">★★★ 3</option><option value="2">★★ 2</option><option value="1">★ 1</option></select></label><label>Your review<textarea name="text" rows="4" required></textarea></label><button class="btn">Submit Review</button></form><div class="fablux-review-list" id="reviewList"></div>';
  page.parentElement.appendChild(section);
  const list=section.querySelector('#reviewList');
- const draw=arr=>{list.innerHTML=arr&&arr.length?arr.map(r=>'<div class="fablux-review-item"><strong>'+'★'.repeat(Number(r.rating)||5)+'☆'.repeat(5-(Number(r.rating)||5))+'</strong><p>'+String(r.text||'')+'</p><small>'+(r.name||'Customer')+'</small></div>').join(''):'<p>No reviews yet. Be the first to review this product.</p>'};
+ const draw=arr=>{list.innerHTML=arr&&arr.length?arr.map(r=>'<div class="fablux-review-item"><strong>'+'★'.repeat(Number(r.rating)||5)+'☆'.repeat(5-(Number(r.rating)||5))+'</strong><p>'+esc(r.text||'')+'</p><small>'+esc(r.name||'Customer')+'</small></div>').join(''):'<p>No reviews yet. Be the first to review this product.</p>'};
  if(window.FabluXAPI){
    // Reviews live in Supabase; submissions are handled by handleReview() in js/backend-bridge.js.
    draw([]);

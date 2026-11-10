@@ -59,21 +59,11 @@ function copyDir(rel) {
 }
 
 /* Safety net: refuse to publish obvious secrets. */
-function readEnvPassword() {
-  try {
-    const env = fs.readFileSync(path.join(ROOT, 'server', '.env'), 'utf8');
-    const m = env.match(/^\s*SUPABASE_DB_PASSWORD\s*=\s*(.+)\s*$/m);
-    return m ? m[1].trim() : null;
-  } catch (e) { return null; }
-}
-
 function scanForSecrets() {
   const markers = [
     'SUPABASE_SERVICE_ROLE_KEY', 'sb_secret', 'service_role',
-    'PAYSTACK_SECRET_KEY', 'RESEND_API_KEY', 'q7DtgatAqgyaOyqf'
+    'PAYSTACK_SECRET_KEY', 'RESEND_API_KEY', 'xkeysib-', 'sk_live_'
   ];
-  const dbPass = readEnvPassword();
-  if (dbPass) markers.push(dbPass);
   const exts = new Set(['.html', '.css', '.js', '.json', '.xml', '.txt', '.svg', '.toml']);
   const bad = [];
 
