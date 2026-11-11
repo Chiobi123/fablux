@@ -13,7 +13,7 @@ Companions: `MONITORING.md`, `LOAD_TEST.md`, `loadtest/k6.js`.
 | HTML (gzipped) | < 25 KB | largest page is `shop.html` (~63 KB raw) |
 | CSS total | < 90 KB raw | 5 files, no framework |
 | JS total | < 140 KB raw | no framework, no bundler |
-| Hero image | < 150 KB | `hero1.jpg` 79 KB, `hero2.jpg` 79 KB |
+| Hero image | < 150 KB | `hero1.jpg` 38 KB (1536×508), `hero2.jpg` 45 KB (764×508) |
 | LCP (4G, mid phone) | < 2.5 s | measure with Lighthouse |
 | CLS | < 0.1 | fixed header height handled in JS |
 | INP | < 200 ms | list rendering is the main risk |

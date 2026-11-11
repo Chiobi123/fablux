@@ -51,6 +51,10 @@ Type scale (desktop → mobile):
   Below 1200 px the nav wraps onto a second row; the header grows; the CSS var
   follows (via `site-tools.js` `syncHeader()`).
 - **Hero:** one full-bleed photograph (`images/hero1.jpg`) with a gradient `.overlay`.
+  Each banner file must be a single photograph: they are cropped by
+  `background-size: cover`, so a collage shows its gutter as a hard seam and the
+  exposure step between the source photos as one half of the banner being darker
+  (that is what the 2026-11-11 asset fix removed).
   The two-slide auto-rotating carousel was removed on 2026-10-30: it was hard-coded
   (no admin control), repeated the same artwork every five seconds and did not
   justify its weight. The section starts

@@ -63,6 +63,19 @@ Bug reports go to the repository owner with the §1.3 information.
 
 Chronological, newest first. Conventional prefixes match the commit history.
 
+### 2026-11-11
+
+- `fix(assets)`: `images/hero1.jpg` and `images/hero2.jpg` were photo **collages**,
+  not single photographs — `hero1` was two photos stacked and `hero2` a 2×2 grid,
+  each with a white gutter at the 50 % line. Because the banners crop the image,
+  the gutter and the exposure step between the source photos showed up as a hard
+  horizontal seam and a darker lower half. Both files are now one photograph each,
+  cropped from the originals: `hero1` is the top frame at 1536×508, `hero2` the
+  bottom-right frame at 764×508. No markup or CSS changed, the filenames are
+  unchanged, and `cover` chooses the same region of `hero1` as before, so the
+  composition on the home page is identical. 79 KB → 38 KB and 79 KB → 45 KB.
+- `docs(perf)`: the image budget row in `14-performance.md` lists the real sizes.
+
 ### 2026-11-10
 
 - `fix(ui)`: light-mode hero and shop banner no longer wash the photograph. The
