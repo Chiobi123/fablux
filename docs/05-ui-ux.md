@@ -55,6 +55,9 @@ Type scale (desktop → mobile):
   `background-size: cover`, so a collage shows its gutter as a hard seam and the
   exposure step between the source photos as one half of the banner being darker
   (that is what the 2026-11-11 asset fix removed).
+  Below 560 px the home hero swaps to `images/hero1-mobile.jpg`, a 9:16 crop of
+  the same photograph, because a 3:1 landscape frame inside a full-height portrait
+  box only ever shows a narrow slice of itself.
   The two-slide auto-rotating carousel was removed on 2026-10-30: it was hard-coded
   (no admin control), repeated the same artwork every five seconds and did not
   justify its weight. The section starts

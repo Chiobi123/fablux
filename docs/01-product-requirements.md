@@ -5,7 +5,7 @@ database-backed back office
 **Owner:** FabluX.U.Design (single-operator business)
 **Document owner:** repository maintainer
 **Status:** current · last reviewed **2026-11-10** · supersedes the 2026-10-29 draft
-**Asset version token at review:** `?v=20261110b`
+**Asset version token at review:** `?v=20261114a`
 
 | Read next | For |
 |---|---|

@@ -68,7 +68,7 @@ in the deployed site requires `node_modules`.
 
 - Node: `node -v` (built and verified on v24).
 - Site asset version: the `?v=` token in every HTML `<link>`/`<script>` tag,
-  currently `20261110b`. Bump it on every asset change (`15-deployment.md` §2).
+  currently `20261114a`. Bump it on every asset change (`15-deployment.md` §2).
 - Postgres/Supabase: platform-managed. RPC signatures are the contract.
 - Supabase Edge Functions runtime: Deno, only used by `payments` (undeployed).
 

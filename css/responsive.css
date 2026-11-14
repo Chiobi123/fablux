@@ -460,6 +460,12 @@ body{
         min-height:600px;
         padding:100px 0 70px;
         align-items:center;
+        /* hero1 is a 3:1 landscape frame. Filling a 100svh portrait box with it
+           showed a ~280 px slice of the original, which reads as a dark slab.
+           A 9:16 crop of the same photograph keeps the model fully in frame. */
+        background-image:url("../images/hero1-mobile.jpg");
+        background-position:center top;
+        background-size:cover;
     }
 
     .slide:nth-child(1),

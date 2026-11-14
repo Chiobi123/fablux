@@ -324,7 +324,7 @@ The console never silently rewrites history: every action writes an audit row.
 
 1. Change source files. CSS/JS change → bump `?v=` in every HTML file.
 2. `node --check` on changed JS.
-3. `node build.js` → `dist/` with 68 public files. `dist/` contains only pages,
+3. `node build.js` → `dist/` with 69 public files. `dist/` contains only pages,
    `css/`, `js/`, `images/`, `favicon.svg`, `robots.txt`, `sitemap.xml`,
    `health.json`, `_headers`, `.htaccess`. No SQL, no docs, no `.env`, no tooling.
 4. Commit and push `main`. Cloudflare Pages runs `node build.js` (output `dist`)

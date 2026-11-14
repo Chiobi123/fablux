@@ -76,6 +76,20 @@ Chronological, newest first. Conventional prefixes match the commit history.
   composition on the home page is identical. 79 KB → 38 KB and 79 KB → 45 KB.
 - `docs(perf)`: the image budget row in `14-performance.md` lists the real sizes.
 
+### 2026-11-14
+
+- `fix(ui)`: the home hero on phones. A 3:1 landscape photograph inside a
+  `100svh` portrait box with `background-size: cover` showed a ~280 px slice of
+  the original — the model sat outside the frame and the banner read as a dark
+  slab. Below 560 px the hero now loads `images/hero1-mobile.jpg`, a 9:16 crop of
+  the same photograph (286×508, 17 KB), anchored `center top` so heads are never
+  cut. Desktop and tablet still use `hero1.jpg`; nothing about the layout,
+  copy or overlay changed. The shop banner needs no mobile crop — its box is
+  short enough that `cover` keeps the subject in frame.
+- `chore(assets)`: `?v=20261114a` on all 28 pages; `dist/` is 69 files now
+  (the new image), and the build-size references in `15`, `24`, the checklist
+  and the handover page follow.
+
 ### 2026-11-10
 
 - `fix(ui)`: light-mode hero and shop banner no longer wash the photograph. The
