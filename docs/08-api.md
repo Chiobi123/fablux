@@ -65,11 +65,19 @@ client-supplied price, is idempotent on `p_idempotency_key` (returns the first o
 with `duplicate: true`), **decrements `products.stock`** inside the same transaction,
 writes `order_events`, queues the notification rows, writes `audit_log`.
 
-Stock is not returned if the order is later cancelled — `reserved_stock` exists but
-nothing writes it (`01` §14).
+Quantity must be a whole number of at least 1 per line; anything else is refused
+rather than clamped. Each call consumes a `rate_limit_hits` slot for the buyer's
+email and phone number (20 per hour each) — `ponytail:` the bucket key is the only
+identity an anonymous guest has, so an attacker rotating both can still place
+orders. Add an edge/WAF rule or captcha if that appears in the logs.
+
+Cancelling the order later returns the stock (`admin_set_order_status` →
+`cancelled`). `reserved_stock` exists but nothing writes it (`01` §14).
 
 Errors: `not authenticated` (signed-in path only), `Not enough stock for "…"`,
-`That promo code is not valid.`, `Order not found.`
+`Each item needs a quantity of at least 1.`, `Each item needs a whole-number
+quantity.`, `Too many checkout attempts from this email.`, `That promo code is not
+valid.`, `Order not found.`
 
 ### 2.2 `track_order`
 

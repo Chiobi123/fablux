@@ -86,14 +86,15 @@ cart (localStorage, ids+qty only)
                 ├─ lock product rows, verify stock
                 ├─ compute subtotal, delivery, discount, total
                 ├─ insert orders + order_items
-                ├─ reserve stock
+                ├─ decrement stock (row lock, rejects oversell)
                 ├─ insert order_events('created')
                 ├─ queue_notification(...)     → notifications row
                 └─ audit(...)
    ← { id, reference, tracking_token }
 
-pg_cron (every minute) → dispatch_emails() → Brevo HTTP API → notifications.sent
-                        ↑ reads the API key from Supabase Vault
+pg_cron (every minute) → dispatch_emails() → Brevo HTTP API
+                       ↑ reads the API key from Supabase Vault
+   next pass reads pg_net's response → notifications.sent | failed
    → order-success.html?ref=…&token=…
 ```
 

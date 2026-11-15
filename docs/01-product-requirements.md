@@ -368,13 +368,15 @@ Ordered by what blocks trading.
 | 1 | Verify Brevo senders `fabluxdesigns@gmail.com`, `ujuigbani@gmail.com` | sender identity for order mail; standby address | click two confirmation emails |
 | 2 | Replace `settings.store_email` (`info@fabluxudesign.com`) with a mailbox that exists | the contact page publishes an address nobody reads | owner: does the domain exist? |
 | 3 | Deploy the payments Edge Function + set Paystack keys | card option stays hidden until then | Supabase access token + secret key |
-| 4 | Restore stock when an order is cancelled | cancelled orders leave stock short | code change in `admin_set_order_status` |
+| 4 | ~~Restore stock when an order is cancelled~~ | done 2026-11-15 in `setup-launch-hardening.sql` | — |
 | 5 | `reserved_stock` is read by the dashboard but written by nothing | "available" equals `stock`; the column implies a reservation model that does not exist | either implement reservation or drop the column from the calculation |
 | 6 | Admin alerts hard-code two addresses while contact alerts use three | one admin misses order mail | align on the allow-list table |
-| 7 | No email delivery/bounce feedback | "sent" means accepted by Brevo | optional verification pass |
-| 8 | No contact-message or review-moderation screen | admin needs SQL for both | build only if volume justifies it |
+| 7 | ~~No email delivery/bounce feedback~~ | done 2026-11-15: `dispatch_emails` reads the `pg_net` response; bounces themselves still only show in Brevo | — |
+| 8 | No contact-message or review-moderation screen | admin needs SQL for both; reviews now land `pending` so nothing false goes live, but approving one is still SQL | build only if volume justifies it |
 | 9 | Rotate the Brevo SMTP and API keys (both were displayed on screen) | secret hygiene | owner does it in Brevo + Vault |
 | 10 | Rehearse a restore into a staging project | unknown RTO | maintainer |
+| 11 | Product photography: 11 of 15 catalogue images ship as 0-byte files | every shop card shows a placeholder; the store cannot sell | owner: upload real photos |
+| 12 | Homepage featured card pointed at product id `1`, which does not exist | dead "view details" link on the most visible CTA | fixed 2026-11-15 (now id 20) |
 
 ---
 

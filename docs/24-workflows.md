@@ -108,17 +108,21 @@ the order is later cancelled — see §5 and `01` §14 item 4.
 | `delivered` | — | terminal |
 | `cancelled` | — | terminal |
 
-Each transition (`admin_set_order_status`) does four things in one transaction:
+Each transition (`admin_set_order_status`) does five things in one transaction:
 
 1. updates `orders` (status, `status_updated_at`, `cancelled_at` / `delivered_at`);
-2. inserts an `order_events` row with the human label and the acting email;
-3. inserts an `audit_log` row (`order_status_change`, from → to);
-4. queues customer mail for `confirmed`, `ready_for_dispatch`, `shipped`,
+2. returns the order's units to `products.stock` when the new status is
+   `cancelled` (one `UPDATE … FROM` over `order_items`, so a multi-item order is
+   credited in full);
+3. inserts an `order_events` row with the human label and the acting email;
+4. inserts an `audit_log` row (`order_status_change`, from → to);
+5. queues customer mail for `confirmed`, `ready_for_dispatch`, `shipped`,
    `delivered`, `cancelled`, and admin mail for `confirmed` / `cancelled`.
 
-**Stock:** releasing stock on cancel is **not implemented**. `products.stock` is
-reduced at order creation only. `reserved_stock` exists and the dashboard
-subtracts it, but no code writes it.
+**Stock:** `products.stock` is reduced inside `create_order` under a
+`SELECT … FOR UPDATE` row lock, so two checkouts cannot oversell the last unit.
+Cancelling an order adds the quantities back. `reserved_stock` exists and the
+dashboard subtracts it, but no code writes it — sellable stock is `stock` alone.
 
 **Failure behaviour:** an illegal transition is refused before any write; a
 concurrent double-click hits the row lock and the second call sees the new state.
@@ -245,26 +249,30 @@ address, and nothing else.
 
 ### 11.1 The loop
 
-1. Some action calls `queue_notification()` (or a trigger does). Row is inserted
-   with `status = 'queued'` when `settings.email_enabled = 'true'`, otherwise
-   `pending` with an explanatory error.
+1. Some action calls `queue_notification()` (or a trigger does). The row is
+   always inserted as `queued`; the loop below decides whether anything leaves
+   the building. There is no second "disabled" state to get stuck in.
 2. Every minute `dispatch_emails(20)` runs.
-3. It exits immediately when email is disabled, or when the Vault secret
+3. It first settles rows already handed to the provider (`status = 'sending'`)
+   by reading `pg_net`'s recorded response — a 2xx becomes `sent`, anything else
+   returns to `queued` or becomes `failed` after four attempts. Rows with no
+   response after ten minutes are treated as a failed attempt.
+4. It exits immediately when email is disabled, or when the Vault secret
    `brevo_api_key` or the `email_settings` row is missing.
-4. It selects up to 20 rows (`status = 'queued'`, `attempts < 4`, non-empty
+5. It selects up to 20 rows (`status = 'queued'`, `attempts < 4`, non-empty
    recipient) `FOR UPDATE SKIP LOCKED` — two overlapping runs cannot send the
    same row.
-5. For each row it POSTs to `https://api.brevo.com/v3/smtp/email` through
-   `pg_net`, then marks the row `sent` with `sent_at` and `attempts + 1`.
-6. A failed POST increments `attempts` and stores `left(SQLERRM, 300)` in
+6. For each row it POSTs to `https://api.brevo.com/v3/smtp/email` through
+   `pg_net` and stores `status = 'sending'` with the returned request id in
+   `provider_request_id` and `attempts + 1`.
+7. A POST that throws increments `attempts` and stores `left(SQLERRM, 300)` in
    `error`; the row stays `queued` and is retried until four attempts.
 
 ### 11.2 What "sent" means
 
-`sent` means **Brevo accepted the request**, not that the inbox received it. The
-real response is kept by `pg_net` for about six hours and is not read back. This
-is deliberate for now; a verification pass can be added if bounces must be
-surfaced.
+`sent` means **the provider answered 2xx**, read back from `pg_net` on the next
+run — not that the inbox received it. Bounces still only show in the Brevo
+dashboard.
 
 ### 11.3 Reply routing
 

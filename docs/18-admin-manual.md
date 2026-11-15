@@ -172,11 +172,13 @@ Every order event queues a row: recipient, subject, body, status, error.
 
 - `queued` — waiting for the next dispatch pass (runs every minute). This is the
   normal state for a few seconds.
-- `sent` — Brevo **accepted** the request. It does not prove the inbox received it.
-- `pending` — email is switched off (`settings.email_enabled ≠ 'true'`), so nothing
-  was attempted. The row carries an explanatory error.
+- `sending` — handed to Brevo; the next pass reads the response and settles it.
+- `sent` — the provider answered 2xx. It does not prove the inbox received it.
 - `failed` — kept for history; a row stops retrying after 4 attempts, with the
   provider's reason in `error`.
+
+Rows are never created in a "disabled" state any more. If email is switched off,
+outbox rows simply stay `queued` until it is switched back on.
 
 If rows pile up in `queued`, the cron job or the Brevo key is the problem
 (`24-workflows.md` §11.4). A rejected recipient stays `queued` with the reason in

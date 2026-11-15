@@ -164,6 +164,25 @@ header height variable prevents overlap when the nav wraps.
     Submit the contact form and confirm the alert carries the customer's address as
     reply-to. Anon reads of `email_settings` must return `[]`.
 16. Confirm the asset `?v=` token changed if any CSS/JS changed.
+17. Checkout guards (run against the live project with the publishable key; none of
+    these create an order):
+    ```sql
+    -- all three must return 400 P0001, and the counts either side must not move
+    select count(*) from public.orders;
+    -- POST /rest/v1/rpc/create_order with p_items = [{"product_id":"10","quantity":0}]
+    -- POST /rest/v1/rpc/create_order with p_items = [{"product_id":"10","quantity":-5}]
+    -- POST /rest/v1/rpc/create_order with p_items = [{"product_id":"10","quantity":"abc"}]
+    select count(*), (select stock from public.products where id = '10') from public.orders;
+    ```
+18. Cancel an order in the admin console and confirm `products.stock` rose by the
+    ordered quantity; a second cancel is refused ("already cancelled").
+19. Outbox states: after a queueing action the row is `queued`, then `sending`, then
+    `sent`/`failed` — never `pending`. `select status, attempts, error from
+    public.notifications order by id desc limit 5;`
+20. Privilege check: `select p.proname, has_function_privilege('anon', p.oid,
+    'execute') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where
+    n.nspname = 'public' and p.proname in ('queue_notification','audit');` must both
+    read `false`.
 
 ## 9. Gaps and planned tooling
 

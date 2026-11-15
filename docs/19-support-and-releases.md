@@ -76,6 +76,47 @@ Chronological, newest first. Conventional prefixes match the commit history.
   composition on the home page is identical. 79 KB → 38 KB and 79 KB → 45 KB.
 - `docs(perf)`: the image budget row in `14-performance.md` lists the real sizes.
 
+### 2026-11-15
+
+- `fix(security)`: an anonymous caller holding the publishable key could execute
+  `queue_notification(...)`, `audit(...)` and the trigger helpers directly, which
+  made the store an open mail relay on the verified Brevo sender. All internal
+  `SECURITY DEFINER` helpers are now owner-only; the RPCs that legitimately call
+  them (`create_order`, `admin_*`, `confirm_payment`) keep access through
+  ownership. Verified live: `has_function_privilege('anon', …)` is now `false` for
+  all seven, `create_order` still `true`.
+- `fix(reviews)`: `reviews_insert` let any signed-in customer publish their own
+  review. The policy now requires `status = 'pending'` and `rating` 1–5, so
+  nothing false reaches the product page without an admin.
+- `fix(checkout)`: `create_order` silently clamped `quantity` to 1–99, so a crafted
+  request with `-5` or `0` still created a real order and reserved stock. It now
+  refuses anything that is not a whole number ≥ 1, and consumes a `rate_limit_hits`
+  slot for the buyer's email and phone (20/hour each). Verified live: `0`, `-5`
+  and `"abc"` all return 400 `P0001`, order count unchanged, stock unchanged.
+- `fix(stock)`: cancelling an order never returned its units, so every cancellation
+  leaked inventory. `admin_set_order_status` now adds the `order_items` quantities
+  back to `products.stock` on the `cancelled` transition. It already refuses to
+  leave `cancelled`, so it cannot double-credit.
+- `fix(email)`: outbox rows were written as `pending` whenever mail was off, and
+  `dispatch_emails` only read `queued` — six rows from 2026-10-31 were stuck
+  forever. Worse, it marked a row `sent` the moment `net.http_post` was submitted,
+  so a rejected send looked delivered. Rows are now always created `queued`, the
+  new `sending` state stores the `pg_net` request id, and the next pass reads the
+  real HTTP answer before deciding. The six stuck rows are closed as `failed`
+  with an explanatory error rather than being mailed a fortnight late.
+- `chore(ops)`: nightly `fx-prune-cron-log` and `fx-prune-http-responses` jobs keep
+  `cron.job_run_details` (3.4 MB, the largest table in a 17 MB database) and
+  `net._http_response` from growing forever.
+- `fix(content)`: the first featured card on the home page pointed at product id
+  `1`, which does not exist, so its "view details" link 404'd. It now uses id 20
+  (Leather Jacket, ₦95,000 — same price, so nothing shifts visually).
+- `chore(data)`: the stray "pillow" test product (₦34,000 PNG upload) is
+  deactivated so it no longer appears in the shop.
+- `chore(cleanup)`: deleted the two 0-byte stylesheets `css/product.css` and
+  `css/shop.css`. `js/shop.js` stays — it is a deliberate 113-byte shim so pages
+  cached before the refactor do not 404.
+- Applied with `setup-launch-hardening.sql` (idempotent, re-runnable).
+
 ### 2026-11-14
 
 - `fix(ui)`: the home hero on phones. A 3:1 landscape photograph inside a

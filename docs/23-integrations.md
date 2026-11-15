@@ -131,9 +131,12 @@ client on port **465**; app mail goes through Brevo's HTTP API from Postgres.
 `queue_notification()` writes rows into `public.notifications`. The sender added on
 2026-10-31 delivers them with no server:
 
-1. `public.dispatch_emails(20)` takes `status='queued'` rows, posts them to
-   `https://api.brevo.com/v3/smtp/email`, then marks them `sent`.
-2. `pg_cron` job `fx-email-dispatch` runs it every minute.
+1. `public.dispatch_emails(20)` takes `status='queued'` rows and posts them to
+   `https://api.brevo.com/v3/smtp/email`, marking them `sending` with the `pg_net`
+   request id. The next pass reads the recorded response: 2xx → `sent`, anything
+   else → `queued` for another attempt, `failed` after four.
+2. `pg_cron` job `fx-email-dispatch` runs it every minute; `fx-prune-cron-log` and
+   `fx-prune-http-responses` clear the two bookkeeping tables nightly.
 3. `trg_welcome_email` on `public.users` queues a welcome message for each new
    customer (OAuth included, because `trg_sync_auth_user` creates the row).
 4. Sender identity lives in `public.email_settings` (RLS on, no policy).

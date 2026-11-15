@@ -5,7 +5,7 @@ Source of truth: `setup-supabase.sql`, `setup-fulfilment.sql`, `setup-rls.sql`,
 `setup-admin-emails.sql` (admin allow-list, auth-user sync, email lock),
 `setup-security-hardening.sql`, `setup-promo-codes.sql`,
 `setup-product-details.sql`, `setup-product-images.sql`,
-`setup-admin-bootstrap.sql`.
+`setup-admin-bootstrap.sql`, `setup-launch-hardening.sql`.
 
 Project: `https://msisbmcowtggbvasubla.supabase.co` (Postgres 15, Supabase).
 
@@ -67,7 +67,7 @@ newsletter_subscribers  — standalone
 |---|---|
 | `settings` | `key` PK, `value` (text), `updated_at` |
 | `promo_codes` | `code` PK, `kind` (`percent`\|`amount`), `value` (>0), `min_subtotal`, `max_uses` (0 = unlimited), `used_count`, `active`, `created_at` |
-| `notifications` | `id`, `order_id`, `event`, `channel`, `recipient`, `subject`, `body`, `status` (`pending`\|`sent`\|`failed`), `error`, `attempts`, `created_at`, `sent_at`, `reply_to` (overrides the default reply address for that message) |
+| `notifications` | `id`, `order_id`, `event`, `channel`, `recipient`, `subject`, `body`, `status` (`queued`\|`sending`\|`sent`\|`failed`), `error`, `attempts`, `created_at`, `sent_at`, `reply_to` (overrides the default reply address for that message), `provider_request_id` (the `pg_net` request id), `dispatched_at`. Default status is `queued`. |
 | `audit_log` | `id`, `actor_id`, `actor_email`, `action`, `entity`, `entity_id`, `detail` jsonb, `created_at` |
 | `rate_limit_hits` | `id`, `bucket`, `subject`, `created_at` |
 | `contacts` | `id`, `name`, `email`, `subject`, `message`, `created_at` |
@@ -138,6 +138,10 @@ There is no migration framework. The SQL files are applied **in this order** wit
 8. `setup-admin-bootstrap.sql` — admin role trigger
 9. `setup-email-dispatch.sql` — Brevo sender identity, `dispatch_emails()`,
    `pg_cron` job `fx-email-dispatch`, welcome-email trigger, `email_enabled='true'`
+10. `setup-launch-hardening.sql` — closes the 2026-11-14 audit findings:
+    owner-only helper functions, moderated reviews, quantity checks and a
+    checkout throttle in `create_order`, stock returned on cancel, an outbox that
+    reconciles the provider's real HTTP answer, and nightly cron/`pg_net` pruning
 
 All files are written to be re-runnable (`IF NOT EXISTS`, `CREATE OR REPLACE`,
 idempotent policy drops). Re-applying them to a populated database is the supported
@@ -161,13 +165,14 @@ There is no automated down-migration. Rollback = restore the last logical backup
 
 ## 5. Stock model
 
-- `stock` = physical units available.
-- `reserved_stock` = units held by open orders.
-- Sellable = `stock - reserved_stock`.
-- `create_order` locks the product row, re-checks sellable, increments
-  `reserved_stock`; cancellation decrements it; delivery decrements `stock` and
-  `reserved_stock` together (fulfilment RPC).
-- The shop display uses `stock` and marks sold out at `stock - reserved_stock <= 0`.
+- `stock` = units available. This is the only number that gates a sale.
+- `reserved_stock` = exists, displayed by the dashboard, **written by no code**.
+- `create_order` locks each product row (`FOR UPDATE`), refuses the order when
+  `stock < quantity`, then decrements `stock`.
+- Cancelling an order (`admin_set_order_status` → `cancelled`) adds the ordered
+  quantities back. The function refuses to leave `cancelled`, so it cannot
+  double-credit.
+- The shop marks a card sold out at `stock <= 0`.
 
 ## 6. Backup
 

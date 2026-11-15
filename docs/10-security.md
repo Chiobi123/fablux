@@ -32,6 +32,9 @@ compromise of Supabase or Cloudflare themselves.
 | T12 | Enumeration of accounts | Supabase generic auth errors | yes |
 | T13 | Brute force | Supabase Auth rate limits | platform |
 | T14 | Data retention beyond need | `delete_my_data`; retention rules in `07-database.md` §7 | yes |
+| T15 | Mail relay abuse through the publishable key | `queue_notification` / `audit` / trigger helpers are owner-only; guest mail is only queued by `create_order` | yes — `setup-launch-hardening.sql` |
+| T16 | Fake reviews | `reviews_insert` forces `status = 'pending'` and `rating` 1–5; only an admin publishes | yes |
+| T17 | Stock-depletion spam | `create_order` rejects quantity < 1 and throttles email + phone | yes, per-identity (`08-api.md` §2.1) |
 
 ## 2. Security requirements
 

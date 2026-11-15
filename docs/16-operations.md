@@ -174,6 +174,11 @@ software is required.
 | 2026-10-28 | 18+ gate | removed |
 | 2026-10-29 | CSP for Google Translate hosts | `_headers` |
 | 2026-10-29 | accounts/logs wiped on request | `_private-tools/wipe-accounts.sql` |
+| 2026-11-15 | anon could execute `queue_notification` / `audit` / trigger helpers | `setup-launch-hardening.sql` revokes them |
+| 2026-11-15 | reviews could self-publish | `reviews_insert` now forces `pending` + rating 1–5 |
+| 2026-11-15 | `create_order` accepted quantity ≤ 0, no throttle | quantity validation + `rate_limit_hit` buckets |
+| 2026-11-15 | cancelling an order did not return stock | `admin_set_order_status` restores it |
+| 2026-11-15 | outbox marked `sent` without reading the provider reply | `dispatch_emails` reconciles `pg_net` responses |
 
 Platform patching (Postgres, GoTrue, CDN) is Supabase's/Cloudflare's responsibility.
 Third-party assets (Font Awesome, fonts) are loaded from CDNs at pinned major
