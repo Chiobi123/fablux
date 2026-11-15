@@ -38,7 +38,7 @@ html[data-theme="light"] .fx-tokens{
 }
 
 .fx-acc{padding:40px 0 80px;color:var(--fx-text)}
-.fx-dash{color:var(--fx-text)}
+.fx-dash{color:var(--fx-text);min-width:0}
 .fx-acc *,.fx-dash *{box-sizing:border-box}
 .fx-acc h1,.fx-acc h2,.fx-acc h3,.fx-acc h4,.fx-dash h1,.fx-dash h2,.fx-dash h3,.fx-dash h4{color:var(--fx-text);margin:0}
 .fx-acc p,.fx-dash p{margin:0;color:var(--fx-muted)}
@@ -94,7 +94,7 @@ html[data-theme="light"] .fx-tokens{
 .fx-panel[hidden],#accountPage [hidden],#adminPage [hidden]{display:none!important}
 
 /* ---------- stat tiles ---------- */
-.fx-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.fx-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:14px}
 .fx-kpi{padding:16px 18px;border-radius:14px;background:var(--fx-surface);border:1px solid var(--fx-line)}
 .fx-kpi span{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fx-muted);font-weight:700}
 .fx-kpi strong{display:block;margin-top:8px;font-size:1.5rem;line-height:1.1;color:var(--fx-text)}
@@ -110,14 +110,14 @@ html[data-theme="light"] .fx-tokens{
 .fx-table{width:100%;border-collapse:collapse;font-size:.88rem}
 .fx-table th{text-align:left;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--fx-muted);
   padding:0 12px 10px;border-bottom:1px solid var(--fx-line);white-space:nowrap}
-.fx-table td{padding:12px;border-bottom:1px solid var(--fx-line);color:var(--fx-text);vertical-align:top}
+.fx-table td{padding:12px;border-bottom:1px solid var(--fx-line);color:var(--fx-text);vertical-align:top;overflow-wrap:anywhere}
 .fx-table tr:last-child td{border-bottom:0}
 .fx-table tr[data-ref]{cursor:pointer}
 .fx-table tr[data-ref]:hover td{background:var(--fx-accent-soft)}
-.fx-scroll{overflow-x:auto}
+.fx-scroll{overflow-x:auto;min-width:0}
 
 /* ---------- addresses ---------- */
-.fx-addr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.fx-addr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:14px}
 .fx-addr{padding:16px 18px;border:1px solid var(--fx-line);border-radius:12px;background:var(--fx-surface2)}
 .fx-addr strong{display:block;color:var(--fx-text)}
 .fx-addr p{margin-top:6px;font-size:.86rem;line-height:1.5;color:var(--fx-muted)}
@@ -155,7 +155,10 @@ html[data-theme="light"] .fx-tokens{
 
 /* ---------- admin shell ---------- */
 .fx-dash-head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}.fx-dash-head h1{font-size:1.6rem}
-.fx-dash-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.fx-dash-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
+/* Grid items default to min-width:auto, so a wide child (a table, a long order
+   line) inflates the track past the screen. Pin them to the track instead. */
+.fx-dash-grid > *{min-width:0}
 .fx-dash-grid.wide{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
 
 /* ---------- admin shell: sidebar + workspace ---------- */
@@ -187,7 +190,10 @@ html[data-theme="light"] .fx-tokens{
   font-size:.86rem;font-weight:600;text-decoration:none;color:var(--fx-muted)!important}
 .fx-side-foot a:hover{background:var(--fx-accent-soft);color:var(--fx-text)!important}
 
-.fx-main{min-width:0;display:grid;gap:18px}
+/* Single clamped column: without minmax(0,1fr) an implicit `auto` track sizes
+   to the widest child's min-content, which pushed the whole dashboard ~275px
+   wider than a phone screen and got clipped by body{overflow-x:hidden}. */
+.fx-main{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
 .fx-pagehead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
 .fx-pagehead h1{font-size:1.7rem;line-height:1.2;letter-spacing:-.01em}
 .fx-pagehead p{margin-top:6px;font-size:.9rem}
@@ -197,7 +203,7 @@ html[data-theme="light"] .fx-tokens{
   font-size:.82rem;font-weight:600;white-space:nowrap}
 
 /* KPI cards with trend */
-.fx-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.fx-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:16px}
 .fx-stat{display:grid;gap:10px;padding:18px 20px;border-radius:18px;background:var(--fx-surface);
   border:1px solid var(--fx-line);box-shadow:var(--fx-shadow)}
 .fx-stat-top{display:flex;align-items:center;gap:10px}
@@ -220,22 +226,38 @@ html[data-theme="light"] .fx-tokens{
   .fx-side{position:static}
   .fx-side .fx-nav{flex-direction:row;flex-wrap:wrap}
   .fx-side .fx-nav button{width:auto;flex:0 0 auto}
+  .fx-side-group{margin-top:12px}
   .fx-side-foot{grid-template-columns:1fr 1fr}
 }
 @media (max-width:900px){
   .fx-acc-body{grid-template-columns:1fr}
-  .fx-nav{flex-direction:row;flex-wrap:wrap;overflow-x:auto}
-  .fx-nav button,.fx-nav a{width:auto;flex:0 0 auto;padding:9px 12px}
+  /* Chips wrap onto extra rows instead of scrolling sideways — a hidden
+     horizontal strip is how sections go missing on a phone. */
+  .fx-nav{flex-direction:row;flex-wrap:wrap}
+  .fx-nav button,.fx-nav a{width:auto;flex:0 1 auto;padding:9px 12px}
   .fx-nav .fx-count{margin-left:6px}
   .fx-nav-sep{display:none}
-  .fx-dash-grid.wide{grid-template-columns:1fr}
+  .fx-dash-grid.wide{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:560px){
   .fx-acc{padding-top:26px}
   .fx-acc-head{padding:18px}
   .fx-avatar{width:54px;height:54px;flex-basis:54px;font-size:1.15rem}
+  .fx-card{border-radius:14px}
+  .fx-pad{padding:16px}
+  .fx-pagehead h1{font-size:1.35rem}
+  .fx-stat strong{font-size:1.5rem}
+  .fx-kpi strong{font-size:1.3rem}
+  .fx-stat,.fx-kpi{padding:14px 16px}
   .fx-form .fx-two{grid-template-columns:1fr}
-  .fx-bar-row{grid-template-columns:88px 1fr auto}
+  .fx-bar-row{grid-template-columns:minmax(0,88px) minmax(0,1fr) auto}
+  .fx-chart{height:120px}
+  .fx-table th,.fx-table td{padding:8px 6px}
+  .fx-btn{min-height:44px;padding:0 14px}
+  /* Long order lines (address, email, product notes) must wrap, not stretch. */
+  #adminPage .pro-summary-row{flex-wrap:wrap}
+  #adminPage .pro-summary-row strong{min-width:0;text-align:left;overflow-wrap:anywhere}
+  #adminPage .pro-summary-row span{overflow-wrap:anywhere}
 }
 
 /* Older admin/account wrappers ship light-mode rules (responsive.css,

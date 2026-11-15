@@ -139,6 +139,22 @@ Type scale (desktop → mobile):
 - Measured contrast on the new components: 6.9:1 or better in both themes for
   labels, values, table headers, pills and buttons.
 
+### Layout rules for these two pages
+
+- Both pages contain their own `<header>` (`.fx-pagehead`) and `<nav>` (`.fx-nav`).
+  Site-chrome rules in `style.css` / `responsive.css` are therefore scoped to
+  `body > header`, never bare `header` / `nav` — an unscoped `header{position:fixed}`
+  captured the console header and an unscoped `nav{height:90px}` squeezed the account
+  menu. Any new global header/nav rule must use the scoped selector.
+- Grid tracks use `minmax(min(<px>,100%),1fr)` or `minmax(0,1fr)`, and grid items are
+  pinned with `min-width:0`, so a wide child can never inflate a track past the
+  viewport. A plain `repeat(auto-fit,minmax(300px,1fr))` is a bug on a 320 px screen.
+- Tables have no fixed `min-width`. Cells wrap (`overflow-wrap:anywhere`) and the
+  `.fx-scroll` / `.pro-admin-section` wrapper scrolls horizontally inside the card
+  when the content is genuinely wider.
+- Below 900 px the account nav switches from a vertical rail to wrapping chips; a
+  sideways-scrolling strip hides the later sections off-screen and is not used.
+
 ---
 
 ## 5. States

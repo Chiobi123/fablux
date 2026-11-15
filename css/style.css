@@ -91,7 +91,11 @@ ul{
         HEADER
 ===============================*/
 
-header{
+/* Site chrome only. A bare `header`/`nav` selector also matched the admin
+   console's own <header class="fx-pagehead"> and the account <nav class="fx-nav">,
+   pinning the dashboard header over the page and squeezing the account menu into
+   90px. Keep these rules on the site header. */
+body > header{
 
     position:fixed;
 
@@ -115,7 +119,7 @@ header{
         NAVIGATION
 ===============================*/
 
-nav{
+body > header nav{
     display:flex;
     justify-content:space-between;
     align-items:center;

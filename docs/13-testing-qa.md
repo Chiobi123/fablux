@@ -131,8 +131,17 @@ score. Add both before claiming full WCAG 2.2 AA conformance.
 | Safari (macOS/iOS) | not tested | risk: `background-attachment: fixed`, `100vh` behaviour |
 | Samsung Internet | not tested | risk: custom properties (supported since 21) |
 
-Responsive widths checked: 360, 390, 768, 1024, 1440. No horizontal scrolling; the
-header height variable prevents overlap when the nav wraps.
+Responsive widths checked: 320, 360, 390, 768, 1024, 1280, 1440. No horizontal
+scrolling; the header height variable prevents overlap when the nav wraps.
+
+The account hub, admin console and order history were measured on 2026-11-15 by
+loading the real pages in iframes at 320/360/390/414/480/600/768/900/1024/1280 px
+and comparing `document.documentElement.scrollWidth` with the viewport, plus
+listing every element whose right edge landed past it. Before the fix the admin
+console reported 578 px of content inside a 320 px viewport; it now reports 305 px
+(320 minus the desktop scrollbar) at every width. Elements that remain wider than
+the screen are tables inside `.fx-scroll` / `.pro-admin-section`, which scroll
+horizontally within their card by design.
 
 ## 8. Regression checklist (run before every release)
 
@@ -183,6 +192,18 @@ header height variable prevents overlap when the nav wraps.
     'execute') from pg_proc p join pg_namespace n on n.oid = p.pronamespace where
     n.nspname = 'public' and p.proname in ('queue_notification','audit');` must both
     read `false`.
+21. No horizontal overflow on a phone. At 320 px and 360 px wide, open
+    `account.html`, `admin.html` (signed in as admin) and `orders.html` and run:
+    ```js
+    document.documentElement.scrollWidth   // must be ≤ window.innerWidth
+    [...document.querySelectorAll('*')]
+      .filter(e => e.getBoundingClientRect().right > innerWidth + 1)
+      .map(e => e.tagName + '.' + e.className)   // only tables inside a scrolling card
+    ```
+    A wide `body` here means a grid or table grew past the screen; check for a
+    `minmax(<px>,1fr)` track and a fixed `min-width` on the table. Also confirm the
+    site header logo and the **Order Now** button stay inside the viewport at 320 px,
+    and that the account nav chips wrap rather than scroll sideways.
 
 ## 9. Gaps and planned tooling
 

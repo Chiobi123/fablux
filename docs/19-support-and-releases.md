@@ -116,6 +116,28 @@ Chronological, newest first. Conventional prefixes match the commit history.
   `css/shop.css`. `js/shop.js` stays — it is a deliberate 113-byte shim so pages
   cached before the refactor do not 404.
 - Applied with `setup-launch-hardening.sql` (idempotent, re-runnable).
+- `fix(ui)`: the admin console and account hub clipped on phones. Measured with a
+  real layout harness at 320/360/390/414/480/600/768/900/1024/1280 px:
+  `document.body.scrollWidth` was 578 px inside a 320 px viewport, and
+  `body{overflow-x:hidden}` silently cut the difference. Two causes:
+  `.fx-main` was `display:grid` with one implicit `auto` track, so the column sized
+  to its widest child's min-content instead of the screen; and bare `header{}` /
+  `nav{}` rules in `style.css` / `responsive.css` also matched the console's own
+  `<header class="fx-pagehead">` (pinning it `position:fixed;z-index:1000` over the
+  dashboard) and the account `<nav class="fx-nav">` (forcing `height:90px`). Both
+  tracks are `minmax(0,1fr)` now, grid items carry `min-width:0`, and every
+  site-chrome rule is scoped to `body > header`. After: body width equals the
+  viewport at all ten widths on `account.html`, `admin.html` and `orders.html`.
+- `fix(ui)`: the 600 px table floor in `#adminPage table{min-width:600px}` forced
+  every admin table past the edge of a phone. Removed; cells wrap with
+  `overflow-wrap:anywhere` and the `.fx-scroll` / `.pro-admin-section` wrappers
+  scroll only when content genuinely exceeds the card.
+- `fix(ui)`: the account section nav scrolled sideways on phones, which hides
+  sections off-screen. Chips now wrap onto extra rows. The logo ran 331 px wide
+  inside a 294 px container at 320 px because `.logo{font-size:2rem}` came later
+  in `responsive.css` and won on equal specificity; it is
+  `clamp(1.35rem,8.5vw,2rem)` and measures 208 px.
+- `chore(assets)`: `?v=20261115a` on all 28 pages.
 
 ### 2026-11-14
 
@@ -127,7 +149,7 @@ Chronological, newest first. Conventional prefixes match the commit history.
   cut. Desktop and tablet still use `hero1.jpg`; nothing about the layout,
   copy or overlay changed. The shop banner needs no mobile crop — its box is
   short enough that `cover` keeps the subject in frame.
-- `chore(assets)`: `?v=20261114a` on all 28 pages; `dist/` is 69 files now
+- `chore(assets)`: `?v=20261115a` on all 28 pages; `dist/` is 69 files now
   (the new image), and the build-size references in `15`, `24`, the checklist
   and the handover page follow.
 
@@ -345,6 +367,16 @@ Chronological, newest first. Conventional prefixes match the commit history.
 Earlier history: `git log --oneline`.
 
 ## 4. Release notes (user-facing)
+
+### Release 2026-11-15b — "Fits your phone"
+
+- The admin console and your account page now fit the screen you are holding. On a
+  small phone nothing is cut off at the right edge any more; wide tables scroll
+  inside their own card instead of pushing the page sideways.
+- The account menu buttons (Overview, Delivery addresses, Orders…) wrap onto extra
+  rows on a phone instead of hiding the later sections off the side.
+- The site name in the header shrinks to fit narrow screens instead of running off
+  the edge.
 
 ### Release 2026-11-03 — "FabluX, front and centre"
 
